@@ -32,7 +32,7 @@ const db = getFirestore(app);
 
 // Types
 type TicketStatus = "Waiting" | "Serving" | "Completed";
-type Role = "receptionist" | "stylist";
+type Role = "receptionist" | "stylist" | "owner" | "owner_stylist";
 
 interface User {
   username: string;
@@ -49,6 +49,8 @@ interface Ticket {
   status: TicketStatus;
   timestamp: any;
   stylistName?: string;
+  servedAt?: any;
+  completedAt?: any;
 }
 
 const SERVICE_TYPES = [
@@ -129,6 +131,7 @@ const Login: React.FC<{ onLogin: (user: User) => void }> = ({ onLogin }) => {
   const [password, setPassword] = useState('');
   const [createPassword, setCreatePassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [registerRole, setRegisterRole] = useState<Role>('stylist');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
@@ -176,19 +179,26 @@ const Login: React.FC<{ onLogin: (user: User) => void }> = ({ onLogin }) => {
 
     try {
       const formattedName = username.charAt(0).toUpperCase() + username.slice(1);
-      const isReceptionist = formattedName.toLowerCase().includes('reception');
+      const isStylist = registerRole === 'stylist' || registerRole === 'owner_stylist';
       
       await addDoc(collection(db, "stylists"), {
         name: formattedName,
-        active: !isReceptionist,
-        role: isReceptionist ? 'receptionist' : 'stylist',
+        active: isStylist,
+        role: registerRole,
         password: createPassword // Storing password in plain text for prototype demo purposes
       });
-      setSuccess(`${isReceptionist ? 'Receptionist' : 'Stylist'} ${username} registered successfully!`);
+      
+      const roleDisplayName = 
+        registerRole === 'receptionist' ? 'Receptionist' :
+        registerRole === 'owner' ? 'Owner' :
+        registerRole === 'owner_stylist' ? 'Owner & Stylist' : 'Stylist';
+
+      setSuccess(`${roleDisplayName} ${username} registered successfully!`);
       setTimeout(() => {
         setMode('login');
         setCreatePassword('');
         setConfirmPassword('');
+        setRegisterRole('stylist');
       }, 2000);
     } catch (err) {
       setError('Registration failed. Please try again.');
@@ -237,7 +247,7 @@ const Login: React.FC<{ onLogin: (user: User) => void }> = ({ onLogin }) => {
 
         <form onSubmit={mode === 'login' ? handleLogin : handleRegister} className="space-y-6">
           <div className="space-y-2">
-            <label className="text-xs font-sans text-gray-500 uppercase tracking-widest">{mode === 'login' ? 'Username' : 'New Stylist Name'}</label>
+            <label className="text-xs font-sans text-gray-500 uppercase tracking-widest">{mode === 'login' ? 'Username' : 'Display Name'}</label>
             <input 
               type="text" 
               value={username}
@@ -247,6 +257,22 @@ const Login: React.FC<{ onLogin: (user: User) => void }> = ({ onLogin }) => {
               required
             />
           </div>
+
+          {mode === 'register' && (
+            <div className="space-y-2">
+              <label className="text-xs font-sans text-gray-500 uppercase tracking-widest">Role</label>
+              <select
+                value={registerRole}
+                onChange={(e) => setRegisterRole(e.target.value as Role)}
+                className="w-full bg-[#F5F5F0] border border-[#E5E5E0] rounded-sm px-4 py-3 focus:outline-none focus:border-[#D4AF37] transition-all text-[#111111] font-sans appearance-none cursor-pointer"
+              >
+                <option value="stylist">Stylist</option>
+                <option value="receptionist">Receptionist</option>
+                <option value="owner">Owner</option>
+                <option value="owner_stylist">Owner + Stylist</option>
+              </select>
+            </div>
+          )}
           
           {mode === 'login' && (
             <div className="space-y-2">
@@ -296,7 +322,7 @@ const Login: React.FC<{ onLogin: (user: User) => void }> = ({ onLogin }) => {
             type="submit"
             className="w-full mt-4 bg-[#D4AF37] hover:bg-[#C5A059] text-[#111111] font-serif font-bold tracking-widest uppercase py-4 px-6 rounded-sm transition-colors duration-300"
           >
-            {mode === 'login' ? 'Authenticate' : 'Register Stylist'}
+            {mode === 'login' ? 'Authenticate' : 'Register User'}
           </button>
         </form>
       </motion.div>
@@ -306,7 +332,7 @@ const Login: React.FC<{ onLogin: (user: User) => void }> = ({ onLogin }) => {
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
-  const [view, setView] = useState<"reception" | "staff" | "tv">("reception");
+  const [view, setView] = useState<"reception" | "staff" | "tv" | "owner">("reception");
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
   
@@ -341,6 +367,7 @@ export default function App() {
     if (user && view !== "tv") {
       if (user.role === "receptionist") setView("reception");
       else if (user.role === "stylist") setView("staff");
+      else if (user.role === "owner" || user.role === "owner_stylist") setView("owner");
     }
   }, [user, view]);
 
@@ -364,7 +391,7 @@ export default function App() {
     );
   }
 
-  const isDarkView = view === 'tv' || view === 'staff';
+  const isDarkView = view === 'tv' || view === 'staff' || view === 'owner';
 
   return (
     <div className={`min-h-screen font-sans selection:bg-[#D4AF37]/30 overflow-x-hidden flex flex-col transition-colors duration-500 ${isDarkView ? 'bg-[#0A0A0A] text-gray-100' : 'bg-[#F5F5F0] text-[#111111]'}`}>
@@ -392,12 +419,27 @@ export default function App() {
 
           <div className="flex items-center gap-6">
             <div className={`flex p-1 rounded-sm border transition-colors duration-500 ${isDarkView ? 'bg-[#1A1A1A] border-[#2A2A2A]' : 'bg-[#F5F5F0] border-[#E5E5E0]'}`}>
-              {user?.role === "receptionist" && (
+              {(user?.role === "owner" || user?.role === "owner_stylist") && (
+                <button
+                  onClick={() => setView("owner")}
+                  className={`flex items-center gap-2 px-6 py-2 rounded-sm text-sm font-medium transition-all duration-300 cursor-pointer ${
+                    view === "owner" 
+                      ? "bg-[#2A2A2A] text-[#D4AF37] shadow-[0_2px_10px_rgba(0,0,0,0.5)] border-b border-[#D4AF37]/50" 
+                      : isDarkView ? "text-gray-500 hover:text-gray-300" : "text-gray-500 hover:text-gray-800"
+                  }`}
+                >
+                  <Monitor className="w-4 h-4" />
+                  OWNER DASHBOARD
+                </button>
+              )}
+              {(user?.role === "receptionist" || user?.role === "owner" || user?.role === "owner_stylist") && (
                 <button
                   onClick={() => setView("reception")}
                   className={`flex items-center gap-2 px-6 py-2 rounded-sm text-sm font-medium transition-all duration-300 cursor-pointer ${
                     view === "reception" 
-                      ? "bg-[#111111] text-[#D4AF37] shadow-md" 
+                      ? isDarkView 
+                        ? "bg-[#2A2A2A] text-[#D4AF37] shadow-[0_2px_10px_rgba(0,0,0,0.5)] border-b border-[#D4AF37]/50"
+                        : "bg-[#111111] text-[#D4AF37] shadow-md"
                       : isDarkView ? "text-gray-500 hover:text-gray-300" : "text-gray-500 hover:text-gray-800"
                   }`}
                 >
@@ -405,7 +447,7 @@ export default function App() {
                   RECEPTION
                 </button>
               )}
-              {user?.role === "stylist" && (
+              {(user?.role === "stylist" || user?.role === "owner_stylist") && (
                 <button
                   onClick={() => setView("staff")}
                   className={`flex items-center gap-2 px-6 py-2 rounded-sm text-sm font-medium transition-all duration-300 cursor-pointer ${
@@ -453,6 +495,9 @@ export default function App() {
           </div>
         ) : (
           <AnimatePresence mode="wait">
+            {view === "owner" && (
+              <OwnerDashboard key="owner" tickets={tickets} />
+            )}
             {view === "reception" && (
               <ReceptionDashboard key="reception" tickets={tickets} />
             )}
@@ -460,7 +505,7 @@ export default function App() {
               <StaffLineView key="staff" tickets={tickets} user={user} />
             )}
             {view === "tv" && (
-              <TVDisplay key="tv" tickets={tickets} onExit={() => setView(user ? (user.role === 'stylist' ? 'staff' : 'reception') : 'reception')} />
+              <TVDisplay key="tv" tickets={tickets} onExit={() => setView(user ? ((user.role === 'owner' || user.role === 'owner_stylist') ? 'owner' : (user.role === 'stylist' ? 'staff' : 'reception')) : 'reception')} />
             )}
           </AnimatePresence>
         )}
@@ -927,6 +972,237 @@ const TVDisplay: React.FC<{ tickets: Ticket[], onExit?: () => void }> = ({ ticke
 }
 
 // ---------------------------------------------------------
+// HELPER FUNCTIONS & COMPONENT FOR WORK TIME
+// ---------------------------------------------------------
+const formatDuration = (totalSeconds: number) => {
+  if (totalSeconds <= 0) return '0s';
+  const hrs = Math.floor(totalSeconds / 3600);
+  const mins = Math.floor((totalSeconds % 3600) / 60);
+  const secs = totalSeconds % 60;
+  
+  if (hrs > 0) {
+    return `${hrs}h ${mins}m`;
+  }
+  if (mins > 0) {
+    return `${mins}m ${secs}s`;
+  }
+  return `${secs}s`;
+};
+
+const LiveStylistTimer: React.FC<{ servedAt: any, baseSeconds: number }> = ({ servedAt, baseSeconds }) => {
+  const [seconds, setSeconds] = useState(0);
+
+  useEffect(() => {
+    if (!servedAt) {
+      setSeconds(0);
+      return;
+    }
+    const updateTime = () => {
+      let start = 0;
+      if (typeof servedAt.toDate === 'function') {
+        start = servedAt.toDate().getTime();
+      } else if (servedAt.seconds) {
+        start = servedAt.seconds * 1000;
+      } else {
+        setSeconds(0);
+        return;
+      }
+      const now = new Date().getTime();
+      const diff = Math.max(0, Math.floor((now - start) / 1000));
+      setSeconds(diff);
+    };
+
+    updateTime();
+    const interval = setInterval(updateTime, 1000);
+    return () => clearInterval(interval);
+  }, [servedAt]);
+
+  return <span>{formatDuration(seconds + baseSeconds)}</span>;
+};
+
+// ---------------------------------------------------------
+// OWNER DASHBOARD COMPONENT
+// ---------------------------------------------------------
+interface StylistDoc {
+  id: string;
+  name: string;
+  active: boolean;
+  role: string;
+}
+
+interface OwnerDashboardProps {
+  tickets: Ticket[];
+}
+
+const OwnerDashboard: React.FC<OwnerDashboardProps> = ({ tickets }) => {
+  const [stylists, setStylists] = useState<StylistDoc[]>([]);
+  const [loadingStylists, setLoadingStylists] = useState(true);
+
+  useEffect(() => {
+    const q = query(collection(db, "stylists"), orderBy("name", "asc"));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const data = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as StylistDoc[];
+      // Filter out pure receptionist accounts for tracking
+      setStylists(data.filter(s => s.role !== 'receptionist'));
+      setLoadingStylists(false);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const activeStylists = stylists.filter(s => s.active);
+  const activeServings = tickets.filter(t => t.status === "Serving");
+  const completedTickets = tickets.filter(t => t.status === "Completed");
+
+  let totalServiceTimeSeconds = 0;
+  let completedWithTimeCount = 0;
+  completedTickets.forEach(t => {
+    if (t.servedAt && t.completedAt) {
+      const start = t.servedAt.toDate ? t.servedAt.toDate().getTime() : (t.servedAt.seconds * 1000);
+      const end = t.completedAt.toDate ? t.completedAt.toDate().getTime() : (t.completedAt.seconds * 1000);
+      totalServiceTimeSeconds += Math.max(0, Math.floor((end - start) / 1000));
+      completedWithTimeCount++;
+    }
+  });
+  const avgDuration = completedWithTimeCount > 0 ? Math.floor(totalServiceTimeSeconds / completedWithTimeCount) : 0;
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      className="max-w-7xl mx-auto w-full flex flex-col gap-10 flex-1 relative z-10"
+    >
+      <div className="flex items-center justify-between mb-2 border-b border-[#D4AF37]/30 pb-6">
+        <div>
+          <h2 className="text-4xl font-serif text-[#D4AF37] tracking-wider uppercase mb-2">
+            Owner Dashboard
+          </h2>
+          <p className="text-gray-500 font-sans tracking-[0.2em] uppercase text-sm">Real-time Performance & Work Hour Analytics</p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="bg-[#111111] border border-[#2A2A2A] p-6 rounded-sm shadow-xl flex flex-col gap-2">
+          <span className="text-gray-500 text-xs font-sans uppercase tracking-widest">Active Stylists</span>
+          <span className="text-4xl font-serif font-bold text-white">{activeStylists.length} <span className="text-xs text-gray-500 font-sans">/ {stylists.length}</span></span>
+        </div>
+        <div className="bg-[#111111] border border-[#2A2A2A] p-6 rounded-sm shadow-xl flex flex-col gap-2">
+          <span className="text-gray-500 text-xs font-sans uppercase tracking-widest">Current Servings</span>
+          <span className="text-4xl font-serif font-bold text-[#D4AF37]">{activeServings.length}</span>
+        </div>
+        <div className="bg-[#111111] border border-[#2A2A2A] p-6 rounded-sm shadow-xl flex flex-col gap-2">
+          <span className="text-gray-500 text-xs font-sans uppercase tracking-widest">Completed Today</span>
+          <span className="text-4xl font-serif font-bold text-white">{completedTickets.length}</span>
+        </div>
+        <div className="bg-[#111111] border border-[#2A2A2A] p-6 rounded-sm shadow-xl flex flex-col gap-2">
+          <span className="text-gray-500 text-xs font-sans uppercase tracking-widest">Avg Service Time</span>
+          <span className="text-4xl font-serif font-bold text-[#D4AF37]">{formatDuration(avgDuration)}</span>
+        </div>
+      </div>
+
+      <div className="bg-[#111111] border border-[#2A2A2A] p-8 rounded-sm shadow-xl flex-1 flex flex-col">
+        <h3 className="text-xl font-serif text-white mb-6 border-b border-[#2A2A2A] pb-4 uppercase tracking-wider">
+          Stylist Performance Tracking
+        </h3>
+
+        {loadingStylists ? (
+          <div className="flex flex-col items-center justify-center flex-1 py-12 gap-4">
+            <Loader2 className="w-8 h-8 text-[#D4AF37] animate-spin" />
+            <p className="text-sm tracking-widest font-serif text-gray-400">LOADING ANALYTICS...</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-[#2A2A2A] text-gray-500 text-xs uppercase tracking-widest font-sans">
+                  <th className="py-4 font-semibold">Stylist</th>
+                  <th className="py-4 font-semibold">Duty Status</th>
+                  <th className="py-4 font-semibold">Current Client</th>
+                  <th className="py-4 font-semibold text-center">Served Today</th>
+                  <th className="py-4 font-semibold text-right">Total Work Duration</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#2A2A2A]">
+                {stylists.map(stylist => {
+                  const completedList = completedTickets.filter(t => t.stylistName === stylist.name);
+                  
+                  let completedSecs = 0;
+                  completedList.forEach(t => {
+                    if (t.servedAt && t.completedAt) {
+                      const start = t.servedAt.toDate ? t.servedAt.toDate().getTime() : (t.servedAt.seconds * 1000);
+                      const end = t.completedAt.toDate ? t.completedAt.toDate().getTime() : (t.completedAt.seconds * 1000);
+                      completedSecs += Math.max(0, Math.floor((end - start) / 1000));
+                    }
+                  });
+
+                  const activeServingTicket = activeServings.find(t => t.stylistName === stylist.name);
+
+                  return (
+                    <tr key={stylist.id} className="text-gray-300 font-sans hover:bg-[#1A1A1A]/30 transition-colors">
+                      <td className="py-5 font-medium text-white flex items-center gap-2">
+                        {stylist.name}
+                        {stylist.role === 'owner_stylist' && (
+                          <span className="text-[9px] uppercase tracking-widest bg-[#D4AF37]/20 text-[#D4AF37] border border-[#D4AF37]/30 px-2 py-0.5 rounded-sm">Owner</span>
+                        )}
+                      </td>
+                      <td className="py-5">
+                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-sm text-xs font-semibold uppercase tracking-wider ${
+                          stylist.active 
+                            ? 'bg-green-500/10 text-green-400 border border-green-500/20' 
+                            : 'bg-gray-500/10 text-gray-500 border border-gray-500/20'
+                        }`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${stylist.active ? 'bg-green-400' : 'bg-gray-500'}`}></span>
+                          {stylist.active ? 'On Duty' : 'Offline'}
+                        </span>
+                      </td>
+                      <td className="py-5">
+                        {activeServingTicket ? (
+                          <div className="flex flex-col gap-1">
+                            <span className="text-white font-medium">{activeServingTicket.customerName}</span>
+                            <span className="text-xs text-gray-500">{activeServingTicket.serviceType}</span>
+                          </div>
+                        ) : (
+                          <span className="text-gray-500 italic text-sm">
+                            {stylist.active ? 'Idle / Waiting for client' : 'Offline'}
+                          </span>
+                        )}
+                      </td>
+                      <td className="py-5 text-center font-semibold text-white">
+                        {completedList.length}
+                      </td>
+                      <td className="py-5 text-right font-mono text-white">
+                        {activeServingTicket ? (
+                          <div className="flex items-center justify-end gap-1.5 text-amber-400 font-bold">
+                            <span className="w-1.5 h-1.5 bg-amber-400 rounded-full animate-ping"></span>
+                            <LiveStylistTimer servedAt={activeServingTicket.servedAt} baseSeconds={completedSecs} />
+                          </div>
+                        ) : (
+                          formatDuration(completedSecs)
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+                {stylists.length === 0 && (
+                  <tr>
+                    <td colSpan={5} className="py-10 text-center text-gray-500 italic">
+                      No stylists registered in system.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </motion.div>
+  );
+};
+
+// ---------------------------------------------------------
 // STAFF LINE VIEW COMPONENT
 // ---------------------------------------------------------
 const StaffLineView: React.FC<{ tickets: Ticket[], user: User }> = ({ tickets, user }) => {
@@ -934,10 +1210,22 @@ const StaffLineView: React.FC<{ tickets: Ticket[], user: User }> = ({ tickets, u
     try {
       await updateDoc(doc(db, "tickets", ticketId), { 
         status: "Serving",
-        stylistName: user.name 
+        stylistName: user.name,
+        servedAt: serverTimestamp()
       });
     } catch (err) {
       console.error("Failed to accept customer", err);
+    }
+  };
+
+  const handleCompleteCustomer = async (ticketId: string) => {
+    try {
+      await updateDoc(doc(db, "tickets", ticketId), { 
+        status: "Completed",
+        completedAt: serverTimestamp()
+      });
+    } catch (err) {
+      console.error("Failed to complete service", err);
     }
   };
 
@@ -1009,8 +1297,15 @@ const StaffLineView: React.FC<{ tickets: Ticket[], user: User }> = ({ tickets, u
                      >
                        Accept
                      </button>
+                   ) : ticket.stylistName === user.name ? (
+                     <button
+                       onClick={() => handleCompleteCustomer(ticket.docId)}
+                       className="bg-[#0A0A0A] hover:bg-[#1A1A1A] text-white px-6 py-3 rounded-sm font-sans text-xs uppercase tracking-widest font-bold transition-colors whitespace-nowrap shadow-md"
+                     >
+                       Complete
+                     </button>
                    ) : (
-                     <div className="bg-[#111111]/10 px-6 py-3 rounded-sm font-sans text-xs uppercase tracking-widest font-bold text-[#111111] whitespace-nowrap">
+                     <div className="bg-[#0A0A0A]/10 px-6 py-3 rounded-sm font-sans text-xs uppercase tracking-widest font-bold text-[#0A0A0A] whitespace-nowrap">
                        With {ticket.stylistName || 'Stylist'}
                      </div>
                    )}
