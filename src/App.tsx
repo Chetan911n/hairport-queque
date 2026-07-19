@@ -589,38 +589,51 @@ export default function App() {
 
       {/* Header (Hide in TV View to make it fully full-screen as requested) */}
       {view !== 'tv' && (
-        <header className={`relative z-20 flex justify-between items-center px-8 py-6 border-b transition-colors duration-500 ${isDarkView ? 'bg-[#0A0A0A]/90 border-[#2A2A2A]' : 'bg-white/90 border-[#111111]'} backdrop-blur-md`}>
-          <div className="flex items-center gap-4">
-            <div className={`w-12 h-12 rounded-sm border transition-colors duration-500 flex items-center justify-center ${isDarkView ? 'border-[#D4AF37]/50 bg-[#1A1A1A]' : 'border-[#111111] bg-[#111111]'}`}>
-              <Scissors className="w-6 h-6 text-[#D4AF37]" />
+        <header className={`relative z-20 flex flex-col lg:flex-row justify-between items-center px-4 sm:px-8 py-4 sm:py-6 gap-4 sm:gap-6 border-b transition-colors duration-500 ${isDarkView ? 'bg-[#0A0A0A]/90 border-[#2A2A2A]' : 'bg-white/90 border-[#111111]'} backdrop-blur-md`}>
+          <div className="flex items-center justify-between w-full lg:w-auto gap-4">
+            <div className="flex items-center gap-3 sm:gap-4">
+              <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-sm border transition-colors duration-500 flex items-center justify-center ${isDarkView ? 'border-[#D4AF37]/50 bg-[#1A1A1A]' : 'border-[#111111] bg-[#111111]'}`}>
+                <Scissors className="w-5 h-5 sm:w-6 sm:h-6 text-[#D4AF37]" />
+              </div>
+              <div>
+                <h1 className={`text-2xl sm:text-3xl font-bold tracking-widest font-serif uppercase transition-colors duration-500 ${isDarkView ? 'text-[#D4AF37]' : 'text-[#111111]'}`}>
+                  Hairport
+                </h1>
+                <p className="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-gray-500 font-sans mt-0.5 sm:mt-1">Premium Grooming</p>
+              </div>
             </div>
-            <div>
-              <h1 className={`text-3xl font-bold tracking-widest font-serif uppercase transition-colors duration-500 ${isDarkView ? 'text-[#D4AF37]' : 'text-[#111111]'}`}>
-                Hairport
-              </h1>
-              <p className="text-xs uppercase tracking-[0.3em] text-gray-500 font-sans mt-1">Premium Grooming</p>
+            
+            {/* Mobile Sign Out */}
+            <div className="flex flex-col items-end lg:hidden">
+              <span className={`text-xs font-serif font-bold ${isDarkView ? 'text-white' : 'text-[#111111]'}`}>{user?.name}</span>
+              <button 
+                onClick={() => setUser(null)}
+                className="text-[10px] font-sans tracking-widest uppercase text-gray-500 hover:text-[#D4AF37] transition-colors"
+              >
+                Sign Out
+              </button>
             </div>
           </div>
 
-          <div className="flex items-center gap-6">
-            <div className={`flex p-1 rounded-sm border transition-colors duration-500 ${isDarkView ? 'bg-[#1A1A1A] border-[#2A2A2A]' : 'bg-[#F5F5F0] border-[#E5E5E0]'}`}>
+          <div className="flex flex-col sm:flex-row items-center w-full lg:w-auto gap-4 sm:gap-6">
+            <div className={`flex flex-wrap items-center justify-center p-1 rounded-sm border transition-colors duration-500 w-full lg:w-auto ${isDarkView ? 'bg-[#1A1A1A] border-[#2A2A2A]' : 'bg-[#F5F5F0] border-[#E5E5E0]'}`}>
               {(user?.role === "owner" || user?.role === "owner_stylist") && (
                 <button
                   onClick={() => setView("owner")}
-                  className={`flex items-center gap-2 px-6 py-2 rounded-sm text-sm font-medium transition-all duration-300 cursor-pointer ${
+                  className={`flex items-center justify-center gap-1.5 px-3 sm:px-6 py-2.5 rounded-sm text-xs sm:text-sm font-medium transition-all duration-300 cursor-pointer flex-1 lg:flex-none ${
                     view === "owner" 
                       ? "bg-[#2A2A2A] text-[#D4AF37] shadow-[0_2px_10px_rgba(0,0,0,0.5)] border-b border-[#D4AF37]/50" 
                       : isDarkView ? "text-gray-500 hover:text-gray-300" : "text-gray-500 hover:text-gray-800"
                   }`}
                 >
-                  <Monitor className="w-4 h-4" />
-                  OWNER DASHBOARD
+                  <Monitor className="w-3.5 h-3.5" />
+                  <span className="hidden xs:inline">OWNER</span>
                 </button>
               )}
               {(user?.role === "receptionist" || user?.role === "owner" || user?.role === "owner_stylist") && (
                 <button
                   onClick={() => setView("reception")}
-                  className={`flex items-center gap-2 px-6 py-2 rounded-sm text-sm font-medium transition-all duration-300 cursor-pointer ${
+                  className={`flex items-center justify-center gap-1.5 px-3 sm:px-6 py-2.5 rounded-sm text-xs sm:text-sm font-medium transition-all duration-300 cursor-pointer flex-1 lg:flex-none ${
                     view === "reception" 
                       ? isDarkView 
                         ? "bg-[#2A2A2A] text-[#D4AF37] shadow-[0_2px_10px_rgba(0,0,0,0.5)] border-b border-[#D4AF37]/50"
@@ -628,37 +641,38 @@ export default function App() {
                       : isDarkView ? "text-gray-500 hover:text-gray-300" : "text-gray-500 hover:text-gray-800"
                   }`}
                 >
-                  <UserPlus className="w-4 h-4" />
-                  RECEPTION
+                  <UserPlus className="w-3.5 h-3.5" />
+                  <span>RECEPTION</span>
                 </button>
               )}
               {(user?.role === "stylist" || user?.role === "owner_stylist") && (
                 <button
                   onClick={() => setView("staff")}
-                  className={`flex items-center gap-2 px-6 py-2 rounded-sm text-sm font-medium transition-all duration-300 cursor-pointer ${
+                  className={`flex items-center justify-center gap-1.5 px-3 sm:px-6 py-2.5 rounded-sm text-xs sm:text-sm font-medium transition-all duration-300 cursor-pointer flex-1 lg:flex-none ${
                     view === "staff" 
                       ? "bg-[#2A2A2A] text-[#D4AF37] shadow-[0_2px_10px_rgba(0,0,0,0.5)] border-b border-[#D4AF37]/50" 
                       : isDarkView ? "text-gray-500 hover:text-gray-300" : "text-gray-500 hover:text-gray-800"
                   }`}
                 >
-                  <Clock className="w-4 h-4" />
-                  STAFF LINE
+                  <Clock className="w-3.5 h-3.5" />
+                  <span className="hidden xs:inline">STAFF</span>
                 </button>
               )}
               <button
                 onClick={() => { setView("tv"); playChime(); }}
-                className={`flex items-center gap-2 px-6 py-2 rounded-sm text-sm font-medium transition-all duration-300 cursor-pointer ${
+                className={`flex items-center justify-center gap-1.5 px-3 sm:px-6 py-2.5 rounded-sm text-xs sm:text-sm font-medium transition-all duration-300 cursor-pointer flex-1 lg:flex-none ${
                   view === "tv" 
                     ? "bg-[#2A2A2A] text-[#D4AF37] shadow-[0_2px_10px_rgba(0,0,0,0.5)] border-b border-[#D4AF37]/50" 
                     : isDarkView ? "text-gray-500 hover:text-gray-300" : "text-gray-500 hover:text-gray-800"
                 }`}
               >
-                <Monitor className="w-4 h-4" />
-                TV DISPLAY
+                <Monitor className="w-3.5 h-3.5" />
+                <span className="hidden xs:inline">TV</span>
               </button>
             </div>
             
-            <div className="flex flex-col items-end border-l border-gray-300 dark:border-[#2A2A2A] pl-6">
+            {/* Desktop Sign Out */}
+            <div className="hidden lg:flex flex-col items-end border-l border-gray-300 dark:border-[#2A2A2A] pl-6">
               <span className={`text-sm font-serif font-bold ${isDarkView ? 'text-white' : 'text-[#111111]'}`}>{user?.name}</span>
               <button 
                 onClick={() => setUser(null)}
@@ -1154,7 +1168,7 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
   return (
     <div className="max-w-7xl mx-auto w-full flex flex-col gap-6 flex-1 text-[#111111]">
       {/* Tab Selector */}
-      <div className="flex border-b border-[#E5E5E0] pb-2 gap-6">
+      <div className="flex border-b border-[#E5E5E0] pb-2 gap-6 overflow-x-auto whitespace-nowrap hide-scrollbar">
         <button
           onClick={() => setActiveTab("queue")}
           className={`pb-2 text-sm font-sans uppercase tracking-widest font-semibold border-b-2 transition-all cursor-pointer ${
