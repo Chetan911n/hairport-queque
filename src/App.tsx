@@ -528,13 +528,13 @@ export default function App() {
     if (user) {
       if (user.role === "tv") {
         setView("tv");
-      } else if (view !== "tv") {
+      } else {
         if (user.role === "receptionist") setView("reception");
         else if (user.role === "stylist") setView("staff");
         else if (user.role === "owner" || user.role === "owner_stylist") setView("owner");
       }
     }
-  }, [user, view]);
+  }, [user]);
 
   const handleConfirmCompletion = async (price: number, stylistName: string) => {
     if (!completingTicket) return;
