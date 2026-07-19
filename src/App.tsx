@@ -215,9 +215,63 @@ const Login: React.FC<{ onLogin: (user: User) => void }> = ({ onLogin }) => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F5F5F0] flex flex-col md:flex-row items-center justify-center p-6 relative gap-10">
+    <div className="min-h-screen bg-[#F5F5F0] flex flex-col md:flex-row items-center justify-center p-6 relative gap-10 overflow-hidden">
       <div className="absolute inset-0 opacity-[0.02] mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] invert"></div>
       
+      {/* 3D Floating Scissors Background Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+        <div className="absolute top-[10%] left-[10%] opacity-[0.18] animate-float-3d-1 text-[#D4AF37]">
+          <Scissors className="w-16 h-16 drop-shadow-[0_10px_20px_rgba(212,175,55,0.4)]" />
+        </div>
+        <div className="absolute top-[20%] right-[15%] opacity-[0.12] animate-float-3d-2 text-gray-400">
+          <Scissors className="w-24 h-24 drop-shadow-[0_15px_30px_rgba(0,0,0,0.15)]" />
+        </div>
+        <div className="absolute bottom-[25%] left-[15%] opacity-[0.12] animate-float-3d-3 text-gray-400">
+          <Scissors className="w-20 h-20 drop-shadow-[0_15px_25px_rgba(0,0,0,0.15)]" />
+        </div>
+        <div className="absolute bottom-[10%] right-[20%] opacity-[0.18] animate-float-3d-1 text-[#D4AF37]">
+          <Scissors className="w-28 h-28 drop-shadow-[0_20px_35px_rgba(212,175,55,0.4)]" />
+        </div>
+        <div className="absolute top-[60%] left-[5%] opacity-[0.08] animate-float-3d-2 text-gray-400">
+          <Scissors className="w-12 h-12" />
+        </div>
+        <div className="absolute top-[50%] right-[5%] opacity-[0.15] animate-float-3d-3 text-[#D4AF37]">
+          <Scissors className="w-16 h-16 drop-shadow-[0_10px_20px_rgba(212,175,55,0.3)]" />
+        </div>
+      </div>
+
+      <style dangerouslySetInnerHTML={{__html: `
+        @keyframes float-scissor-1 {
+          0% { transform: translateY(0px) rotateX(0deg) rotateY(0deg) rotateZ(0deg) scale(1); }
+          50% { transform: translateY(-40px) rotateX(180deg) rotateY(90deg) rotateZ(45deg) scale(1.1); }
+          100% { transform: translateY(0px) rotateX(360deg) rotateY(180deg) rotateZ(0deg) scale(1); }
+        }
+        @keyframes float-scissor-2 {
+          0% { transform: translateY(0px) rotateX(45deg) rotateY(0deg) rotateZ(90deg) scale(0.9); }
+          50% { transform: translateY(30px) rotateX(-90deg) rotateY(180deg) rotateZ(-45deg) scale(0.85); }
+          100% { transform: translateY(0px) rotateX(45deg) rotateY(360deg) rotateZ(90deg) scale(0.9); }
+        }
+        @keyframes float-scissor-3 {
+          0% { transform: translateY(0px) rotateX(0deg) rotateY(-45deg) rotateZ(180deg) scale(1.1); }
+          50% { transform: translateY(-50px) rotateX(90deg) rotateY(180deg) rotateZ(270deg) scale(1); }
+          100% { transform: translateY(0px) rotateX(0deg) rotateY(315deg) rotateZ(180deg) scale(1.1); }
+        }
+        .animate-float-3d-1 {
+          animation: float-scissor-1 15s infinite ease-in-out;
+          perspective: 1000px;
+          transform-style: preserve-3d;
+        }
+        .animate-float-3d-2 {
+          animation: float-scissor-2 20s infinite ease-in-out;
+          perspective: 1000px;
+          transform-style: preserve-3d;
+        }
+        .animate-float-3d-3 {
+          animation: float-scissor-3 25s infinite ease-in-out;
+          perspective: 1000px;
+          transform-style: preserve-3d;
+        }
+      `}} />
 
       {/* Main Authentication Panel */}
       <motion.div 
