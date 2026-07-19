@@ -137,9 +137,6 @@ const LiveCounter: React.FC<{ timestamp: any }> = ({ timestamp }) => {
 const Login: React.FC<{ onLogin: (user: User) => void }> = ({ onLogin }) => {
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [createPassword, setCreatePassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [registerRole, setRegisterRole] = useState<Role>('stylist');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -149,7 +146,7 @@ const Login: React.FC<{ onLogin: (user: User) => void }> = ({ onLogin }) => {
     setError('');
 
     // Predefined TV terminal display account
-    if (username.toLowerCase() === "tv" && password === "password") {
+    if (username.toLowerCase() === "tv") {
       onLogin({ username: "tv", role: "tv", name: "TV Display" });
       return;
     }
@@ -158,20 +155,17 @@ const Login: React.FC<{ onLogin: (user: User) => void }> = ({ onLogin }) => {
       // Query stylist by name
       const formattedName = username.charAt(0).toUpperCase() + username.slice(1);
       
-      // Special check for a registered receptionist (stored in same collection for simplicity)
       const q = query(collection(db, "stylists"), where("name", "==", formattedName));
       const querySnapshot = await getDocs(q);
       
       if (!querySnapshot.empty) {
         const stylistDoc = querySnapshot.docs[0].data();
-        if (stylistDoc.password && stylistDoc.password === password) {
-          const role = stylistDoc.role || (formattedName.toLowerCase().includes('reception') ? 'receptionist' : 'stylist');
-          onLogin({ username, role, name: formattedName });
-          return;
-        }
+        const role = stylistDoc.role || (formattedName.toLowerCase().includes('reception') ? 'receptionist' : 'stylist');
+        onLogin({ username, role, name: formattedName });
+        return;
       }
       
-      setError('Invalid credentials');
+      setError('Member name not found. Please register first.');
     } catch (err) {
       setError('Login failed. Please try again.');
     }
@@ -182,25 +176,22 @@ const Login: React.FC<{ onLogin: (user: User) => void }> = ({ onLogin }) => {
     setError('');
     setSuccess('');
 
-    if (createPassword !== confirmPassword) {
-      setError('Passwords do not match.');
-      return;
-    }
-
-    if (createPassword.length < 6) {
-      setError('Password must be at least 6 characters.');
-      return;
-    }
-
     try {
       const formattedName = username.charAt(0).toUpperCase() + username.slice(1);
       const isStylist = registerRole === 'stylist' || registerRole === 'owner_stylist';
       
+      // Check if user already exists
+      const q = query(collection(db, "stylists"), where("name", "==", formattedName));
+      const querySnapshot = await getDocs(q);
+      if (!querySnapshot.empty) {
+        setError('A member with this name is already registered.');
+        return;
+      }
+
       await addDoc(collection(db, "stylists"), {
         name: formattedName,
         active: isStylist,
-        role: registerRole,
-        password: createPassword // Storing password in plain text for prototype demo purposes
+        role: registerRole
       });
       
       const roleDisplayName = 
@@ -211,8 +202,6 @@ const Login: React.FC<{ onLogin: (user: User) => void }> = ({ onLogin }) => {
       setSuccess(`${roleDisplayName} ${username} registered successfully!`);
       setTimeout(() => {
         setMode('login');
-        setCreatePassword('');
-        setConfirmPassword('');
         setRegisterRole('stylist');
       }, 2000);
     } catch (err) {
@@ -345,47 +334,7 @@ const Login: React.FC<{ onLogin: (user: User) => void }> = ({ onLogin }) => {
               </select>
             </div>
           )}
-          
-          {mode === 'login' && (
-            <div className="space-y-2">
-              <label className="text-xs font-sans text-gray-500 uppercase tracking-widest">Password</label>
-              <input 
-                type="password" 
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-[#F5F5F0] border border-[#E5E5E0] rounded-sm px-4 py-3 focus:outline-none focus:border-[#D4AF37] transition-all text-[#111111] font-sans"
-                placeholder="Enter password"
-                required
-              />
-            </div>
-          )}
-          
-          {mode === 'register' && (
-            <>
-              <div className="space-y-2">
-                <label className="text-xs font-sans text-gray-500 uppercase tracking-widest">Create Password</label>
-                <input 
-                  type="password" 
-                  value={createPassword}
-                  onChange={(e) => setCreatePassword(e.target.value)}
-                  className="w-full bg-[#F5F5F0] border border-[#E5E5E0] rounded-sm px-4 py-3 focus:outline-none focus:border-[#D4AF37] transition-all text-[#111111] font-sans"
-                  placeholder="Create password"
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-xs font-sans text-gray-500 uppercase tracking-widest">Confirm Password</label>
-                <input 
-                  type="password" 
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full bg-[#F5F5F0] border border-[#E5E5E0] rounded-sm px-4 py-3 focus:outline-none focus:border-[#D4AF37] transition-all text-[#111111] font-sans"
-                  placeholder="Confirm password"
-                  required
-                />
-              </div>
-            </>
-          )}
+          {/* Password fields removed as requested */}
           
           {error && <p className="text-red-500 text-xs text-center">{error}</p>}
           {success && <p className="text-green-600 text-xs text-center">{success}</p>}
