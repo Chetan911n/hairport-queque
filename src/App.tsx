@@ -215,8 +215,11 @@ const Login: React.FC<{ onLogin: (user: User) => void }> = ({ onLogin }) => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F5F5F0] flex flex-col md:flex-row items-center justify-center p-6 relative gap-10 overflow-hidden">
-      <div className="absolute inset-0 opacity-[0.02] mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] invert"></div>
+    <div 
+      style={{ backgroundImage: 'url("/abstract_beauty.jpg")', backgroundSize: 'cover', backgroundPosition: 'center' }}
+      className="min-h-screen flex flex-col md:flex-row items-center justify-center p-6 relative gap-10 overflow-hidden"
+    >
+      <div className="absolute inset-0 opacity-[0.01] mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] invert"></div>
       
       {/* 3D Floating Scissors Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
@@ -277,7 +280,7 @@ const Login: React.FC<{ onLogin: (user: User) => void }> = ({ onLogin }) => {
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white border border-[#111111] p-10 rounded-sm shadow-xl w-full max-w-md relative z-10"
+        className="bg-white/80 backdrop-blur-lg border border-[#E5E5E0]/50 p-10 rounded-sm shadow-2xl w-full max-w-md relative z-10"
       >
         <div className="flex flex-col items-center mb-8">
           <div className="w-16 h-16 rounded-sm border border-[#111111] bg-[#111111] flex items-center justify-center mb-6">
@@ -1537,14 +1540,13 @@ const TVDisplay: React.FC<{ tickets: Ticket[], onExit?: () => void }> = ({ ticke
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="absolute inset-0 bg-[#0F0F0F] z-50 flex overflow-hidden"
+      style={{ backgroundImage: 'url("/botanical_retreat.jpg")', backgroundSize: 'cover', backgroundPosition: 'center' }}
+      className="absolute inset-0 z-50 flex overflow-hidden bg-white"
     >
-      <div className="absolute inset-0 opacity-[0.02] mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] pointer-events-none"></div>
-
       {onExit && (
         <button 
           onClick={onExit}
-          className="absolute top-8 right-8 z-50 text-gray-500 hover:text-[#D4AF37] transition-colors bg-[#111111]/80 px-4 py-2 rounded-sm border border-[#2A2A2A] backdrop-blur-sm text-xs font-sans tracking-widest uppercase"
+          className="absolute top-8 right-8 z-50 text-gray-500 hover:text-[#C5A059] transition-colors bg-white/80 px-4 py-2 rounded-sm border border-[#E5E5E0] backdrop-blur-sm text-xs font-sans tracking-widest uppercase shadow-sm"
         >
           Exit TV View
         </button>
@@ -1552,23 +1554,20 @@ const TVDisplay: React.FC<{ tickets: Ticket[], onExit?: () => void }> = ({ ticke
 
       {/* FULL SCREEN WAITING LOUNGE */}
       <div className="w-full max-w-7xl mx-auto p-16 relative z-10 flex flex-col">
-        <div className="flex items-center justify-between mb-16 border-b border-[#2A2A2A] pb-8">
+        <div className="flex items-center justify-between mb-16 border-b border-[#E5E5E0] pb-8">
           <div>
-            <h2 className="text-5xl font-serif text-[#D4AF37] tracking-wider uppercase mb-2">
+            <h2 className="text-5xl font-serif text-[#111111] tracking-wider uppercase mb-2">
               Waiting Lounge
             </h2>
             <p className="text-gray-500 font-sans tracking-[0.2em] uppercase text-xl">Upcoming Appointments</p>
           </div>
           <div className="flex flex-col items-end">
-            <span className="text-7xl font-serif text-[#D4AF37]">{waitingTickets.length}</span>
+            <span className="text-7xl font-serif text-[#C5A059] font-bold">{waitingTickets.length}</span>
             <span className="text-gray-500 font-sans tracking-[0.2em] uppercase text-sm">Waiting</span>
           </div>
         </div>
 
         <div className="flex-1 overflow-hidden relative">
-          <div className="absolute top-0 left-0 right-0 h-16 bg-gradient-to-b from-[#0F0F0F] to-transparent z-10 pointer-events-none"></div>
-          <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-[#0F0F0F] to-transparent z-10 pointer-events-none"></div>
-          
           <div 
             ref={scrollRef}
             className="h-full overflow-y-auto space-y-6 pr-4 hide-scrollbar pb-32"
@@ -1576,7 +1575,7 @@ const TVDisplay: React.FC<{ tickets: Ticket[], onExit?: () => void }> = ({ ticke
             <AnimatePresence>
               {waitingTickets.length === 0 ? (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="h-full flex items-center justify-center">
-                   <p className="text-3xl font-serif text-gray-600 italic">No clients waiting.</p>
+                   <p className="text-3xl font-serif text-gray-500 italic">No clients waiting.</p>
                 </motion.div>
               ) : (
                 waitingTickets.map((ticket, index) => (
@@ -1587,17 +1586,17 @@ const TVDisplay: React.FC<{ tickets: Ticket[], onExit?: () => void }> = ({ ticke
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -50 }}
                     transition={{ delay: index * 0.05 }}
-                    className="bg-[#141414] border border-[#2A2A2A] p-10 rounded-sm flex items-center justify-between"
+                    className="bg-white/85 backdrop-blur-md border border-[#E5E5E0] p-10 rounded-sm flex items-center justify-between shadow-sm hover:shadow-md transition-shadow"
                   >
                     <div className="flex items-center gap-10">
-                      <span className="text-5xl font-sans font-medium text-gray-500 w-24">{ticket.id}</span>
+                      <span className="text-5xl font-sans font-bold text-gray-400 w-24">{ticket.id}</span>
                       <div>
-                        <p className="text-4xl text-gray-200 font-serif tracking-wide">
+                        <p className="text-4xl text-[#111111] font-serif font-bold tracking-wide">
                           {maskName(ticket.customerName)}
                         </p>
                       </div>
                     </div>
-                    <span className="text-2xl font-sans text-[#D4AF37] tracking-widest px-6 py-3 border border-[#D4AF37]/30 rounded-sm uppercase">
+                    <span className="text-2xl font-sans text-[#C5A059] font-bold tracking-widest px-6 py-3 border border-[#C5A059]/30 rounded-sm uppercase bg-white/50">
                       {ticket.serviceType}
                     </span>
                   </motion.div>
