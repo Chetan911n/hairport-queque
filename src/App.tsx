@@ -549,6 +549,12 @@ export default function App() {
         updateData.servedAt = serverTimestamp();
       }
       await updateDoc(doc(db, "tickets", completingTicket.docId), updateData);
+      
+      // Auto-compose and trigger native SMS to thank the client
+      const smsBody = `Hi ${completingTicket.customerName}, thank you for visiting Hairport! Your haircut with ${stylistName} is complete. Your total spent was ₹${price}. We hope you love your new look. Please visit again!`;
+      const smsUrl = `sms:${completingTicket.phone}?body=${encodeURIComponent(smsBody)}`;
+      window.location.href = smsUrl;
+
       setCompletingTicket(null);
     } catch (err) {
       console.error("Error completing ticket:", err);
