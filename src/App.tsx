@@ -15,7 +15,7 @@ import {
   where
 } from "firebase/firestore";
 import { motion, AnimatePresence } from 'motion/react';
-import { Play, CheckCircle, Trash2, Monitor, Scissors, UserPlus, Phone, Loader2, User, Clock, ChevronRight } from 'lucide-react';
+import { Play, CheckCircle, Trash2, Monitor, Scissors, UserPlus, Phone, Loader2, User, Clock, ChevronRight, Search } from 'lucide-react';
 
 // Firebase Configuration
 const firebaseConfig = {
@@ -51,6 +51,7 @@ interface Ticket {
   stylistName?: string;
   servedAt?: any;
   completedAt?: any;
+  price?: number;
 }
 
 const SERVICE_TYPES = [
@@ -60,6 +61,14 @@ const SERVICE_TYPES = [
   "Executive Grooming",
   "Color Treatment"
 ];
+
+const SERVICE_PRICES: Record<string, number> = {
+  "Classic Cut": 45,
+  "Hot Towel Shave": 35,
+  "Beard Sculpting": 30,
+  "Executive Grooming": 75,
+  "Color Treatment": 90
+};
 
 // Audio Synthesizer for Notifications
 const playChime = () => {
@@ -330,11 +339,151 @@ const Login: React.FC<{ onLogin: (user: User) => void }> = ({ onLogin }) => {
   );
 };
 
+interface CompletionModalProps {
+  ticket: Ticket;
+  onClose: () => void;
+  onConfirm: (price: number, stylistName: string) => Promise<void>;
+}
+
+const CompletionModal: React.FC<CompletionModalProps> = ({ ticket, onClose, onConfirm }) => {
+  const [price, setPrice] = useState<string>("");
+  const [stylist, setStylist] = useState<string>("");
+  const [stylists, setStylists] = useState<{ id: string, name: string }[]>([]);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const defaultPrice = SERVICE_PRICES[ticket.serviceType] || 0;
+    setPrice(defaultPrice.toString());
+
+    if (ticket.stylistName) {
+      setStylist(ticket.stylistName);
+    }
+
+    const q = query(collection(db, "stylists"), orderBy("name", "asc"));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const data = snapshot.docs
+        .map(doc => doc.data() as { name: string, role?: string })
+        .filter(s => s.role !== 'receptionist')
+        .map(s => ({ id: s.name, name: s.name }));
+      setStylists(data);
+      
+      if (!ticket.stylistName && data.length > 0) {
+        setStylist(data[0].name);
+      }
+    });
+
+    return () => unsubscribe();
+  }, [ticket]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    const parsedPrice = parseFloat(price);
+    if (isNaN(parsedPrice) || parsedPrice < 0) {
+      setError("Please enter a valid price.");
+      return;
+    }
+    if (!stylist) {
+      setError("Please select a stylist.");
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      await onConfirm(parsedPrice, stylist);
+    } catch (err) {
+      setError("Failed to complete ticket. Please try again.");
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4">
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+        className="bg-[#111111] border border-[#D4AF37]/30 p-8 rounded-sm shadow-2xl w-full max-w-md relative text-gray-200 font-sans"
+      >
+        <h3 className="text-2xl font-serif text-[#D4AF37] mb-6 border-b border-[#2A2A2A] pb-4 uppercase tracking-wider">
+          Complete Appointment
+        </h3>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <span className="text-xs text-gray-500 uppercase tracking-widest block mb-1">Client Name</span>
+            <span className="text-lg text-white font-medium">{ticket.customerName}</span>
+          </div>
+
+          <div>
+            <span className="text-xs text-gray-500 uppercase tracking-widest block mb-1">Service Type</span>
+            <span className="text-lg text-[#D4AF37] font-medium">{ticket.serviceType}</span>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-xs text-gray-500 uppercase tracking-widest block">Stylist Assigned</label>
+            <select
+              value={stylist}
+              onChange={(e) => setStylist(e.target.value)}
+              disabled={!!ticket.stylistName}
+              className="w-full bg-[#1A1A1A] text-white border border-[#2A2A2A] rounded-sm px-4 py-3 focus:outline-none focus:border-[#D4AF37] disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
+            >
+              {ticket.stylistName ? (
+                <option value={ticket.stylistName}>{ticket.stylistName}</option>
+              ) : (
+                stylists.map(s => (
+                  <option key={s.id} value={s.name}>{s.name}</option>
+                ))
+              )}
+            </select>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-xs text-gray-500 uppercase tracking-widest block">Amount Charged ($)</label>
+            <input
+              type="number"
+              step="0.01"
+              min="0"
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
+              required
+              className="w-full bg-[#1A1A1A] text-white border border-[#2A2A2A] rounded-sm px-4 py-3 focus:outline-none focus:border-[#D4AF37]"
+              placeholder="0.00"
+            />
+          </div>
+
+          {error && <p className="text-red-500 text-xs">{error}</p>}
+
+          <div className="flex gap-4 pt-4">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={submitting}
+              className="flex-1 bg-transparent hover:bg-white/5 border border-gray-600 text-gray-400 hover:text-white py-3 rounded-sm font-sans text-xs uppercase tracking-widest transition-colors font-semibold"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={submitting}
+              className="flex-1 bg-[#D4AF37] hover:bg-[#C5A059] text-[#111111] py-3 rounded-sm font-sans text-xs uppercase tracking-widest transition-colors font-bold flex items-center justify-center gap-2"
+            >
+              {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Confirm"}
+            </button>
+          </div>
+        </form>
+      </motion.div>
+    </div>
+  );
+};
+
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [view, setView] = useState<"reception" | "staff" | "tv" | "owner">("reception");
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
+  const [completingTicket, setCompletingTicket] = useState<Ticket | null>(null);
   
   // Audio notification tracking
   const prevServingCount = useRef(0);
@@ -370,6 +519,26 @@ export default function App() {
       else if (user.role === "owner" || user.role === "owner_stylist") setView("owner");
     }
   }, [user, view]);
+
+  const handleConfirmCompletion = async (price: number, stylistName: string) => {
+    if (!completingTicket) return;
+    try {
+      const updateData: any = {
+        status: "Completed",
+        price,
+        stylistName,
+        completedAt: serverTimestamp()
+      };
+      if (!completingTicket.servedAt) {
+        updateData.servedAt = serverTimestamp();
+      }
+      await updateDoc(doc(db, "tickets", completingTicket.docId), updateData);
+      setCompletingTicket(null);
+    } catch (err) {
+      console.error("Error completing ticket:", err);
+      throw err;
+    }
+  };
 
   // If no user is logged in, show Login, unless we are forcing TV view.
   // Wait, TV view doesn't require login. But how do we get to TV view if we are logged out?
@@ -499,10 +668,10 @@ export default function App() {
               <OwnerDashboard key="owner" tickets={tickets} />
             )}
             {view === "reception" && (
-              <ReceptionDashboard key="reception" tickets={tickets} />
+              <ReceptionDashboard key="reception" tickets={tickets} onCompleteTicket={setCompletingTicket} />
             )}
             {view === "staff" && user && (
-              <StaffLineView key="staff" tickets={tickets} user={user} />
+              <StaffLineView key="staff" tickets={tickets} user={user} onCompleteTicket={setCompletingTicket} />
             )}
             {view === "tv" && (
               <TVDisplay key="tv" tickets={tickets} onExit={() => setView(user ? ((user.role === 'owner' || user.role === 'owner_stylist') ? 'owner' : (user.role === 'stylist' ? 'staff' : 'reception')) : 'reception')} />
@@ -517,14 +686,138 @@ export default function App() {
           background: transparent;
         }
       `}} />
+
+      {completingTicket && (
+        <CompletionModal
+          ticket={completingTicket}
+          onClose={() => setCompletingTicket(null)}
+          onConfirm={handleConfirmCompletion}
+        />
+      )}
     </div>
   );
 }
 
 // ---------------------------------------------------------
+// CLIENT HISTORY VIEW COMPONENT (FOR RECEPTIONIST)
+// ---------------------------------------------------------
+interface ClientHistoryViewProps {
+  tickets: Ticket[];
+}
+
+const ClientHistoryView: React.FC<ClientHistoryViewProps> = ({ tickets }) => {
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const completedTickets = tickets.filter(t => t.status === "Completed");
+
+  const filteredTickets = completedTickets.filter(t => {
+    const query = searchQuery.toLowerCase();
+    return (
+      t.customerName.toLowerCase().includes(query) ||
+      t.phone.toLowerCase().includes(query) ||
+      (t.stylistName && t.stylistName.toLowerCase().includes(query)) ||
+      t.serviceType.toLowerCase().includes(query)
+    );
+  }).sort((a, b) => {
+    const aTime = a.completedAt?.toDate ? a.completedAt.toDate().getTime() : (a.completedAt?.seconds * 1000 || 0);
+    const bTime = b.completedAt?.toDate ? b.completedAt.toDate().getTime() : (b.completedAt?.seconds * 1000 || 0);
+    return bTime - aTime;
+  });
+
+  const totalVisits = completedTickets.length;
+  const totalRevenue = completedTickets.reduce((sum, t) => sum + (t.price || 0), 0);
+  const avgSpend = totalVisits > 0 ? totalRevenue / totalVisits : 0;
+
+  return (
+    <div className="flex flex-col gap-8 w-full text-[#111111] font-sans">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <div className="bg-white border border-[#E5E5E0] p-6 rounded-sm shadow-sm flex flex-col gap-2">
+          <span className="text-gray-500 text-xs uppercase tracking-widest font-semibold">Total Completed Visits</span>
+          <span className="text-4xl font-serif font-bold text-[#111111]">{totalVisits}</span>
+        </div>
+        <div className="bg-white border border-[#E5E5E0] p-6 rounded-sm shadow-sm flex flex-col gap-2">
+          <span className="text-gray-500 text-xs uppercase tracking-widest font-semibold">Total Revenue Generated</span>
+          <span className="text-4xl font-serif font-bold text-[#D4AF37]">${totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+        </div>
+        <div className="bg-white border border-[#E5E5E0] p-6 rounded-sm shadow-sm flex flex-col gap-2">
+          <span className="text-gray-500 text-xs uppercase tracking-widest font-semibold">Average Ticket Value</span>
+          <span className="text-4xl font-serif font-bold text-[#111111]">${avgSpend.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+        </div>
+      </div>
+
+      <div className="bg-white border border-[#111111] p-8 rounded-sm shadow-xl flex flex-col gap-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#E5E5E0] pb-4">
+          <h3 className="text-xl font-serif uppercase tracking-wider text-[#111111]">
+            Client Database & Billing Logs
+          </h3>
+          <div className="relative w-full md:w-80">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search className="h-4 w-4 text-gray-400" />
+            </div>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-[#F5F5F0] border border-[#E5E5E0] rounded-sm pl-10 pr-4 py-2 text-sm focus:outline-none focus:border-[#D4AF37] transition-all text-[#111111] placeholder-gray-500 font-sans"
+              placeholder="Search by client, stylist, or service..."
+            />
+          </div>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="border-b border-[#E5E5E0] text-gray-500 text-xs uppercase tracking-widest">
+                <th className="py-4 font-semibold">Client Name</th>
+                <th className="py-4 font-semibold">Contact</th>
+                <th className="py-4 font-semibold">Service Type</th>
+                <th className="py-4 font-semibold">Assigned Stylist</th>
+                <th className="py-4 font-semibold">Date Completed</th>
+                <th className="py-4 font-semibold text-right">Amount Paid</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#E5E5E0]">
+              {filteredTickets.map(ticket => {
+                const date = ticket.completedAt?.toDate ? ticket.completedAt.toDate() : (ticket.completedAt?.seconds ? new Date(ticket.completedAt.seconds * 1000) : null);
+                const formattedDate = date ? date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'N/A';
+
+                return (
+                  <tr key={ticket.docId} className="text-gray-700 hover:bg-[#F5F5F0]/50 transition-colors">
+                    <td className="py-4 font-medium text-[#111111]">{ticket.customerName}</td>
+                    <td className="py-4 text-sm font-mono">{ticket.phone}</td>
+                    <td className="py-4">
+                      <span className="text-xs uppercase tracking-wider text-[#111111] bg-[#E5E5E0] px-2.5 py-1 rounded-sm">
+                        {ticket.serviceType}
+                      </span>
+                    </td>
+                    <td className="py-4 font-medium">{ticket.stylistName || 'Unassigned'}</td>
+                    <td className="py-4 text-xs text-gray-500">{formattedDate}</td>
+                    <td className="py-4 text-right font-mono font-bold text-[#111111]">
+                      ${(ticket.price || 0).toFixed(2)}
+                    </td>
+                  </tr>
+                );
+              })}
+              {filteredTickets.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="py-10 text-center text-gray-400 italic">
+                    No matching records found.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ---------------------------------------------------------
 // RECEPTION DASHBOARD COMPONENT
 // ---------------------------------------------------------
-const ReceptionDashboard: React.FC<{ tickets: Ticket[] }> = ({ tickets }) => {
+const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticket: Ticket) => void }> = ({ tickets, onCompleteTicket }) => {
+  const [activeTab, setActiveTab] = useState<"queue" | "history">("queue");
   const [customerName, setCustomerName] = useState("");
   const [phone, setPhone] = useState("");
   const [serviceType, setServiceType] = useState(SERVICE_TYPES[0]);
@@ -606,246 +899,287 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[] }> = ({ tickets }) => {
   };
 
   return (
-    <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      className="max-w-7xl mx-auto w-full grid grid-cols-1 xl:grid-cols-12 gap-10 flex-1"
-    >
-      {/* Left Column: Form & Stylists */}
-      <div className="xl:col-span-4 flex flex-col gap-6">
-        <div className="bg-white border border-[#111111] p-8 rounded-sm shadow-xl">
-          <h2 className="text-2xl font-serif text-[#111111] mb-8 border-b border-[#E5E5E0] pb-4 tracking-wide">
-            Add Client
-          </h2>
+    <div className="max-w-7xl mx-auto w-full flex flex-col gap-6 flex-1 text-[#111111]">
+      {/* Tab Selector */}
+      <div className="flex border-b border-[#E5E5E0] pb-2 gap-6">
+        <button
+          onClick={() => setActiveTab("queue")}
+          className={`pb-2 text-sm font-sans uppercase tracking-widest font-semibold border-b-2 transition-all cursor-pointer ${
+            activeTab === "queue"
+              ? "border-[#D4AF37] text-[#111111]"
+              : "border-transparent text-gray-400 hover:text-gray-600"
+          }`}
+        >
+          Queue Management
+        </button>
+        <button
+          onClick={() => setActiveTab("history")}
+          className={`pb-2 text-sm font-sans uppercase tracking-widest font-semibold border-b-2 transition-all cursor-pointer ${
+            activeTab === "history"
+              ? "border-[#D4AF37] text-[#111111]"
+              : "border-transparent text-gray-400 hover:text-gray-600"
+          }`}
+        >
+          Client History & CRM
+        </button>
+      </div>
 
-          <form onSubmit={handleDeployTicket} className="space-y-6">
-            <div className="space-y-2">
-              <label className="text-xs font-sans text-gray-500 uppercase tracking-widest">Client Name</label>
-              <div className="relative group/input">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <User className="h-4 w-4 text-gray-400 group-focus-within/input:text-[#D4AF37] transition-colors" />
-                </div>
-                <input 
-                  type="text" 
-                  value={customerName}
-                  onChange={(e) => setCustomerName(e.target.value)}
-                  className="w-full bg-[#F5F5F0] border border-[#E5E5E0] rounded-sm pl-10 pr-4 py-3 focus:outline-none focus:border-[#D4AF37] transition-all text-[#111111] placeholder-gray-500 font-sans"
-                  placeholder="Enter name"
-                  required
-                />
-              </div>
-            </div>
+      <AnimatePresence mode="wait">
+        {activeTab === "queue" ? (
+          <motion.div 
+            key="queue"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="w-full grid grid-cols-1 xl:grid-cols-12 gap-10 flex-1"
+          >
+            {/* Left Column: Form & Stylists */}
+            <div className="xl:col-span-4 flex flex-col gap-6">
+              <div className="bg-white border border-[#111111] p-8 rounded-sm shadow-xl">
+                <h2 className="text-2xl font-serif text-[#111111] mb-8 border-b border-[#E5E5E0] pb-4 tracking-wide">
+                  Add Client
+                </h2>
 
-            <div className="space-y-2">
-              <label className="text-xs font-sans text-gray-500 uppercase tracking-widest">Contact Number</label>
-              <div className="relative group/input">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Phone className="h-4 w-4 text-gray-400 group-focus-within/input:text-[#D4AF37] transition-colors" />
-                </div>
-                <input 
-                  type="tel" 
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  className="w-full bg-[#F5F5F0] border border-[#E5E5E0] rounded-sm pl-10 pr-4 py-3 focus:outline-none focus:border-[#D4AF37] transition-all text-[#111111] placeholder-gray-500 font-sans"
-                  placeholder="Enter phone number"
-                  required
-                />
-              </div>
-            </div>
+                <form onSubmit={handleDeployTicket} className="space-y-6">
+                  <div className="space-y-2">
+                    <label className="text-xs font-sans text-gray-500 uppercase tracking-widest">Client Name</label>
+                    <div className="relative group/input">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <User className="h-4 w-4 text-gray-400 group-focus-within/input:text-[#D4AF37] transition-colors" />
+                      </div>
+                      <input 
+                        type="text" 
+                        value={customerName}
+                        onChange={(e) => setCustomerName(e.target.value)}
+                        className="w-full bg-[#F5F5F0] border border-[#E5E5E0] rounded-sm pl-10 pr-4 py-3 focus:outline-none focus:border-[#D4AF37] transition-all text-[#111111] placeholder-gray-500 font-sans"
+                        placeholder="Enter name"
+                        required
+                      />
+                    </div>
+                  </div>
 
-            <div className="space-y-2">
-              <label className="text-xs font-sans text-gray-500 uppercase tracking-widest">Service</label>
-              <div className="relative group/input">
-                <select 
-                  value={serviceType}
-                  onChange={(e) => setServiceType(e.target.value)}
-                  className="w-full bg-[#F5F5F0] border border-[#E5E5E0] rounded-sm pl-4 pr-10 py-3 focus:outline-none focus:border-[#D4AF37] transition-all text-[#111111] appearance-none cursor-pointer font-sans"
-                >
-                  {SERVICE_TYPES.map(type => (
-                    <option key={type} value={type} className="bg-white text-[#111111]">{type}</option>
-                  ))}
-                </select>
-                <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                  <ChevronRight className="h-4 w-4 text-gray-400 group-focus-within/input:text-[#D4AF37] rotate-90 transition-colors" />
-                </div>
-              </div>
-            </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-sans text-gray-500 uppercase tracking-widest">Contact Number</label>
+                    <div className="relative group/input">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <Phone className="h-4 w-4 text-gray-400 group-focus-within/input:text-[#D4AF37] transition-colors" />
+                      </div>
+                      <input 
+                        type="tel" 
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        className="w-full bg-[#F5F5F0] border border-[#E5E5E0] rounded-sm pl-10 pr-4 py-3 focus:outline-none focus:border-[#D4AF37] transition-all text-[#111111] placeholder-gray-500 font-sans"
+                        placeholder="Enter phone number"
+                        required
+                      />
+                    </div>
+                  </div>
 
-            <button 
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full mt-8 bg-[#D4AF37] hover:bg-[#C5A059] text-[#111111] font-serif font-bold tracking-widest uppercase py-4 px-6 rounded-sm transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            >
-              {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : null}
-              {isSubmitting ? "Adding..." : "Add to Queue"}
-            </button>
-          </form>
-        </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-sans text-gray-500 uppercase tracking-widest">Service</label>
+                    <div className="relative group/input">
+                      <select 
+                        value={serviceType}
+                        onChange={(e) => setServiceType(e.target.value)}
+                        className="w-full bg-[#F5F5F0] border border-[#E5E5E0] rounded-sm pl-4 pr-10 py-3 focus:outline-none focus:border-[#D4AF37] transition-all text-[#111111] appearance-none cursor-pointer font-sans"
+                      >
+                        {SERVICE_TYPES.map(type => (
+                          <option key={type} value={type} className="bg-white text-[#111111]">{type}</option>
+                        ))}
+                      </select>
+                      <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                        <ChevronRight className="h-4 w-4 text-gray-400 group-focus-within/input:text-[#D4AF37] rotate-90 transition-colors" />
+                      </div>
+                    </div>
+                  </div>
 
-        <div className="bg-white border border-[#111111] p-8 rounded-sm shadow-xl flex-1">
-          <h2 className="text-xl font-serif text-[#111111] mb-6 border-b border-[#E5E5E0] pb-4 tracking-wide">
-            Stylists On Duty
-          </h2>
-          
-          <form onSubmit={handleAddStylist} className="flex gap-2 mb-6">
-            <input 
-              type="text" 
-              value={newStylistName}
-              onChange={(e) => setNewStylistName(e.target.value)}
-              className="flex-1 bg-[#F5F5F0] border border-[#E5E5E0] rounded-sm px-4 py-2 focus:outline-none focus:border-[#D4AF37] transition-all text-[#111111] placeholder-gray-500 font-sans text-sm"
-              placeholder="Add stylist name..."
-              required
-            />
-            <button 
-              type="submit"
-              className="bg-[#111111] hover:bg-[#2A2A2A] text-white font-sans text-xs tracking-widest uppercase py-2 px-4 rounded-sm transition-colors"
-            >
-              Add
-            </button>
-          </form>
-
-          <div className="space-y-3 overflow-y-auto max-h-[200px] pr-2 hide-scrollbar">
-            {stylists.length === 0 ? (
-              <p className="text-gray-500 font-serif italic text-sm text-center py-4">No stylists registered.</p>
-            ) : (
-              stylists.map(stylist => (
-                <div key={stylist.id} className="flex items-center justify-between p-3 border border-[#E5E5E0] rounded-sm bg-[#F5F5F0]">
-                  <span className="font-sans font-medium text-[#111111] text-sm">{stylist.name}</span>
                   <button 
-                    onClick={() => toggleStylistActive(stylist.id, stylist.active)}
-                    className={`text-xs uppercase tracking-widest px-3 py-1 rounded-sm border transition-colors ${
-                      stylist.active 
-                        ? 'bg-[#D4AF37] text-[#111111] border-[#D4AF37]' 
-                        : 'bg-white text-gray-500 border-[#E5E5E0] hover:border-gray-400'
-                    }`}
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full mt-8 bg-[#D4AF37] hover:bg-[#C5A059] text-[#111111] font-serif font-bold tracking-widest uppercase py-4 px-6 rounded-sm transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
-                    {stylist.active ? 'Active' : 'Offline'}
+                    {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : null}
+                    {isSubmitting ? "Adding..." : "Add to Queue"}
                   </button>
+                </form>
+              </div>
+
+              {/* Stylists Section */}
+              <div className="bg-white border border-[#111111] p-8 rounded-sm shadow-xl flex-1 flex flex-col min-h-[350px]">
+                <h2 className="text-2xl font-serif text-[#111111] mb-6 border-b border-[#E5E5E0] pb-4 tracking-wide uppercase">
+                  Duty Stylists
+                </h2>
+                
+                <form onSubmit={handleAddStylist} className="flex gap-2 mb-6">
+                  <input 
+                    type="text" 
+                    value={newStylistName}
+                    onChange={(e) => setNewStylistName(e.target.value)}
+                    placeholder="New Stylist Name" 
+                    className="flex-1 bg-[#F5F5F0] border border-[#E5E5E0] rounded-sm px-4 py-2 text-sm focus:outline-none focus:border-[#D4AF37] transition-all text-[#111111] placeholder-gray-500 font-sans"
+                  />
+                  <button 
+                    type="submit"
+                    className="bg-[#111111] hover:bg-[#2A2A2A] text-white px-4 py-2 rounded-sm text-xs font-sans tracking-widest uppercase transition-colors"
+                  >
+                    Add
+                  </button>
+                </form>
+
+                <div className="flex-1 overflow-y-auto space-y-4 max-h-[300px] hide-scrollbar">
+                  {stylists.length === 0 ? (
+                    <p className="text-gray-500 font-serif italic text-sm text-center py-6">No stylists active.</p>
+                  ) : (
+                    stylists.map(stylist => (
+                      <div key={stylist.id} className="flex items-center justify-between p-3 border border-[#E5E5E0] rounded-sm bg-[#F5F5F0]">
+                        <span className="font-serif text-[#111111] font-medium">{stylist.name}</span>
+                        <button
+                          onClick={() => toggleStylistActive(stylist.id, stylist.active)}
+                          className={`px-3 py-1 rounded-sm text-[10px] font-sans tracking-widest uppercase font-bold transition-all border cursor-pointer ${
+                            stylist.active 
+                              ? 'bg-green-50/50 text-green-700 border-green-200' 
+                              : 'bg-gray-50 text-gray-500 border-gray-200'
+                          }`}
+                        >
+                          {stylist.active ? 'Active' : 'Offline'}
+                        </button>
+                      </div>
+                    ))
+                  )}
                 </div>
-              ))
-            )}
-          </div>
-        </div>
-      </div>
+              </div>
+            </div>
 
-      {/* Right Column: Queues */}
-      <div className="xl:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-10">
-        
-        {/* Waiting Column */}
-        <div className="bg-white border border-[#111111] p-6 rounded-sm shadow-xl flex flex-col h-[calc(100vh-180px)] xl:h-auto">
-          <div className="flex items-center justify-between mb-6 border-b border-[#E5E5E0] pb-4">
-            <h3 className="font-serif text-lg tracking-widest text-[#111111] flex items-center gap-2 uppercase">
-              Waiting Lounge
-            </h3>
-            <span className="text-[#D4AF37] font-serif font-bold text-xl">{waitingTickets.length}</span>
-          </div>
+            {/* Right Column: Queues */}
+            <div className="xl:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-10">
+              
+              {/* Waiting Column */}
+              <div className="bg-white border border-[#111111] p-6 rounded-sm shadow-xl flex flex-col h-[calc(100vh-180px)] xl:h-auto">
+                <div className="flex items-center justify-between mb-6 border-b border-[#E5E5E0] pb-4">
+                  <h3 className="font-serif text-lg tracking-widest text-[#111111] flex items-center gap-2 uppercase">
+                    Waiting Lounge
+                  </h3>
+                  <span className="text-[#D4AF37] font-serif font-bold text-xl">{waitingTickets.length}</span>
+                </div>
 
-          <div className="overflow-y-auto flex-1 hide-scrollbar space-y-4 pr-2">
-            <AnimatePresence>
-              {waitingTickets.length === 0 ? (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-12 border border-[#E5E5E0] border-dashed rounded-sm">
-                  <p className="text-gray-500 font-serif italic text-sm">No clients waiting.</p>
-                </motion.div>
-              ) : (
-                waitingTickets.map((ticket) => (
-                  <motion.div
-                    key={ticket.docId}
-                    layout
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    className="bg-[#F5F5F0] border border-[#E5E5E0] p-5 rounded-sm flex items-center justify-between group hover:border-[#D4AF37] transition-colors"
-                  >
-                    <div>
-                      <div className="flex items-center gap-3 mb-1">
-                        <span className="text-[#111111] font-sans font-medium text-sm">{ticket.id}</span>
-                        <span className="text-[10px] uppercase tracking-wider text-gray-600 bg-[#E5E5E0] px-2 py-0.5 rounded-sm">{ticket.serviceType}</span>
-                      </div>
-                      <p className="text-[#111111] font-serif text-lg font-medium">{ticket.customerName}</p>
-                      <p className="text-xs text-gray-500 font-sans mt-1">{ticket.phone}</p>
-                    </div>
-                    
-                    <div className="flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button 
-                        onClick={() => updateStatus(ticket.docId, "Serving")}
-                        className="bg-[#D4AF37]/10 text-[#D4AF37] hover:bg-[#D4AF37] hover:text-[#111111] p-2 rounded-sm transition-colors border border-[#D4AF37]/20"
-                        title="Seat Client"
-                      >
-                        <Play className="w-4 h-4 ml-0.5" />
-                      </button>
-                      <button 
-                        onClick={() => deleteTicket(ticket.docId)}
-                        className="bg-red-50 text-red-600 hover:bg-red-600 hover:text-white p-2 rounded-sm transition-colors border border-red-200"
-                        title="Cancel Appointment"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </motion.div>
-                ))
-              )}
-            </AnimatePresence>
-          </div>
-        </div>
+                <div className="overflow-y-auto flex-1 hide-scrollbar space-y-4 pr-2">
+                  <AnimatePresence>
+                    {waitingTickets.length === 0 ? (
+                      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-12 border border-[#E5E5E0] border-dashed rounded-sm">
+                        <p className="text-gray-500 font-serif italic text-sm">No clients waiting.</p>
+                      </motion.div>
+                    ) : (
+                      waitingTickets.map((ticket) => (
+                        <motion.div
+                          key={ticket.docId}
+                          layout
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, scale: 0.95 }}
+                          className="bg-[#F5F5F0] border border-[#E5E5E0] p-5 rounded-sm flex items-center justify-between group hover:border-[#D4AF37] transition-colors"
+                        >
+                          <div>
+                            <div className="flex items-center gap-3 mb-1">
+                              <span className="text-[#111111] font-sans font-medium text-sm">{ticket.id}</span>
+                              <span className="text-[10px] uppercase tracking-wider text-gray-600 bg-[#E5E5E0] px-2 py-0.5 rounded-sm">{ticket.serviceType}</span>
+                            </div>
+                            <p className="text-[#111111] font-serif text-lg font-medium">{ticket.customerName}</p>
+                            <p className="text-xs text-gray-500 font-sans mt-1">{ticket.phone}</p>
+                          </div>
+                          
+                          <div className="flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button 
+                              onClick={() => updateStatus(ticket.docId, "Serving")}
+                              className="bg-[#D4AF37]/10 text-[#D4AF37] hover:bg-[#D4AF37] hover:text-[#111111] p-2 rounded-sm transition-colors border border-[#D4AF37]/20 cursor-pointer"
+                              title="Seat Client"
+                            >
+                              <Play className="w-4 h-4 ml-0.5" />
+                            </button>
+                            <button 
+                              onClick={() => deleteTicket(ticket.docId)}
+                              className="bg-red-50 text-red-600 hover:bg-red-600 hover:text-white p-2 rounded-sm transition-colors border border-red-200 cursor-pointer"
+                              title="Cancel Appointment"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </motion.div>
+                      ))
+                    )}
+                  </AnimatePresence>
+                </div>
+              </div>
 
-        {/* Serving Column */}
-        <div className="bg-white border border-[#111111] p-6 rounded-sm shadow-xl flex flex-col h-[calc(100vh-180px)] xl:h-auto">
-          <div className="flex items-center justify-between mb-6 border-b border-[#E5E5E0] pb-4">
-            <h3 className="font-serif text-lg tracking-widest text-[#D4AF37] flex items-center gap-2 uppercase">
-              Now Serving
-            </h3>
-            <span className="text-[#D4AF37] font-serif font-bold text-xl">{servingTickets.length}</span>
-          </div>
+              {/* Serving Column */}
+              <div className="bg-white border border-[#111111] p-6 rounded-sm shadow-xl flex flex-col h-[calc(100vh-180px)] xl:h-auto">
+                <div className="flex items-center justify-between mb-6 border-b border-[#E5E5E0] pb-4">
+                  <h3 className="font-serif text-lg tracking-widest text-[#D4AF37] flex items-center gap-2 uppercase">
+                    Now Serving
+                  </h3>
+                  <span className="text-[#D4AF37] font-serif font-bold text-xl">{servingTickets.length}</span>
+                </div>
 
-          <div className="overflow-y-auto flex-1 hide-scrollbar space-y-4 pr-2">
-            <AnimatePresence>
-              {servingTickets.length === 0 ? (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-12 border border-[#E5E5E0] border-dashed rounded-sm">
-                  <p className="text-gray-500 font-serif italic text-sm">All stations available.</p>
-                </motion.div>
-              ) : (
-                servingTickets.map((ticket) => (
-                  <motion.div
-                    key={ticket.docId}
-                    layout
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    className="relative bg-[#F5F5F0] border border-[#D4AF37] p-5 rounded-sm flex items-center justify-between group"
-                  >
-                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#D4AF37]"></div>
-                    
-                    <div className="pl-2">
-                      <div className="flex items-center gap-3 mb-1">
-                        <span className="text-[#111111] font-sans font-medium text-sm">{ticket.id}</span>
-                        <span className="text-[10px] uppercase tracking-wider text-[#111111] bg-[#D4AF37] px-2 py-0.5 rounded-sm">{ticket.serviceType}</span>
-                      </div>
-                      <p className="text-[#111111] font-serif text-lg font-medium">{ticket.customerName}</p>
-                      {ticket.stylistName && (
-                        <p className="text-xs text-gray-500 font-sans mt-1">with <span className="font-semibold">{ticket.stylistName}</span></p>
-                      )}
-                    </div>
-                    
-                    <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button 
-                        onClick={() => updateStatus(ticket.docId, "Completed")}
-                        className="flex items-center gap-2 bg-white border border-[#E5E5E0] text-gray-500 hover:text-[#111111] hover:border-[#D4AF37] px-4 py-2 rounded-sm transition-colors font-sans text-xs uppercase tracking-widest"
-                        title="Complete Service"
-                      >
-                        <CheckCircle className="w-4 h-4" />
-                        Complete
-                      </button>
-                    </div>
-                  </motion.div>
-                ))
-              )}
-            </AnimatePresence>
-          </div>
-        </div>
+                <div className="overflow-y-auto flex-1 hide-scrollbar space-y-4 pr-2">
+                  <AnimatePresence>
+                    {servingTickets.length === 0 ? (
+                      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-12 border border-[#E5E5E0] border-dashed rounded-sm">
+                        <p className="text-gray-500 font-serif italic text-sm">All stations available.</p>
+                      </motion.div>
+                    ) : (
+                      servingTickets.map((ticket) => (
+                        <motion.div
+                          key={ticket.docId}
+                          layout
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, scale: 0.95 }}
+                          className="relative bg-[#F5F5F0] border border-[#D4AF37] p-5 rounded-sm flex items-center justify-between group"
+                        >
+                          <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#D4AF37]"></div>
+                          
+                          <div className="pl-2">
+                            <div className="flex items-center gap-3 mb-1">
+                              <span className="text-[#111111] font-sans font-medium text-sm">{ticket.id}</span>
+                              <span className="text-[10px] uppercase tracking-wider text-[#111111] bg-[#D4AF37] px-2 py-0.5 rounded-sm">{ticket.serviceType}</span>
+                            </div>
+                            <p className="text-[#111111] font-serif text-lg font-medium">{ticket.customerName}</p>
+                            {ticket.stylistName && (
+                              <p className="text-xs text-gray-500 font-sans mt-1">with <span className="font-semibold">{ticket.stylistName}</span></p>
+                            )}
+                          </div>
+                          
+                          <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button 
+                              onClick={() => onCompleteTicket(ticket)}
+                              className="flex items-center gap-2 bg-white border border-[#E5E5E0] text-gray-500 hover:text-[#111111] hover:border-[#D4AF37] px-4 py-2 rounded-sm transition-colors font-sans text-xs uppercase tracking-widest cursor-pointer"
+                              title="Complete Service"
+                            >
+                              <CheckCircle className="w-4 h-4" />
+                              Complete
+                            </button>
+                          </div>
+                        </motion.div>
+                      ))
+                    )}
+                  </AnimatePresence>
+                </div>
+              </div>
 
-      </div>
-    </motion.div>
+            </div>
+          </motion.div>
+        ) : (
+          <motion.div
+            key="history"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="w-full flex flex-col gap-6 flex-1"
+          >
+            <ClientHistoryView tickets={tickets} />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }
 
@@ -1205,7 +1539,7 @@ const OwnerDashboard: React.FC<OwnerDashboardProps> = ({ tickets }) => {
 // ---------------------------------------------------------
 // STAFF LINE VIEW COMPONENT
 // ---------------------------------------------------------
-const StaffLineView: React.FC<{ tickets: Ticket[], user: User }> = ({ tickets, user }) => {
+const StaffLineView: React.FC<{ tickets: Ticket[], user: User, onCompleteTicket: (ticket: Ticket) => void }> = ({ tickets, user, onCompleteTicket }) => {
   const handleAcceptCustomer = async (ticketId: string) => {
     try {
       await updateDoc(doc(db, "tickets", ticketId), { 
@@ -1215,17 +1549,6 @@ const StaffLineView: React.FC<{ tickets: Ticket[], user: User }> = ({ tickets, u
       });
     } catch (err) {
       console.error("Failed to accept customer", err);
-    }
-  };
-
-  const handleCompleteCustomer = async (ticketId: string) => {
-    try {
-      await updateDoc(doc(db, "tickets", ticketId), { 
-        status: "Completed",
-        completedAt: serverTimestamp()
-      });
-    } catch (err) {
-      console.error("Failed to complete service", err);
     }
   };
 
@@ -1297,14 +1620,14 @@ const StaffLineView: React.FC<{ tickets: Ticket[], user: User }> = ({ tickets, u
                      >
                        Accept
                      </button>
-                   ) : ticket.stylistName === user.name ? (
-                     <button
-                       onClick={() => handleCompleteCustomer(ticket.docId)}
-                       className="bg-[#0A0A0A] hover:bg-[#1A1A1A] text-white px-6 py-3 rounded-sm font-sans text-xs uppercase tracking-widest font-bold transition-colors whitespace-nowrap shadow-md"
-                     >
-                       Complete
-                     </button>
-                   ) : (
+                    ) : ticket.stylistName === user.name ? (
+                      <button
+                        onClick={() => onCompleteTicket(ticket)}
+                        className="bg-[#0A0A0A] hover:bg-[#1A1A1A] text-white px-6 py-3 rounded-sm font-sans text-xs uppercase tracking-widest font-bold transition-colors whitespace-nowrap shadow-md"
+                      >
+                        Complete
+                      </button>
+                    ) : (
                      <div className="bg-[#0A0A0A]/10 px-6 py-3 rounded-sm font-sans text-xs uppercase tracking-widest font-bold text-[#0A0A0A] whitespace-nowrap">
                        With {ticket.stylistName || 'Stylist'}
                      </div>
