@@ -753,6 +753,238 @@ export default function App() {
 }
 
 // ---------------------------------------------------------
+// REVENUE ANALYTICS VIEW COMPONENT (FOR RECEPTIONIST)
+// ---------------------------------------------------------
+interface RevenueAnalyticsViewProps {
+  tickets: Ticket[];
+}
+
+const RevenueAnalyticsView: React.FC<RevenueAnalyticsViewProps> = ({ tickets }) => {
+  const completedTickets = tickets.filter(t => t.status === "Completed");
+
+  const getTicketDate = (ticket: Ticket): Date | null => {
+    if (!ticket.completedAt) return null;
+    if (typeof ticket.completedAt.toDate === 'function') {
+      return ticket.completedAt.toDate();
+    }
+    if (ticket.completedAt.seconds) {
+      return new Date(ticket.completedAt.seconds * 1000);
+    }
+    return null;
+  };
+
+  const monthlyData: Record<string, number> = {};
+  const dailyData: Record<string, number> = {};
+
+  const now = new Date();
+  const currentMonthKey = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}`;
+  const lastMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const lastMonthKey = `${lastMonthDate.getFullYear()}-${(lastMonthDate.getMonth() + 1).toString().padStart(2, '0')}`;
+
+  completedTickets.forEach(ticket => {
+    const date = getTicketDate(ticket);
+    if (!date) return;
+
+    const price = ticket.price || 0;
+
+    const monthKey = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}`;
+    monthlyData[monthKey] = (monthlyData[monthKey] || 0) + price;
+
+    const dayKey = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
+    dailyData[dayKey] = (dailyData[dayKey] || 0) + price;
+  });
+
+  const thisMonthRevenue = monthlyData[currentMonthKey] || 0;
+  const lastMonthRevenue = monthlyData[lastMonthKey] || 0;
+
+  let percentageChange = 0;
+  let hasGrowth = true;
+  if (lastMonthRevenue > 0) {
+    percentageChange = ((thisMonthRevenue - lastMonthRevenue) / lastMonthRevenue) * 100;
+    hasGrowth = percentageChange >= 0;
+  } else if (thisMonthRevenue > 0) {
+    percentageChange = 100;
+    hasGrowth = true;
+  }
+
+  const last7Days = Array.from({ length: 7 }).map((_, i) => {
+    const d = new Date();
+    d.setDate(now.getDate() - i);
+    return d;
+  }).reverse();
+
+  const dailyChartData = last7Days.map(d => {
+    const dayKey = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
+    const label = d.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric' });
+    return {
+      label,
+      value: dailyData[dayKey] || 0
+    };
+  });
+
+  const last6Months = Array.from({ length: 6 }).map((_, i) => {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    return d;
+  }).reverse();
+
+  const monthlyChartData = last6Months.map(d => {
+    const monthKey = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}`;
+    const label = d.toLocaleDateString(undefined, { month: 'short', year: '2-digit' });
+    return {
+      label,
+      value: monthlyData[monthKey] || 0
+    };
+  });
+
+  const maxDaily = Math.max(...dailyChartData.map(d => d.value), 1);
+  const maxMonthly = Math.max(...monthlyChartData.map(m => m.value), 1);
+
+  const totalComparison = thisMonthRevenue + lastMonthRevenue;
+  const thisMonthPercent = totalComparison > 0 ? (thisMonthRevenue / totalComparison) * 100 : 50;
+  const lastMonthPercent = totalComparison > 0 ? (lastMonthRevenue / totalComparison) * 100 : 50;
+
+  return (
+    <div className="flex flex-col gap-10 w-full text-[#111111] font-sans">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="bg-white border border-[#E5E5E0] p-6 rounded-sm shadow-sm flex flex-col gap-2 relative overflow-hidden">
+          <span className="text-gray-500 text-xs uppercase tracking-widest font-semibold">This Month's Revenue</span>
+          <span className="text-4xl font-serif font-bold text-[#111111]">₹{thisMonthRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+          <span className="text-[10px] text-gray-400 uppercase tracking-wider">{now.toLocaleString(undefined, { month: 'long', year: 'numeric' })}</span>
+        </div>
+
+        <div className="bg-white border border-[#E5E5E0] p-6 rounded-sm shadow-sm flex flex-col gap-2 relative overflow-hidden">
+          <span className="text-gray-500 text-xs uppercase tracking-widest font-semibold">Last Month's Revenue</span>
+          <span className="text-4xl font-serif font-bold text-gray-600">₹{lastMonthRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+          <span className="text-[10px] text-gray-400 uppercase tracking-wider">
+            {new Date(now.getFullYear(), now.getMonth() - 1, 1).toLocaleString(undefined, { month: 'long', year: 'numeric' })}
+          </span>
+        </div>
+
+        <div className="bg-white border border-[#E5E5E0] p-6 rounded-sm shadow-sm flex flex-col justify-between gap-2">
+          <div className="flex flex-col gap-1">
+            <span className="text-gray-500 text-xs uppercase tracking-widest font-semibold">Monthly Performance Change</span>
+            <span className={`text-4xl font-serif font-bold ${hasGrowth ? 'text-green-600' : 'text-red-600'}`}>
+              {hasGrowth ? '+' : ''}{percentageChange.toFixed(1)}%
+            </span>
+          </div>
+          <span className="text-[10px] text-gray-400 uppercase tracking-wider">Compared to previous month</span>
+        </div>
+      </div>
+
+      <div className="bg-white border border-[#111111] p-8 rounded-sm shadow-xl flex flex-col gap-6">
+        <h3 className="text-lg font-serif uppercase tracking-wider text-[#111111]">
+          Monthly Revenue Balance Check
+        </h3>
+        
+        <div className="flex flex-col gap-2">
+          <div className="h-6 w-full bg-gray-100 rounded-full overflow-hidden flex border border-gray-200">
+            <div 
+              style={{ width: `${lastMonthPercent}%` }} 
+              className="bg-gray-400 transition-all duration-500 animate-pulse-once"
+              title={`Last Month: ${lastMonthPercent.toFixed(1)}%`}
+            />
+            <div 
+              style={{ width: `${thisMonthPercent}%` }} 
+              className="bg-gradient-to-r from-[#C5A059] to-[#D4AF37] transition-all duration-500"
+              title={`This Month: ${thisMonthPercent.toFixed(1)}%`}
+            />
+          </div>
+          
+          <div className="flex justify-between text-xs font-semibold uppercase tracking-wider mt-1">
+            <span className="text-gray-500 flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 bg-gray-400 rounded-full"></span>
+              Last Month ({lastMonthPercent.toFixed(0)}%)
+            </span>
+            <span className="text-[#D4AF37] flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 bg-[#D4AF37] rounded-full"></span>
+              This Month ({thisMonthPercent.toFixed(0)}%)
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+        
+        <div className="bg-white border border-[#111111] p-8 rounded-sm shadow-xl flex flex-col gap-6">
+          <div>
+            <h3 className="text-xl font-serif uppercase tracking-wider text-[#111111] mb-1">
+              Daily Income Overview
+            </h3>
+            <p className="text-xs text-gray-500 font-sans uppercase tracking-widest">Last 7 Days of Business Operations</p>
+          </div>
+
+          <div className="flex items-end justify-between h-64 pt-8 pb-2 px-4 bg-[#F5F5F0] border border-[#E5E5E0] rounded-sm relative">
+            <div className="absolute inset-y-8 left-0 right-0 flex flex-col justify-between pointer-events-none">
+              <div className="border-b border-gray-200/80 w-full"></div>
+              <div className="border-b border-gray-200/80 w-full"></div>
+              <div className="border-b border-gray-200/80 w-full"></div>
+            </div>
+
+            {dailyChartData.map((item, idx) => {
+              const pct = (item.value / maxDaily) * 100;
+              return (
+                <div key={idx} className="flex flex-col items-center flex-1 group relative z-10 font-sans">
+                  <div className="absolute bottom-full mb-2 opacity-0 group-hover:opacity-100 transition-opacity bg-[#111111] text-white text-xs px-2.5 py-1.5 rounded-sm shadow-md font-mono z-30 pointer-events-none">
+                    ₹{item.value.toFixed(2)}
+                  </div>
+                  <div 
+                    style={{ height: `${Math.min(100, Math.max(4, pct))}%` }}
+                    className={`w-8 sm:w-10 transition-all duration-500 rounded-t-sm ${
+                      item.value > 0 ? 'bg-gradient-to-t from-[#C5A059] to-[#D4AF37] hover:brightness-110 shadow-sm' : 'bg-gray-200'
+                    }`}
+                  ></div>
+                  <span className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold mt-2.5 font-sans">
+                    {item.label}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="bg-white border border-[#111111] p-8 rounded-sm shadow-xl flex flex-col gap-6">
+          <div>
+            <h3 className="text-xl font-serif uppercase tracking-wider text-[#111111] mb-1">
+              Monthly Trend Comparison
+            </h3>
+            <p className="text-xs text-gray-500 font-sans uppercase tracking-widest">Last 6 Months of Revenue Flow</p>
+          </div>
+
+          <div className="flex items-end justify-between h-64 pt-8 pb-2 px-4 bg-[#F5F5F0] border border-[#E5E5E0] rounded-sm relative">
+            <div className="absolute inset-y-8 left-0 right-0 flex flex-col justify-between pointer-events-none">
+              <div className="border-b border-gray-200/80 w-full"></div>
+              <div className="border-b border-gray-200/80 w-full"></div>
+              <div className="border-b border-gray-200/80 w-full"></div>
+            </div>
+
+            {monthlyChartData.map((item, idx) => {
+              const pct = (item.value / maxMonthly) * 100;
+              return (
+                <div key={idx} className="flex flex-col items-center flex-1 group relative z-10 font-sans">
+                  <div className="absolute bottom-full mb-2 opacity-0 group-hover:opacity-100 transition-opacity bg-[#111111] text-white text-xs px-2.5 py-1.5 rounded-sm shadow-md font-mono z-30 pointer-events-none">
+                    ₹{item.value.toFixed(2)}
+                  </div>
+                  <div 
+                    style={{ height: `${Math.min(100, Math.max(4, pct))}%` }}
+                    className={`w-10 sm:w-12 transition-all duration-500 rounded-t-sm ${
+                      item.value > 0 ? 'bg-gradient-to-t from-[#C5A059] to-[#D4AF37] hover:brightness-110 shadow-sm' : 'bg-gray-200'
+                    }`}
+                  ></div>
+                  <span className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold mt-2.5 font-sans">
+                    {item.label}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+};
+
+// ---------------------------------------------------------
 // CLIENT HISTORY VIEW COMPONENT (FOR RECEPTIONIST)
 // ---------------------------------------------------------
 interface ClientHistoryViewProps {
@@ -871,7 +1103,7 @@ const ClientHistoryView: React.FC<ClientHistoryViewProps> = ({ tickets }) => {
 // RECEPTION DASHBOARD COMPONENT
 // ---------------------------------------------------------
 const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticket: Ticket) => void }> = ({ tickets, onCompleteTicket }) => {
-  const [activeTab, setActiveTab] = useState<"queue" | "history">("queue");
+  const [activeTab, setActiveTab] = useState<"queue" | "history" | "revenue">("queue");
   const [customerName, setCustomerName] = useState("");
   const [phone, setPhone] = useState("");
   const [serviceType, setServiceType] = useState(SERVICE_TYPES[0]);
@@ -975,6 +1207,16 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
           }`}
         >
           Client History & CRM
+        </button>
+        <button
+          onClick={() => setActiveTab("revenue")}
+          className={`pb-2 text-sm font-sans uppercase tracking-widest font-semibold border-b-2 transition-all cursor-pointer ${
+            activeTab === "revenue"
+              ? "border-[#D4AF37] text-[#111111]"
+              : "border-transparent text-gray-400 hover:text-gray-600"
+          }`}
+        >
+          Revenue Analytics
         </button>
       </div>
 
@@ -1221,7 +1463,7 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
 
             </div>
           </motion.div>
-        ) : (
+        ) : activeTab === "history" ? (
           <motion.div
             key="history"
             initial={{ opacity: 0, y: 10 }}
@@ -1230,6 +1472,16 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
             className="w-full flex flex-col gap-6 flex-1"
           >
             <ClientHistoryView tickets={tickets} />
+          </motion.div>
+        ) : (
+          <motion.div
+            key="revenue"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="w-full flex flex-col gap-6 flex-1"
+          >
+            <RevenueAnalyticsView tickets={tickets} />
           </motion.div>
         )}
       </AnimatePresence>
