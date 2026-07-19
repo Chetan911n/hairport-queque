@@ -1353,14 +1353,21 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
                           <div className="flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                             <button 
                               onClick={() => updateStatus(ticket.docId, "Serving")}
-                              className="bg-[#D4AF37]/10 text-[#D4AF37] hover:bg-[#D4AF37] hover:text-[#111111] p-2 rounded-sm transition-colors border border-[#D4AF37]/20 cursor-pointer"
+                              className="bg-[#D4AF37]/10 text-[#D4AF37] hover:bg-[#D4AF37] hover:text-[#111111] p-2 rounded-sm transition-colors border border-[#D4AF37]/20 cursor-pointer flex items-center justify-center"
                               title="Seat Client"
                             >
                               <Play className="w-4 h-4 ml-0.5" />
                             </button>
+                            <a 
+                              href={`sms:${ticket.phone}?body=${encodeURIComponent(`Hi ${ticket.customerName}, welcome to Hairport! You are next in line. Your stylist will be ready for you shortly. Thank you for waiting!`)}`}
+                              className="bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white p-2 rounded-sm transition-colors border border-blue-200 cursor-pointer flex items-center justify-center animate-pulse-once"
+                              title="Send Waitlist SMS"
+                            >
+                              <Phone className="w-4 h-4" />
+                            </a>
                             <button 
                               onClick={() => deleteTicket(ticket.docId)}
-                              className="bg-red-50 text-red-600 hover:bg-red-600 hover:text-white p-2 rounded-sm transition-colors border border-red-200 cursor-pointer"
+                              className="bg-red-50 text-red-600 hover:bg-red-600 hover:text-white p-2 rounded-sm transition-colors border border-red-200 cursor-pointer flex items-center justify-center"
                               title="Cancel Appointment"
                             >
                               <Trash2 className="w-4 h-4" />
