@@ -1,0 +1,38 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-serif: "Playfair Display", ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --color-gold-light: #E6C875;
+  --color-gold: #D4AF37;
+  --color-gold-dark: #C5A059;
+  --color-charcoal-light: #2A2A2A;
+  --color-charcoal: #1A1A1A;
+  --color-charcoal-dark: #0A0A0A;
+}
+
+@layer base {
+  body {
+    @apply bg-[#F5F5F0] text-[#111111] antialiased selection:bg-gold/30;
+    font-family: var(--font-sans);
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-serif);
+  }
+}
+
+@layer utilities {
+  .gold-gradient {
+    @apply bg-gradient-to-br from-gold-light via-gold to-gold-dark;
+  }
+  .gold-gradient-text {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-gold-light via-gold to-gold-dark;
+  }
+  .border-gold-gradient {
+    position: relative;
+    background: linear-gradient(to right, #0A0A0A, #0A0A0A) padding-box,
+                linear-gradient(to bottom right, #E6C875, #C5A059) border-box;
+    border: 1px solid transparent;
+  }
+}
