@@ -494,7 +494,7 @@ const CompletionModal: React.FC<CompletionModalProps> = ({ ticket, onClose, onCo
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs text-gray-500 uppercase tracking-widest block">Amount Charged ($)</label>
+            <label className="text-xs text-gray-500 uppercase tracking-widest block">Amount Charged (₹)</label>
             <input
               type="number"
               step="0.01"
@@ -791,11 +791,11 @@ const ClientHistoryView: React.FC<ClientHistoryViewProps> = ({ tickets }) => {
         </div>
         <div className="bg-white border border-[#E5E5E0] p-6 rounded-sm shadow-sm flex flex-col gap-2">
           <span className="text-gray-500 text-xs uppercase tracking-widest font-semibold">Total Revenue Generated</span>
-          <span className="text-4xl font-serif font-bold text-[#D4AF37]">${totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+          <span className="text-4xl font-serif font-bold text-[#D4AF37]">₹{totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
         </div>
         <div className="bg-white border border-[#E5E5E0] p-6 rounded-sm shadow-sm flex flex-col gap-2">
           <span className="text-gray-500 text-xs uppercase tracking-widest font-semibold">Average Ticket Value</span>
-          <span className="text-4xl font-serif font-bold text-[#111111]">${avgSpend.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+          <span className="text-4xl font-serif font-bold text-[#111111]">₹{avgSpend.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
         </div>
       </div>
 
@@ -847,7 +847,7 @@ const ClientHistoryView: React.FC<ClientHistoryViewProps> = ({ tickets }) => {
                     <td className="py-4 font-medium">{ticket.stylistName || 'Unassigned'}</td>
                     <td className="py-4 text-xs text-gray-500">{formattedDate}</td>
                     <td className="py-4 text-right font-mono font-bold text-[#111111]">
-                      ${(ticket.price || 0).toFixed(2)}
+                      ₹{(ticket.price || 0).toFixed(2)}
                     </td>
                   </tr>
                 );
