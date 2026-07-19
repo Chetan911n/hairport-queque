@@ -32,7 +32,7 @@ const db = getFirestore(app);
 
 // Types
 type TicketStatus = "Waiting" | "Serving" | "Completed";
-type Role = "receptionist" | "stylist" | "owner" | "owner_stylist";
+type Role = "receptionist" | "stylist" | "owner" | "owner_stylist" | "tv";
 
 interface User {
   username: string;
@@ -147,6 +147,12 @@ const Login: React.FC<{ onLogin: (user: User) => void }> = ({ onLogin }) => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    // Predefined TV terminal display account
+    if (username.toLowerCase() === "tv" && password === "password") {
+      onLogin({ username: "tv", role: "tv", name: "TV Display" });
+      return;
+    }
 
     try {
       // Query stylist by name
@@ -570,10 +576,14 @@ export default function App() {
 
   // Set default view on login based on role
   useEffect(() => {
-    if (user && view !== "tv") {
-      if (user.role === "receptionist") setView("reception");
-      else if (user.role === "stylist") setView("staff");
-      else if (user.role === "owner" || user.role === "owner_stylist") setView("owner");
+    if (user) {
+      if (user.role === "tv") {
+        setView("tv");
+      } else if (view !== "tv") {
+        if (user.role === "receptionist") setView("reception");
+        else if (user.role === "stylist") setView("staff");
+        else if (user.role === "owner" || user.role === "owner_stylist") setView("owner");
+      }
     }
   }, [user, view]);
 
@@ -731,7 +741,12 @@ export default function App() {
               <StaffLineView key="staff" tickets={tickets} user={user} onCompleteTicket={setCompletingTicket} />
             )}
             {view === "tv" && (
-              <TVDisplay key="tv" tickets={tickets} onExit={() => setView(user ? ((user.role === 'owner' || user.role === 'owner_stylist') ? 'owner' : (user.role === 'stylist' ? 'staff' : 'reception')) : 'reception')} />
+              <TVDisplay 
+                key="tv" 
+                tickets={tickets} 
+                onExit={user?.role === 'tv' ? undefined : () => setView(user ? ((user.role === 'owner' || user.role === 'owner_stylist') ? 'owner' : (user.role === 'stylist' ? 'staff' : 'reception')) : 'reception')} 
+                onSignOut={user?.role === 'tv' ? () => setUser(null) : undefined}
+              />
             )}
           </AnimatePresence>
         )}
@@ -1495,7 +1510,13 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
 // ---------------------------------------------------------
 // TV WAITING DISPLAY COMPONENT
 // ---------------------------------------------------------
-const TVDisplay: React.FC<{ tickets: Ticket[], onExit?: () => void }> = ({ tickets, onExit }) => {
+interface TVDisplayProps {
+  tickets: Ticket[];
+  onExit?: () => void;
+  onSignOut?: () => void;
+}
+
+const TVDisplay: React.FC<TVDisplayProps> = ({ tickets, onExit, onSignOut }) => {
   const waitingTickets = tickets.filter(t => t.status === "Waiting");
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -1549,6 +1570,15 @@ const TVDisplay: React.FC<{ tickets: Ticket[], onExit?: () => void }> = ({ ticke
           className="absolute top-8 right-8 z-50 text-gray-500 hover:text-[#C5A059] transition-colors bg-white/80 px-4 py-2 rounded-sm border border-[#E5E5E0] backdrop-blur-sm text-xs font-sans tracking-widest uppercase shadow-sm"
         >
           Exit TV View
+        </button>
+      )}
+
+      {onSignOut && (
+        <button 
+          onClick={onSignOut}
+          className="absolute bottom-4 right-4 z-50 text-gray-400/20 hover:text-gray-500 hover:bg-white/40 transition-all px-2.5 py-1 rounded-sm border border-transparent hover:border-gray-200 backdrop-blur-sm text-[9px] font-sans tracking-widest uppercase"
+        >
+          Sign Out Terminal
         </button>
       )}
 
