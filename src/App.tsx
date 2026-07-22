@@ -81,7 +81,11 @@ const FEMALE_SERVICES = [
   "Threading",
   "Facial",
   "Clean Up",
-  "Regular Pedicure & Spa"
+  "Regular Pedicure & Spa",
+  "Regular Wax",
+  "Rica Wax",
+  "Hard Wax",
+  "Roll-On Wax"
 ];
 
 
