@@ -446,6 +446,27 @@ export default function App() {
   // Audio notification tracking
   const prevServingCount = useRef(0);
 
+  const [currentDateTime, setCurrentDateTime] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentDateTime(new Date());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const formattedHeaderDate = currentDateTime.toLocaleDateString(undefined, {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+  const formattedHeaderTime = currentDateTime.toLocaleTimeString([], {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  });
+
   useEffect(() => {
     // If not TV and no user, we don't necessarily need to stop listening, but let's keep it listening.
     const q = query(collection(db, "tickets"), orderBy("timestamp", "asc"));
@@ -558,6 +579,17 @@ export default function App() {
                   Hairport
                 </h1>
                 <p className="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-gray-500 font-sans mt-0.5 sm:mt-1">Premium Grooming</p>
+              </div>
+
+              {/* Live Date display */}
+              <div className="hidden md:flex flex-col border-l border-gray-300 dark:border-[#2A2A2A] pl-4 ml-2">
+                <span className="text-[9px] uppercase tracking-widest text-gray-400 font-sans font-bold">Current Date</span>
+                <span className={`text-xs font-mono font-bold ${isDarkView ? 'text-[#D4AF37]' : 'text-[#111111]'}`}>
+                  {formattedHeaderDate}
+                </span>
+                <span className="text-[10px] text-gray-500 font-mono mt-0.5">
+                  {formattedHeaderTime}
+                </span>
               </div>
             </div>
             
