@@ -74,7 +74,8 @@ const MALE_SERVICES = [
 const FEMALE_SERVICES = [
   "Haircut",
   "Hair Spa",
-  "Hair Colour & Highlights",
+  "Hair Colour",
+  "Global Colour & Highlights",
   "Root Touch Up",
   "Oil Massage",
   "Hair Fall Treatment",
