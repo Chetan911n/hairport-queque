@@ -12,7 +12,9 @@ import {
   orderBy,
   serverTimestamp,
   getDocs,
-  where
+  where,
+  setDoc,
+  getDoc
 } from "firebase/firestore";
 import { motion, AnimatePresence } from 'motion/react';
 import { Play, CheckCircle, Trash2, Monitor, Scissors, UserPlus, Phone, Loader2, User, Clock, ChevronRight, Search, X } from 'lucide-react';
@@ -110,33 +112,8 @@ const SERVICES_CONFIG = {
 };
 
 
-// Audio Synthesizer for Notifications
-const playChime = () => {
-  try {
-    const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
-    if (!AudioContext) return;
-    const ctx = new AudioContext();
-    const osc = ctx.createOscillator();
-    const gainNode = ctx.createGain();
-    
-    // Elegant bell-like chime
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(523.25, ctx.currentTime); // C5
-    osc.frequency.exponentialRampToValueAtTime(1046.50, ctx.currentTime + 0.1); // C6
-    
-    gainNode.gain.setValueAtTime(0, ctx.currentTime);
-    gainNode.gain.linearRampToValueAtTime(0.3, ctx.currentTime + 0.05);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 1.5);
-    
-    osc.connect(gainNode);
-    gainNode.connect(ctx.destination);
-    
-    osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + 1.5);
-  } catch (e) {
-    console.error("Audio error", e);
-  }
-};
+// Notifications removed
+
 
 // Live Counter Component
 const LiveCounter: React.FC<{ timestamp: any }> = ({ timestamp }) => {
@@ -861,19 +838,10 @@ const App: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [completingTicket, setCompletingTicket] = useState<Ticket | null>(null);
   
-  // Custom Toast state
-  const [toasts, setToasts] = useState<{ id: string; message: string; type: 'info' | 'success' }[]>([]);
-  const addToast = (message: string, type: 'info' | 'success' = 'info') => {
-    const id = Math.random().toString(36).substr(2, 9);
-    setToasts(prev => [...prev, { id, message, type }]);
-    setTimeout(() => {
-      setToasts(prev => prev.filter(t => t.id !== id));
-    }, 6000);
-  };
-
   // Audio notification tracking
   const prevServingCount = useRef(0);
   const isInitialLoad = useRef(true);
+
 
   const [currentDateTime, setCurrentDateTime] = useState(new Date());
 
@@ -884,12 +852,7 @@ const App: React.FC = () => {
     return () => clearInterval(timer);
   }, []);
 
-  // Request browser notification permissions on mount
-  useEffect(() => {
-    if ("Notification" in window && Notification.permission === "default") {
-      Notification.requestPermission();
-    }
-  }, []);
+
 
   // Persist user state to localStorage
   useEffect(() => {
@@ -923,37 +886,49 @@ const App: React.FC = () => {
       setTickets(newTickets);
       setLoading(false);
 
-      // Check for new online bookings from snapshot changes
-      snapshot.docChanges().forEach((change) => {
-        if (change.type === "added" && !snapshot.metadata.hasPendingWrites && !isInitialLoad.current) {
-          const ticketData = change.doc.data() as Ticket;
-          if (ticketData.id && ticketData.id.startsWith("#W")) {
-            playChime();
-            if (Notification.permission === "granted") {
-              try {
-                new Notification("New Online Booking", {
-                  body: `${ticketData.customerName} - ${ticketData.serviceType} (${ticketData.appointmentTime || 'Waiting Lounge'})`,
-                });
-              } catch (e) {
-                console.error("Browser notification failed", e);
-              }
-            }
-            addToast(`🔔 New Web Booking: ${ticketData.customerName} has requested ${ticketData.serviceType} at ${ticketData.appointmentTime || 'Waiting Lounge'}`, 'success');
-          }
-        }
-      });
-      
-      // Check for new serving tickets to play audio
+      // Check for new serving tickets — no audio
       const currentServing = newTickets.filter(t => t.status === "Serving").length;
-      if (currentServing > prevServingCount.current && view === "tv" && !isInitialLoad.current) {
-        playChime();
-      }
       prevServingCount.current = currentServing;
       isInitialLoad.current = false;
+
     });
 
     return () => unsubscribe();
   }, [view]);
+
+  // Record attendance on login for tracked staff
+  const TRACKED_STAFF = ["Prashant", "Tejas", "Kunal"];
+  useEffect(() => {
+    if (!user || user.role === "tv") return;
+    const staffName = user.name;
+    if (!TRACKED_STAFF.includes(staffName)) return;
+
+    // Write a login attendance record for today
+    const today = new Date();
+    const dateStr = today.toISOString().split("T")[0]; // "YYYY-MM-DD"
+    const attendanceDocId = `${staffName}_${dateStr}`;
+
+    const writeAttendance = async () => {
+      try {
+        const attendanceRef = doc(db, "attendance", attendanceDocId);
+        const existing = await getDoc(attendanceRef);
+        if (!existing.exists()) {
+          // First login today — create record
+          await setDoc(attendanceRef, {
+            name: staffName,
+            date: dateStr,
+            loginAt: new Date().toISOString(),
+            loginTimestamp: today.getTime(),
+          });
+        }
+        // If already exists, don't overwrite — first login of the day is canonical
+      } catch (e) {
+        console.error("Failed to write attendance", e);
+      }
+    };
+    writeAttendance();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
   // Set default view on login based on role
   useEffect(() => {
@@ -1063,31 +1038,6 @@ const App: React.FC = () => {
   return (
     <div className={`min-h-screen font-sans selection:bg-[#D4AF37]/30 overflow-x-hidden flex flex-col transition-colors duration-500 ${isDarkView ? 'bg-[#0A0A0A] text-gray-100' : 'bg-[#F5F5F0] text-[#111111]'}`}>
       
-      {/* Toast Container */}
-      <div className="fixed top-6 right-6 z-[9999] flex flex-col gap-3 max-w-sm w-full pointer-events-none">
-        <AnimatePresence>
-          {toasts.map((toast) => (
-            <motion.div
-              key={toast.id}
-              initial={{ opacity: 0, y: -20, scale: 0.9 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -20, scale: 0.9 }}
-              className="pointer-events-auto bg-[#111111] border border-[#D4AF37] text-white p-4 rounded-sm shadow-[0_4px_20px_rgba(0,0,0,0.5)] flex items-start gap-3"
-            >
-              <div className="flex-1 text-sm font-sans font-medium">
-                {toast.message}
-              </div>
-              <button
-                onClick={() => setToasts(prev => prev.filter(t => t.id !== toast.id))}
-                className="text-gray-400 hover:text-white transition-colors cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </motion.div>
-          ))}
-        </AnimatePresence>
-      </div>
-      
       {/* Elegant Background Texture */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
         <div className={`absolute inset-0 transition-colors duration-500 ${isDarkView ? 'bg-gradient-to-b from-[#1A1A1A] to-[#0A0A0A]' : 'bg-[#F5F5F0]'}`}></div>
@@ -1190,7 +1140,7 @@ const App: React.FC = () => {
                 </button>
               )}
               <button
-                onClick={() => { setView("tv"); playChime(); }}
+                onClick={() => setView("tv")}
                 className={`flex items-center justify-center gap-1.5 px-3 sm:px-6 py-2.5 rounded-sm text-xs sm:text-sm font-medium transition-all duration-300 cursor-pointer flex-1 lg:flex-none ${
                   view === "tv" 
                     ? "bg-[#2A2A2A] text-[#D4AF37] shadow-[0_2px_10px_rgba(0,0,0,0.5)] border-b border-[#D4AF37]/50" 
@@ -2506,7 +2456,200 @@ const LiveStylistTimer: React.FC<{ servedAt: any, baseSeconds: number }> = ({ se
 };
 
 // ---------------------------------------------------------
-// OWNER DASHBOARD COMPONENT
+// ATTENDANCE SHEET COMPONENT
+// ---------------------------------------------------------
+interface AttendanceRecord {
+  id: string;
+  name: string;
+  date: string;
+  loginAt: string;
+  loginTimestamp: number;
+}
+
+const LiveWorkTimer: React.FC<{ loginTimestamp: number }> = ({ loginTimestamp }) => {
+  const [elapsed, setElapsed] = useState("");
+  useEffect(() => {
+    const update = () => {
+      const diff = Math.max(0, Math.floor((Date.now() - loginTimestamp) / 1000));
+      const h = Math.floor(diff / 3600);
+      const m = Math.floor((diff % 3600) / 60);
+      const s = diff % 60;
+      setElapsed(`${h}h ${m}m ${s}s`);
+    };
+    update();
+    const interval = setInterval(update, 1000);
+    return () => clearInterval(interval);
+  }, [loginTimestamp]);
+  return <span className="font-mono text-green-400 font-bold tabular-nums">{elapsed}</span>;
+};
+
+const AttendanceSheet: React.FC = () => {
+  const TRACKED = ["Prashant", "Tejas", "Kunal"];
+  const [records, setRecords] = useState<AttendanceRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [viewMode, setViewMode] = useState<"today" | "week" | "all">("today");
+
+  useEffect(() => {
+    // Listen to attendance collection in real-time
+    const q = query(
+      collection(db, "attendance"),
+      orderBy("loginTimestamp", "desc")
+    );
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const data = snapshot.docs.map(d => ({ id: d.id, ...d.data() })) as AttendanceRecord[];
+      setRecords(data.filter(r => TRACKED.includes(r.name)));
+      setLoading(false);
+    });
+    return () => unsubscribe();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const todayStr = new Date().toISOString().split("T")[0];
+  const weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate() - 7);
+
+  const filteredRecords = records.filter(r => {
+    if (viewMode === "today") return r.date === todayStr;
+    if (viewMode === "week") return new Date(r.loginTimestamp) >= weekAgo;
+    return true;
+  });
+
+  // Group by date descending
+  const grouped: Record<string, AttendanceRecord[]> = {};
+  filteredRecords.forEach(r => {
+    if (!grouped[r.date]) grouped[r.date] = [];
+    grouped[r.date].push(r);
+  });
+  const sortedDates = Object.keys(grouped).sort((a, b) => b.localeCompare(a));
+
+  const formatLoginTime = (loginAt: string) => {
+    try {
+      const d = new Date(loginAt);
+      return d.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true });
+    } catch { return loginAt; }
+  };
+
+  const formatDate = (dateStr: string) => {
+    try {
+      const d = new Date(dateStr + "T00:00:00");
+      return d.toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+    } catch { return dateStr; }
+  };
+
+  const getWorkedDuration = (loginTimestamp: number, dateStr: string): string => {
+    if (dateStr === todayStr) return ""; // Live timer shown instead
+    // For past days: approximate 9 hours of duty (we only have login, no logout)
+    const diff = Math.max(0, Math.floor((Date.now() - loginTimestamp) / 1000));
+    const h = Math.floor(diff / 3600);
+    const m = Math.floor((diff % 3600) / 60);
+    return `${h}h ${m}m`;
+  };
+
+  return (
+    <div className="bg-[#111111] border border-[#2A2A2A] rounded-sm p-6 flex flex-col gap-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#2A2A2A] pb-4">
+        <div>
+          <h3 className="text-xl font-serif text-[#D4AF37] uppercase tracking-wider">Attendance Sheet</h3>
+          <p className="text-[10px] text-gray-500 font-sans uppercase tracking-widest mt-0.5">Daily clock-in records for Prashant · Tejas · Kunal</p>
+        </div>
+        <div className="flex gap-2">
+          {(["today", "week", "all"] as const).map(m => (
+            <button
+              key={m}
+              onClick={() => setViewMode(m)}
+              className={`px-3 py-1.5 rounded-sm text-[10px] font-sans tracking-wider uppercase font-semibold cursor-pointer border transition-all ${
+                viewMode === m
+                  ? "bg-[#D4AF37] text-[#111111] border-[#D4AF37]"
+                  : "bg-[#1A1A1A] border-[#2A2A2A] text-gray-400 hover:text-white"
+              }`}
+            >
+              {m === "today" ? "Today" : m === "week" ? "7 Days" : "All Time"}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {loading ? (
+        <div className="flex items-center justify-center py-8 gap-3">
+          <div className="w-5 h-5 border-2 border-[#D4AF37] border-t-transparent rounded-full animate-spin" />
+          <span className="text-gray-500 text-sm font-sans">Loading attendance...</span>
+        </div>
+      ) : sortedDates.length === 0 ? (
+        <div className="text-center py-10">
+          <p className="text-4xl mb-2">📋</p>
+          <p className="text-gray-600 text-sm font-sans">No attendance records yet for {viewMode === "today" ? "today" : "this period"}.</p>
+          <p className="text-gray-700 text-xs font-sans mt-1">Staff will be automatically checked in when they log in.</p>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-6">
+          {sortedDates.map(date => (
+            <div key={date}>
+              <div className="flex items-center gap-3 mb-3">
+                <div className="h-px flex-1 bg-[#2A2A2A]" />
+                <span className="text-[10px] font-sans text-gray-500 uppercase tracking-widest whitespace-nowrap">
+                  {formatDate(date)} {date === todayStr && <span className="text-green-400 font-bold">· Today</span>}
+                </span>
+                <div className="h-px flex-1 bg-[#2A2A2A]" />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {TRACKED.map(name => {
+                  const record = grouped[date]?.find(r => r.name === name);
+                  const isToday = date === todayStr;
+                  return (
+                    <div
+                      key={name}
+                      className={`p-4 rounded-sm border flex flex-col gap-2 ${
+                        record
+                          ? isToday
+                            ? "bg-green-950/20 border-green-800/30"
+                            : "bg-[#1A1A1A] border-[#2A2A2A]"
+                          : "bg-[#0D0D0D] border-[#1A1A1A] opacity-60"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold font-serif ${
+                            record ? "bg-gradient-to-br from-[#D4AF37] to-[#8B7523] text-black" : "bg-[#2A2A2A] text-gray-600"
+                          }`}>
+                            {name.charAt(0)}
+                          </div>
+                          <span className={`text-sm font-medium ${record ? "text-white" : "text-gray-600"}`}>{name}</span>
+                        </div>
+                        {record ? (
+                          <span className="text-[9px] bg-green-900/40 text-green-400 border border-green-700/30 px-2 py-0.5 rounded-sm font-bold uppercase font-sans">Present</span>
+                        ) : (
+                          <span className="text-[9px] bg-red-900/20 text-red-500 border border-red-800/20 px-2 py-0.5 rounded-sm font-bold uppercase font-sans">Absent</span>
+                        )}
+                      </div>
+                      {record ? (
+                        <div className="flex flex-col gap-1 pl-10">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-[10px] text-gray-500 font-sans">Clock In:</span>
+                            <span className="text-[10px] font-mono text-white">{formatLoginTime(record.loginAt)}</span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-[10px] text-gray-500 font-sans">Time on Duty:</span>
+                            {isToday ? (
+                              <LiveWorkTimer loginTimestamp={record.loginTimestamp} />
+                            ) : (
+                              <span className="text-[10px] font-mono text-gray-300">{getWorkedDuration(record.loginTimestamp, date)}</span>
+                            )}
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="text-[10px] text-gray-700 pl-10 font-sans italic">Did not log in</p>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 // ---------------------------------------------------------
 // Staff Analytics Dashboard
 // ---------------------------------------------------------
@@ -3120,6 +3263,10 @@ const OwnerDashboard: React.FC<OwnerDashboardProps> = ({ tickets }) => {
           </div>
         )}
       </div>
+
+      {/* Attendance Sheet */}
+      <AttendanceSheet />
+
     </motion.div>
   );
 };
