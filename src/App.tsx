@@ -15,7 +15,7 @@ import {
   where
 } from "firebase/firestore";
 import { motion, AnimatePresence } from 'motion/react';
-import { Play, CheckCircle, Trash2, Monitor, Scissors, UserPlus, Phone, Loader2, User, Clock, ChevronRight, Search } from 'lucide-react';
+import { Play, CheckCircle, Trash2, Monitor, Scissors, UserPlus, Phone, Loader2, User, Clock, ChevronRight, Search, X } from 'lucide-react';
 
 // Firebase Configuration
 const firebaseConfig = {
@@ -465,12 +465,32 @@ const CompletionModal: React.FC<CompletionModalProps> = ({ ticket, onClose, onCo
 };
 
 export default function App() {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(() => {
+    const saved = localStorage.getItem("hairport_user");
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error("Failed to parse saved user", e);
+      }
+    }
+    return null;
+  });
   const [view, setView] = useState<"reception" | "staff" | "tv" | "owner">("reception");
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
   const [completingTicket, setCompletingTicket] = useState<Ticket | null>(null);
   
+  // Custom Toast state
+  const [toasts, setToasts] = useState<{ id: string; message: string; type: 'info' | 'success' }[]>([]);
+  const addToast = (message: string, type: 'info' | 'success' = 'info') => {
+    const id = Math.random().toString(36).substr(2, 9);
+    setToasts(prev => [...prev, { id, message, type }]);
+    setTimeout(() => {
+      setToasts(prev => prev.filter(t => t.id !== id));
+    }, 6000);
+  };
+
   // Audio notification tracking
   const prevServingCount = useRef(0);
 
@@ -482,6 +502,22 @@ export default function App() {
     }, 1000);
     return () => clearInterval(timer);
   }, []);
+
+  // Request browser notification permissions on mount
+  useEffect(() => {
+    if ("Notification" in window && Notification.permission === "default") {
+      Notification.requestPermission();
+    }
+  }, []);
+
+  // Persist user state to localStorage
+  useEffect(() => {
+    if (user) {
+      localStorage.setItem("hairport_user", JSON.stringify(user));
+    } else {
+      localStorage.removeItem("hairport_user");
+    }
+  }, [user]);
 
   const formattedHeaderDate = currentDateTime.toLocaleDateString(undefined, {
     weekday: 'long',
@@ -496,7 +532,6 @@ export default function App() {
   });
 
   useEffect(() => {
-    // If not TV and no user, we don't necessarily need to stop listening, but let's keep it listening.
     const q = query(collection(db, "tickets"), orderBy("timestamp", "asc"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const newTickets = snapshot.docs.map(doc => ({
@@ -506,6 +541,26 @@ export default function App() {
       
       setTickets(newTickets);
       setLoading(false);
+
+      // Check for new online bookings from snapshot changes
+      snapshot.docChanges().forEach((change) => {
+        if (change.type === "added" && !snapshot.metadata.hasPendingWrites) {
+          const ticketData = change.doc.data() as Ticket;
+          if (ticketData.id && ticketData.id.startsWith("#W")) {
+            playChime();
+            if (Notification.permission === "granted") {
+              try {
+                new Notification("New Online Booking", {
+                  body: `${ticketData.customerName} - ${ticketData.serviceType} (${ticketData.appointmentTime || 'Waiting Lounge'})`,
+                });
+              } catch (e) {
+                console.error("Browser notification failed", e);
+              }
+            }
+            addToast(`🔔 New Web Booking: ${ticketData.customerName} has requested ${ticketData.serviceType} at ${ticketData.appointmentTime || 'Waiting Lounge'}`, 'success');
+          }
+        }
+      });
       
       // Check for new serving tickets to play audio
       const currentServing = newTickets.filter(t => t.status === "Serving").length;
@@ -587,6 +642,31 @@ export default function App() {
 
   return (
     <div className={`min-h-screen font-sans selection:bg-[#D4AF37]/30 overflow-x-hidden flex flex-col transition-colors duration-500 ${isDarkView ? 'bg-[#0A0A0A] text-gray-100' : 'bg-[#F5F5F0] text-[#111111]'}`}>
+      
+      {/* Toast Container */}
+      <div className="fixed top-6 right-6 z-[9999] flex flex-col gap-3 max-w-sm w-full pointer-events-none">
+        <AnimatePresence>
+          {toasts.map((toast) => (
+            <motion.div
+              key={toast.id}
+              initial={{ opacity: 0, y: -20, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -20, scale: 0.9 }}
+              className="pointer-events-auto bg-[#111111] border border-[#D4AF37] text-white p-4 rounded-sm shadow-[0_4px_20px_rgba(0,0,0,0.5)] flex items-start gap-3"
+            >
+              <div className="flex-1 text-sm font-sans font-medium">
+                {toast.message}
+              </div>
+              <button
+                onClick={() => setToasts(prev => prev.filter(t => t.id !== toast.id))}
+                className="text-gray-400 hover:text-white transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      </div>
       
       {/* Elegant Background Texture */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
