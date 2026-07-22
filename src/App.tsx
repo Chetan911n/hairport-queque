@@ -306,7 +306,18 @@ const Login: React.FC<{ onLogin: (user: User) => void }> = ({ onLogin }) => {
 interface CompletionModalProps {
   ticket: Ticket;
   onClose: () => void;
-  onConfirm: (price: number, stylistName: string, paymentMethod: "Cash" | "UPI" | "Pending") => Promise<void>;
+  onConfirm: (
+    price: number, 
+    stylistName: string, 
+    paymentMethod: "Cash" | "UPI" | "Pending",
+    splitDetails?: {
+      isSplit: boolean;
+      primaryStylistName: string;
+      secondaryStylistName: string;
+      primaryStylistPrice: number;
+      secondaryStylistPrice: number;
+    }
+  ) => Promise<void>;
 }
 
 const CompletionModal: React.FC<CompletionModalProps> = ({ ticket, onClose, onConfirm }) => {
@@ -317,8 +328,18 @@ const CompletionModal: React.FC<CompletionModalProps> = ({ ticket, onClose, onCo
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
+  // Split billing states
+  const [isSplit, setIsSplit] = useState(false);
+  const [secondaryStylist, setSecondaryStylist] = useState("");
+  const [primaryPrice, setPrimaryPrice] = useState("");
+  const [secondaryPrice, setSecondaryPrice] = useState("");
+
   useEffect(() => {
     setPrice("");
+    setPrimaryPrice("");
+    setSecondaryPrice("");
+    setIsSplit(false);
+    setSecondaryStylist("");
 
     if (ticket.stylistName) {
       setStylist(ticket.stylistName);
@@ -340,25 +361,61 @@ const CompletionModal: React.FC<CompletionModalProps> = ({ ticket, onClose, onCo
     return () => unsubscribe();
   }, [ticket]);
 
+  const computedTotal = isSplit 
+    ? (parseFloat(primaryPrice) || 0) + (parseFloat(secondaryPrice) || 0)
+    : parseFloat(price) || 0;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    const parsedPrice = parseFloat(price);
-    if (isNaN(parsedPrice) || parsedPrice < 0) {
-      setError("Please enter a valid price.");
-      return;
-    }
-    if (!stylist) {
-      setError("Please select a stylist.");
-      return;
-    }
 
-    setSubmitting(true);
-    try {
-      await onConfirm(parsedPrice, stylist, paymentMethod);
-    } catch (err) {
-      setError("Failed to complete ticket. Please try again.");
-      setSubmitting(false);
+    if (isSplit) {
+      const pPrice = parseFloat(primaryPrice);
+      const sPrice = parseFloat(secondaryPrice);
+      if (isNaN(pPrice) || pPrice < 0 || isNaN(sPrice) || sPrice < 0) {
+        setError("Please enter valid prices for both stylists.");
+        return;
+      }
+      if (!stylist || !secondaryStylist) {
+        setError("Please select both stylists.");
+        return;
+      }
+      if (stylist === secondaryStylist) {
+        setError("Please select two different stylists for split billing.");
+        return;
+      }
+
+      setSubmitting(true);
+      try {
+        await onConfirm(pPrice + sPrice, stylist, paymentMethod, {
+          isSplit: true,
+          primaryStylistName: stylist,
+          secondaryStylistName: secondaryStylist,
+          primaryStylistPrice: pPrice,
+          secondaryStylistPrice: sPrice
+        });
+      } catch (err) {
+        setError("Failed to complete split ticket. Please try again.");
+        setSubmitting(false);
+      }
+    } else {
+      const parsedPrice = parseFloat(price);
+      if (isNaN(parsedPrice) || parsedPrice < 0) {
+        setError("Please enter a valid price.");
+        return;
+      }
+      if (!stylist) {
+        setError("Please select a stylist.");
+        return;
+      }
+
+      setSubmitting(true);
+      try {
+        await onConfirm(parsedPrice, stylist, paymentMethod);
+      } catch (err) {
+        setError("Failed to complete ticket. Please try again.");
+        setSubmitting(false);
+      }
     }
   };
 
@@ -385,37 +442,128 @@ const CompletionModal: React.FC<CompletionModalProps> = ({ ticket, onClose, onCo
             <span className="text-lg text-[#D4AF37] font-medium">{ticket.serviceType}</span>
           </div>
 
-          <div className="space-y-2">
-            <label className="text-xs text-gray-500 uppercase tracking-widest block">Stylist Assigned</label>
-            <select
-              value={stylist}
-              onChange={(e) => setStylist(e.target.value)}
-              disabled={!!ticket.stylistName}
-              className="w-full bg-[#1A1A1A] text-white border border-[#2A2A2A] rounded-sm px-4 py-3 focus:outline-none focus:border-[#D4AF37] disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
-            >
-              {ticket.stylistName ? (
-                <option value={ticket.stylistName}>{ticket.stylistName}</option>
-              ) : (
-                stylists.map(s => (
-                  <option key={s.id} value={s.name}>{s.name}</option>
-                ))
-              )}
-            </select>
+          {/* Split Option Checkbox */}
+          <div className="flex items-center gap-2 border-b border-[#2A2A2A] pb-4">
+            <input
+              type="checkbox"
+              id="split-billing"
+              checked={isSplit}
+              onChange={(e) => {
+                setIsSplit(e.target.checked);
+                setError("");
+              }}
+              className="w-4 h-4 rounded-sm border-gray-600 bg-[#1A1A1A] accent-[#D4AF37] cursor-pointer"
+            />
+            <label htmlFor="split-billing" className="text-xs text-gray-400 uppercase tracking-widest font-sans cursor-pointer select-none">
+              Split Service between two Barbers
+            </label>
           </div>
 
-          <div className="space-y-2">
-            <label className="text-xs text-gray-500 uppercase tracking-widest block">Amount Charged (₹)</label>
-            <input
-              type="number"
-              step="0.01"
-              min="0"
-              value={price}
-              onChange={(e) => setPrice(e.target.value)}
-              required
-              className="w-full bg-[#1A1A1A] text-white border border-[#2A2A2A] rounded-sm px-4 py-3 focus:outline-none focus:border-[#D4AF37]"
-              placeholder="Enter total amount (₹)"
-            />
-          </div>
+          {!isSplit ? (
+            <>
+              <div className="space-y-2">
+                <label className="text-xs text-gray-500 uppercase tracking-widest block">Stylist Assigned</label>
+                <select
+                  value={stylist}
+                  onChange={(e) => setStylist(e.target.value)}
+                  disabled={!!ticket.stylistName}
+                  className="w-full bg-[#1A1A1A] text-white border border-[#2A2A2A] rounded-sm px-4 py-3 focus:outline-none focus:border-[#D4AF37] disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
+                >
+                  {ticket.stylistName ? (
+                    <option value={ticket.stylistName}>{ticket.stylistName}</option>
+                  ) : (
+                    stylists.map(s => (
+                      <option key={s.id} value={s.name}>{s.name}</option>
+                    ))
+                  )}
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs text-gray-500 uppercase tracking-widest block">Amount Charged (₹)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={price}
+                  onChange={(e) => setPrice(e.target.value)}
+                  required
+                  className="w-full bg-[#1A1A1A] text-white border border-[#2A2A2A] rounded-sm px-4 py-3 focus:outline-none focus:border-[#D4AF37]"
+                  placeholder="Enter total amount (₹)"
+                />
+              </div>
+            </>
+          ) : (
+            <div className="space-y-4 bg-[#1A1A1A]/40 border border-[#2A2A2A] p-4 rounded-sm">
+              <span className="text-xs text-gold uppercase tracking-wider font-semibold block mb-2">Split Billing Configuration</span>
+              
+              {/* Primary Stylist & Price */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-[10px] text-gray-500 uppercase tracking-wider">Stylist 1</label>
+                  <select
+                    value={stylist}
+                    onChange={(e) => setStylist(e.target.value)}
+                    className="w-full bg-[#111111] text-white border border-[#2A2A2A] rounded-sm px-3 py-2 text-sm focus:outline-none focus:border-[#D4AF37] cursor-pointer"
+                  >
+                    <option value="">Select Stylist 1</option>
+                    {stylists.map(s => (
+                      <option key={s.id} value={s.name}>{s.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] text-gray-500 uppercase tracking-wider">Cost 1 (₹)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={primaryPrice}
+                    onChange={(e) => setPrimaryPrice(e.target.value)}
+                    required
+                    placeholder="Stylist 1 price"
+                    className="w-full bg-[#111111] text-white border border-[#2A2A2A] rounded-sm px-3 py-2 text-sm focus:outline-none focus:border-[#D4AF37]"
+                  />
+                </div>
+              </div>
+
+              {/* Secondary Stylist & Price */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-[10px] text-gray-500 uppercase tracking-wider">Stylist 2</label>
+                  <select
+                    value={secondaryStylist}
+                    onChange={(e) => setSecondaryStylist(e.target.value)}
+                    className="w-full bg-[#111111] text-white border border-[#2A2A2A] rounded-sm px-3 py-2 text-sm focus:outline-none focus:border-[#D4AF37] cursor-pointer"
+                  >
+                    <option value="">Select Stylist 2</option>
+                    {stylists.map(s => (
+                      <option key={s.id} value={s.name}>{s.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] text-gray-500 uppercase tracking-wider">Cost 2 (₹)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={secondaryPrice}
+                    onChange={(e) => setSecondaryPrice(e.target.value)}
+                    required
+                    placeholder="Stylist 2 price"
+                    className="w-full bg-[#111111] text-white border border-[#2A2A2A] rounded-sm px-3 py-2 text-sm focus:outline-none focus:border-[#D4AF37]"
+                  />
+                </div>
+              </div>
+
+              {/* Computed Sum Display */}
+              <div className="pt-2 border-t border-[#2A2A2A] flex justify-between items-center text-sm font-semibold">
+                <span className="text-gray-400">Total Price:</span>
+                <span className="text-[#D4AF37] text-lg">₹{computedTotal.toFixed(2)}</span>
+              </div>
+            </div>
+          )}
 
           <div className="space-y-2">
             <label className="text-xs text-gray-500 uppercase tracking-widest block">Payment Status / Method</label>
@@ -453,7 +601,7 @@ const CompletionModal: React.FC<CompletionModalProps> = ({ ticket, onClose, onCo
             <button
               type="submit"
               disabled={submitting}
-              className="flex-1 bg-[#D4AF37] hover:bg-[#C5A059] text-[#111111] py-3 rounded-sm font-sans text-xs uppercase tracking-widest transition-colors font-bold flex items-center justify-center gap-2"
+              className="flex-1 bg-[#D4AF37] hover:bg-[#C5A059] text-[#111111] py-3 rounded-sm font-sans text-xs uppercase tracking-widest transition-colors font-bold flex items-center justify-center gap-2 cursor-pointer"
             >
               {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Confirm"}
             </button>
@@ -586,7 +734,18 @@ export default function App() {
     }
   }, [user]);
 
-  const handleConfirmCompletion = async (price: number, stylistName: string, paymentMethod: "Cash" | "UPI" | "Pending") => {
+  const handleConfirmCompletion = async (
+    price: number, 
+    stylistName: string, 
+    paymentMethod: "Cash" | "UPI" | "Pending",
+    splitDetails?: {
+      isSplit: boolean;
+      primaryStylistName: string;
+      secondaryStylistName: string;
+      primaryStylistPrice: number;
+      secondaryStylistPrice: number;
+    }
+  ) => {
     if (!completingTicket) return;
     try {
       const updateData: any = {
@@ -596,6 +755,14 @@ export default function App() {
         paymentMethod,
         completedAt: serverTimestamp()
       };
+      if (splitDetails && splitDetails.isSplit) {
+        updateData.isSplit = true;
+        updateData.primaryStylistName = splitDetails.primaryStylistName;
+        updateData.secondaryStylistName = splitDetails.secondaryStylistName;
+        updateData.primaryStylistPrice = splitDetails.primaryStylistPrice;
+        updateData.secondaryStylistPrice = splitDetails.secondaryStylistPrice;
+        updateData.stylistName = `${splitDetails.primaryStylistName} & ${splitDetails.secondaryStylistName}`;
+      }
       if (!completingTicket.servedAt) {
         updateData.servedAt = serverTimestamp();
       }
@@ -603,10 +770,13 @@ export default function App() {
       
       // Auto-compose and trigger native SMS to thank the client
       let smsBody = "";
+      const displayStylist = splitDetails?.isSplit 
+        ? `${splitDetails.primaryStylistName} and ${splitDetails.secondaryStylistName}`
+        : stylistName;
       if (paymentMethod === "Pending") {
-        smsBody = `Hi ${completingTicket.customerName}, thank you for visiting Hairport! Your haircut with ${stylistName} is complete. Your total bill is ₹${price} (marked as pending). We hope you loved our service! Please visit again.`;
+        smsBody = `Hi ${completingTicket.customerName}, thank you for visiting Hairport! Your service with ${displayStylist} is complete. Your total bill is ₹${price} (marked as pending). We hope you loved our service! Please visit again.`;
       } else {
-        smsBody = `Hi ${completingTicket.customerName}, thank you for visiting Hairport! Your haircut with ${stylistName} is complete. Your payment of ₹${price} via ${paymentMethod} has been received. We hope you love your new look. Please visit again!`;
+        smsBody = `Hi ${completingTicket.customerName}, thank you for visiting Hairport! Your service with ${displayStylist} is complete. Your payment of ₹${price} via ${paymentMethod} has been received. We hope you love your new look. Please visit again!`;
       }
       const smsUrl = `sms:${completingTicket.phone}?body=${encodeURIComponent(smsBody)}`;
       window.location.href = smsUrl;
@@ -1244,7 +1414,16 @@ const ClientHistoryView: React.FC<ClientHistoryViewProps> = ({ tickets }) => {
                         {ticket.serviceType}
                       </span>
                     </td>
-                    <td className="py-4 font-medium">{ticket.stylistName || 'Unassigned'}</td>
+                    <td className="py-4 font-medium">
+                      {ticket.isSplit ? (
+                        <div className="flex flex-col gap-0.5 text-xs">
+                          <span className="font-semibold text-gray-800">{ticket.primaryStylistName} (₹{ticket.primaryStylistPrice})</span>
+                          <span className="text-gray-500 font-normal">&amp; {ticket.secondaryStylistName} (₹{ticket.secondaryStylistPrice})</span>
+                        </div>
+                      ) : (
+                        ticket.stylistName || 'Unassigned'
+                      )}
+                    </td>
                     <td className="py-4 text-xs text-gray-500">{formattedDate}</td>
                     <td className="py-4">
                       <span className={`text-[10px] font-sans tracking-wider uppercase px-2 py-0.5 rounded-sm font-bold border ${
@@ -2101,19 +2280,34 @@ const OwnerDashboard: React.FC<OwnerDashboardProps> = ({ tickets }) => {
                   <th className="py-4 font-semibold">Duty Status</th>
                   <th className="py-4 font-semibold">Current Client</th>
                   <th className="py-4 font-semibold text-center">Served Today</th>
+                  <th className="py-4 font-semibold text-center">Earnings Today</th>
                   <th className="py-4 font-semibold text-right">Total Work Duration</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#2A2A2A]">
                 {stylists.map(stylist => {
-                  const completedList = completedTickets.filter(t => t.stylistName === stylist.name && isCompletedToday(t));
+                  const completedList = completedTickets.filter(t => 
+                    (t.stylistName === stylist.name || t.primaryStylistName === stylist.name || t.secondaryStylistName === stylist.name) 
+                    && isCompletedToday(t)
+                  );
                   
                   let completedSecs = 0;
+                  let earningsToday = 0;
+
                   completedList.forEach(t => {
                     if (t.servedAt && t.completedAt) {
                       const start = t.servedAt.toDate ? t.servedAt.toDate().getTime() : (t.servedAt.seconds * 1000);
                       const end = t.completedAt.toDate ? t.completedAt.toDate().getTime() : (t.completedAt.seconds * 1000);
                       completedSecs += Math.max(0, Math.floor((end - start) / 1000));
+                    }
+                    if (t.isSplit) {
+                      if (t.primaryStylistName === stylist.name) {
+                        earningsToday += t.primaryStylistPrice || 0;
+                      } else if (t.secondaryStylistName === stylist.name) {
+                        earningsToday += t.secondaryStylistPrice || 0;
+                      }
+                    } else {
+                      earningsToday += t.price || 0;
                     }
                   });
 
@@ -2152,6 +2346,9 @@ const OwnerDashboard: React.FC<OwnerDashboardProps> = ({ tickets }) => {
                       <td className="py-5 text-center font-semibold text-white">
                         {completedList.length}
                       </td>
+                      <td className="py-5 text-center font-semibold text-[#D4AF37]">
+                        ₹{earningsToday}
+                      </td>
                       <td className="py-5 text-right font-mono text-white">
                         {activeServingTicket ? (
                           <div className="flex items-center justify-end gap-1.5 text-amber-400 font-bold">
@@ -2167,7 +2364,7 @@ const OwnerDashboard: React.FC<OwnerDashboardProps> = ({ tickets }) => {
                 })}
                 {stylists.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="py-10 text-center text-gray-500 italic">
+                    <td colSpan={6} className="py-10 text-center text-gray-500 italic">
                       No stylists registered in system.
                     </td>
                   </tr>
