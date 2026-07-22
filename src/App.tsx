@@ -1689,7 +1689,6 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
                           type="button"
                           onClick={() => {
                             setServiceCategory(cat);
-                            setSelectedServices([]);
                           }}
                           className={`flex-1 py-3 rounded-sm border text-xs font-sans tracking-widest uppercase transition-all duration-300 cursor-pointer font-bold ${
                             serviceCategory === cat
@@ -1736,6 +1735,35 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
                       })}
                     </div>
                   </div>
+
+                  {selectedServices.length > 0 && (
+                    <div className="bg-[#D4AF37]/5 border border-[#D4AF37]/20 p-3 rounded-sm space-y-2 mt-4">
+                      <div className="flex justify-between items-center">
+                        <span className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Selected ({selectedServices.length})</span>
+                        <button 
+                          type="button" 
+                          onClick={() => setSelectedServices([])}
+                          className="text-[10px] text-red-500 hover:text-red-700 underline uppercase tracking-wider font-bold cursor-pointer"
+                        >
+                          Clear All
+                        </button>
+                      </div>
+                      <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto pr-1">
+                        {selectedServices.map(s => (
+                          <span key={s} className="text-[10px] bg-white border border-[#E5E5E0] text-gray-800 px-2.5 py-1 rounded-sm font-sans flex items-center gap-1.5 font-medium">
+                            {s}
+                            <button 
+                              type="button" 
+                              onClick={() => setSelectedServices(prev => prev.filter(item => item !== s))}
+                              className="text-red-500 hover:text-red-700 font-bold text-xs cursor-pointer focus:outline-none"
+                            >
+                              ×
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
                   <button 
                     type="submit"
