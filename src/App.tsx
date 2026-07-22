@@ -1801,13 +1801,32 @@ const OwnerDashboard: React.FC<OwnerDashboardProps> = ({ tickets }) => {
     return () => unsubscribe();
   }, []);
 
+  const isCompletedToday = (ticket: Ticket): boolean => {
+    if (!ticket.completedAt) return false;
+    let date: Date;
+    if (typeof ticket.completedAt.toDate === 'function') {
+      date = ticket.completedAt.toDate();
+    } else if (ticket.completedAt.seconds) {
+      date = new Date(ticket.completedAt.seconds * 1000);
+    } else {
+      return false;
+    }
+    const today = new Date();
+    return (
+      date.getDate() === today.getDate() &&
+      date.getMonth() === today.getMonth() &&
+      date.getFullYear() === today.getFullYear()
+    );
+  };
+
   const activeStylists = stylists.filter(s => s.active);
   const activeServings = tickets.filter(t => t.status === "Serving");
   const completedTickets = tickets.filter(t => t.status === "Completed");
+  const completedTodayTickets = completedTickets.filter(isCompletedToday);
 
   let totalServiceTimeSeconds = 0;
   let completedWithTimeCount = 0;
-  completedTickets.forEach(t => {
+  completedTodayTickets.forEach(t => {
     if (t.servedAt && t.completedAt) {
       const start = t.servedAt.toDate ? t.servedAt.toDate().getTime() : (t.servedAt.seconds * 1000);
       const end = t.completedAt.toDate ? t.completedAt.toDate().getTime() : (t.completedAt.seconds * 1000);
@@ -1844,7 +1863,7 @@ const OwnerDashboard: React.FC<OwnerDashboardProps> = ({ tickets }) => {
         </div>
         <div className="bg-[#111111] border border-[#2A2A2A] p-6 rounded-sm shadow-xl flex flex-col gap-2">
           <span className="text-gray-500 text-xs font-sans uppercase tracking-widest">Completed Today</span>
-          <span className="text-4xl font-serif font-bold text-white">{completedTickets.length}</span>
+          <span className="text-4xl font-serif font-bold text-white">{completedTodayTickets.length}</span>
         </div>
         <div className="bg-[#111111] border border-[#2A2A2A] p-6 rounded-sm shadow-xl flex flex-col gap-2">
           <span className="text-gray-500 text-xs font-sans uppercase tracking-widest">Avg Service Time</span>
@@ -1876,7 +1895,7 @@ const OwnerDashboard: React.FC<OwnerDashboardProps> = ({ tickets }) => {
               </thead>
               <tbody className="divide-y divide-[#2A2A2A]">
                 {stylists.map(stylist => {
-                  const completedList = completedTickets.filter(t => t.stylistName === stylist.name);
+                  const completedList = completedTickets.filter(t => t.stylistName === stylist.name && isCompletedToday(t));
                   
                   let completedSecs = 0;
                   completedList.forEach(t => {
