@@ -1546,6 +1546,11 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
                           <div>
                             <div className="flex items-center gap-3 mb-1">
                               <span className="text-[#111111] font-sans font-medium text-sm">{ticket.id}</span>
+                              {ticket.appointmentTime && (
+                                <span className="text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-sm font-semibold border bg-green-50 text-green-700 border-green-200">
+                                  Online
+                                </span>
+                              )}
                               {ticket.gender && (
                                 <span className={`text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-sm font-semibold border ${
                                   ticket.gender === 'Female' 
@@ -1568,6 +1573,16 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
                             </div>
                             <p className="text-[#111111] font-serif text-lg font-medium">{ticket.customerName}</p>
                             <p className="text-xs text-gray-500 font-sans mt-1">{ticket.phone}</p>
+                            {ticket.appointmentTime && (
+                              <p className="text-xs text-green-600 font-medium font-sans mt-1.5 flex items-center gap-1">
+                                <Clock className="w-3.5 h-3.5" /> Appt: {ticket.appointmentTime}
+                              </p>
+                            )}
+                            {ticket.notes && (
+                              <p className="text-xs text-gray-500 italic font-sans mt-1">
+                                Notes: "{ticket.notes}"
+                              </p>
+                            )}
                           </div>
                           
                           <div className="flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -2120,13 +2135,58 @@ const StaffLineView: React.FC<{ tickets: Ticket[], user: User, onCompleteTicket:
                     : 'border-[#D4AF37] bg-gradient-to-r from-[#D4AF37] to-[#C5A059] text-[#0A0A0A] shadow-[0_4px_20px_rgba(212,175,55,0.15)]'
                 }`}
               >
-                <div className="md:col-span-2 flex items-center">
+                <div className="md:col-span-2 flex items-center gap-2">
                    <span className={`font-sans font-bold text-2xl ${ticket.status === 'Waiting' ? 'text-[#D4AF37]' : 'text-[#0A0A0A]'}`}>{ticket.id}</span>
+                   {ticket.appointmentTime && (
+                     <span className={`text-[8px] uppercase tracking-wider px-2 py-0.5 rounded-sm font-semibold border ${
+                       ticket.status === 'Waiting'
+                         ? 'bg-green-500/20 text-green-400 border-green-500/30'
+                         : 'bg-green-100 text-green-800 border-green-300'
+                     }`}>
+                       Online
+                     </span>
+                   )}
                 </div>
                 <div className="md:col-span-3">
                   <p className={`font-serif text-3xl tracking-wide ${ticket.status === 'Waiting' ? 'text-white' : 'text-[#0A0A0A] font-bold'}`}>{ticket.customerName}</p>
+                  {ticket.appointmentTime && (
+                    <p className={`text-xs mt-1.5 font-sans flex items-center gap-1 font-medium ${ticket.status === 'Waiting' ? 'text-green-400' : 'text-green-800'}`}>
+                      <Clock className="w-3.5 h-3.5" /> Appt: {ticket.appointmentTime}
+                    </p>
+                  )}
+                  {ticket.notes && (
+                    <p className={`text-xs mt-1 italic font-sans ${ticket.status === 'Waiting' ? 'text-gray-400' : 'text-[#0A0A0A]/70'}`}>
+                      Notes: "{ticket.notes}"
+                    </p>
+                  )}
                 </div>
-                <div className="md:col-span-3">
+                <div className="md:col-span-3 flex flex-wrap gap-2 items-center">
+                  {ticket.gender && (
+                    <span className={`text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-sm font-semibold border ${
+                      ticket.status === 'Waiting'
+                        ? ticket.gender === 'Female' 
+                          ? 'bg-purple-950/40 text-purple-400 border-purple-800/40' 
+                          : 'bg-blue-950/40 text-blue-400 border-blue-800/40'
+                        : ticket.gender === 'Female'
+                          ? 'bg-purple-100 text-purple-800 border-purple-300'
+                          : 'bg-blue-100 text-blue-800 border-blue-300'
+                    }`}>
+                      {ticket.gender}
+                    </span>
+                  )}
+                  {ticket.serviceCategory && (
+                    <span className={`text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-sm font-semibold border ${
+                      ticket.status === 'Waiting'
+                        ? ticket.serviceCategory === 'Hair'
+                          ? 'bg-amber-950/40 text-amber-400 border-amber-800/40'
+                          : 'bg-emerald-950/40 text-emerald-400 border-emerald-800/40'
+                        : ticket.serviceCategory === 'Hair'
+                          ? 'bg-amber-100 text-amber-800 border-amber-300'
+                          : 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                    }`}>
+                      {ticket.serviceCategory}
+                    </span>
+                  )}
                   <span className={`text-xs tracking-[0.2em] uppercase px-4 py-2 border rounded-sm ${
                     ticket.status === 'Waiting' 
                       ? 'border-[#D4AF37]/30 text-gray-300' 
