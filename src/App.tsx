@@ -57,11 +57,18 @@ interface Ticket {
 }
 
 const MALE_SERVICES = [
-  "Classic Cut",
-  "Hot Towel Shave",
-  "Beard Sculpting",
-  "Executive Grooming",
-  "Color Treatment"
+  "Haircut",
+  "Hair Colour",
+  "Hair Spa",
+  "Manicure",
+  "Pedicure",
+  "Facial",
+  "Cleanup",
+  "Head Massage",
+  "Beard Style",
+  "Clean Shave",
+  "Face Massage",
+  "Hair Styling"
 ];
 
 const FEMALE_SERVICES = [
@@ -75,11 +82,18 @@ const FEMALE_SERVICES = [
 
 const SERVICE_PRICES: Record<string, number> = {
   // Male
-  "Classic Cut": 300,
-  "Hot Towel Shave": 200,
-  "Beard Sculpting": 250,
-  "Executive Grooming": 600,
-  "Color Treatment": 800,
+  "Haircut": 300,
+  "Hair Colour": 400,
+  "Hair Spa": 600,
+  "Manicure": 400,
+  "Pedicure": 500,
+  "Facial": 800,
+  "Cleanup": 500,
+  "Head Massage": 300,
+  "Beard Style": 200,
+  "Clean Shave": 150,
+  "Face Massage": 300,
+  "Hair Styling": 250,
   // Female
   "Haircut & Styling": 500,
   "Hair Spa & Treatment": 800,
