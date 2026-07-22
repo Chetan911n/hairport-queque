@@ -321,8 +321,7 @@ const CompletionModal: React.FC<CompletionModalProps> = ({ ticket, onClose, onCo
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const defaultPrice = SERVICE_PRICES[ticket.serviceType] || 0;
-    setPrice(defaultPrice.toString());
+    setPrice("");
 
     if (ticket.stylistName) {
       setStylist(ticket.stylistName);
@@ -417,7 +416,7 @@ const CompletionModal: React.FC<CompletionModalProps> = ({ ticket, onClose, onCo
               onChange={(e) => setPrice(e.target.value)}
               required
               className="w-full bg-[#1A1A1A] text-white border border-[#2A2A2A] rounded-sm px-4 py-3 focus:outline-none focus:border-[#D4AF37]"
-              placeholder="0.00"
+              placeholder="Enter total amount (₹)"
             />
           </div>
 
