@@ -136,11 +136,8 @@ const LiveCounter: React.FC<{ timestamp: any }> = ({ timestamp }) => {
 
 // Login Component
 const Login: React.FC<{ onLogin: (user: User) => void }> = ({ onLogin }) => {
-  const [mode, setMode] = useState<'login' | 'register'>('login');
   const [username, setUsername] = useState('');
-  const [registerRole, setRegisterRole] = useState<Role>('stylist');
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -166,47 +163,9 @@ const Login: React.FC<{ onLogin: (user: User) => void }> = ({ onLogin }) => {
         return;
       }
       
-      setError('Member name not found. Please register first.');
+      setError('Member name not found. Contact administration to register.');
     } catch (err) {
       setError('Login failed. Please try again.');
-    }
-  };
-
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setSuccess('');
-
-    try {
-      const formattedName = username.charAt(0).toUpperCase() + username.slice(1);
-      const isStylist = registerRole === 'stylist' || registerRole === 'owner_stylist';
-      
-      // Check if user already exists
-      const q = query(collection(db, "stylists"), where("name", "==", formattedName));
-      const querySnapshot = await getDocs(q);
-      if (!querySnapshot.empty) {
-        setError('A member with this name is already registered.');
-        return;
-      }
-
-      await addDoc(collection(db, "stylists"), {
-        name: formattedName,
-        active: isStylist,
-        role: registerRole
-      });
-      
-      const roleDisplayName = 
-        registerRole === 'receptionist' ? 'Receptionist' :
-        registerRole === 'owner' ? 'Owner' :
-        registerRole === 'owner_stylist' ? 'Owner & Stylist' : 'Stylist';
-
-      setSuccess(`${roleDisplayName} ${username} registered successfully!`);
-      setTimeout(() => {
-        setMode('login');
-        setRegisterRole('stylist');
-      }, 2000);
-    } catch (err) {
-      setError('Registration failed. Please try again.');
     }
   };
 
@@ -288,63 +247,26 @@ const Login: React.FC<{ onLogin: (user: User) => void }> = ({ onLogin }) => {
           <p className="text-xs uppercase tracking-[0.3em] text-gray-500 font-sans mt-2">Staff Portal</p>
         </div>
 
-        <div className="flex bg-[#F5F5F0] p-1 rounded-sm border border-[#E5E5E0] mb-8">
-          <button
-            onClick={() => { setMode('login'); setError(''); setSuccess(''); }}
-            className={`flex-1 py-2 rounded-sm text-xs font-sans tracking-widest uppercase transition-all duration-300 ${
-              mode === 'login' ? 'bg-[#111111] text-[#D4AF37] shadow-md' : 'text-gray-500 hover:text-gray-800'
-            }`}
-          >
-            Login
-          </button>
-          <button
-            onClick={() => { setMode('register'); setError(''); setSuccess(''); }}
-            className={`flex-1 py-2 rounded-sm text-xs font-sans tracking-widest uppercase transition-all duration-300 ${
-              mode === 'register' ? 'bg-[#111111] text-[#D4AF37] shadow-md' : 'text-gray-500 hover:text-gray-800'
-            }`}
-          >
-            Register
-          </button>
-        </div>
-
-        <form onSubmit={mode === 'login' ? handleLogin : handleRegister} className="space-y-6">
+        <form onSubmit={handleLogin} className="space-y-6">
           <div className="space-y-2">
-            <label className="text-xs font-sans text-gray-500 uppercase tracking-widest">{mode === 'login' ? 'Username' : 'Display Name'}</label>
+            <label className="text-xs font-sans text-gray-500 uppercase tracking-widest">Username</label>
             <input 
               type="text" 
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               className="w-full bg-[#F5F5F0] border border-[#E5E5E0] rounded-sm px-4 py-3 focus:outline-none focus:border-[#D4AF37] transition-all text-[#111111] font-sans"
-              placeholder={mode === 'login' ? "Enter username" : "Enter preferred display name"}
+              placeholder="Enter username"
               required
             />
           </div>
-
-          {mode === 'register' && (
-            <div className="space-y-2">
-              <label className="text-xs font-sans text-gray-500 uppercase tracking-widest">Role</label>
-              <select
-                value={registerRole}
-                onChange={(e) => setRegisterRole(e.target.value as Role)}
-                className="w-full bg-[#F5F5F0] border border-[#E5E5E0] rounded-sm px-4 py-3 focus:outline-none focus:border-[#D4AF37] transition-all text-[#111111] font-sans appearance-none cursor-pointer"
-              >
-                <option value="stylist">Stylist</option>
-                <option value="receptionist">Receptionist</option>
-                <option value="owner">Owner</option>
-                <option value="owner_stylist">Owner + Stylist</option>
-              </select>
-            </div>
-          )}
-          {/* Password fields removed as requested */}
           
           {error && <p className="text-red-500 text-xs text-center">{error}</p>}
-          {success && <p className="text-green-600 text-xs text-center">{success}</p>}
 
           <button 
             type="submit"
             className="w-full mt-4 bg-[#D4AF37] hover:bg-[#C5A059] text-[#111111] font-serif font-bold tracking-widest uppercase py-4 px-6 rounded-sm transition-colors duration-300"
           >
-            {mode === 'login' ? 'Authenticate' : 'Register User'}
+            Authenticate
           </button>
         </form>
       </motion.div>
