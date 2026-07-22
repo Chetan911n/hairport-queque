@@ -1307,7 +1307,7 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
   const [phone, setPhone] = useState("");
   const [gender, setGender] = useState<"Male" | "Female">("Male");
   const [serviceCategory, setServiceCategory] = useState<"Hair" | "Skin">("Hair");
-  const [serviceType, setServiceType] = useState(SERVICES_CONFIG.Male.Hair[0]);
+  const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [stylists, setStylists] = useState<{ id: string, name: string, active: boolean }[]>([]);
   const [newStylistName, setNewStylistName] = useState("");
@@ -1356,6 +1356,10 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
   const handleDeployTicket = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!customerName || !phone) return;
+    if (selectedServices.length === 0) {
+      alert("Please select at least one service.");
+      return;
+    }
     setIsSubmitting(true);
     
     try {
@@ -1363,7 +1367,7 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
         id: generateNextId(),
         customerName,
         phone,
-        serviceType,
+        serviceType: selectedServices.join(", "),
         gender,
         serviceCategory,
         status: "Waiting",
@@ -1371,7 +1375,7 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
       });
       setCustomerName("");
       setPhone("");
-      setServiceType(SERVICES_CONFIG[gender][serviceCategory][0]);
+      setSelectedServices([]);
     } catch (error) {
       console.error("Failed to add client:", error);
     } finally {
@@ -1483,7 +1487,7 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
                           type="button"
                           onClick={() => {
                             setGender(g);
-                            setServiceType(SERVICES_CONFIG[g][serviceCategory][0]);
+                            setSelectedServices([]);
                           }}
                           className={`flex-1 py-3 rounded-sm border text-xs font-sans tracking-widest uppercase transition-all duration-300 cursor-pointer font-bold ${
                             gender === g
@@ -1506,7 +1510,7 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
                           type="button"
                           onClick={() => {
                             setServiceCategory(cat);
-                            setServiceType(SERVICES_CONFIG[gender][cat][0]);
+                            setSelectedServices([]);
                           }}
                           className={`flex-1 py-3 rounded-sm border text-xs font-sans tracking-widest uppercase transition-all duration-300 cursor-pointer font-bold ${
                             serviceCategory === cat
@@ -1521,20 +1525,36 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-xs font-sans text-gray-500 uppercase tracking-widest">Service</label>
-                    <div className="relative group/input">
-                      <select 
-                        value={serviceType}
-                        onChange={(e) => setServiceType(e.target.value)}
-                        className="w-full bg-[#F5F5F0] border border-[#E5E5E0] rounded-sm pl-4 pr-10 py-3 focus:outline-none focus:border-[#D4AF37] transition-all text-[#111111] appearance-none cursor-pointer font-sans"
-                      >
-                        {SERVICES_CONFIG[gender][serviceCategory].map(type => (
-                          <option key={type} value={type} className="bg-white text-[#111111]">{type}</option>
-                        ))}
-                      </select>
-                      <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                        <ChevronRight className="h-4 w-4 text-gray-400 group-focus-within/input:text-[#D4AF37] rotate-90 transition-colors" />
-                      </div>
+                    <label className="text-xs font-sans text-gray-500 uppercase tracking-widest block mb-2">Select Services (Multiple)</label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-2 border border-[#E5E5E0] p-3 rounded-sm bg-[#F5F5F0]">
+                      {SERVICES_CONFIG[gender][serviceCategory].map((serviceName) => {
+                        const isSelected = selectedServices.includes(serviceName);
+                        return (
+                          <button
+                            key={serviceName}
+                            type="button"
+                            onClick={() => {
+                              setSelectedServices(prev => 
+                                prev.includes(serviceName)
+                                  ? prev.filter(s => s !== serviceName)
+                                  : [...prev, serviceName]
+                              );
+                            }}
+                            className={`flex items-center gap-2 px-3 py-2 rounded-sm border text-xs font-sans text-left transition-colors cursor-pointer ${
+                              isSelected
+                                ? 'bg-[#D4AF37]/10 border-[#D4AF37] text-[#D4AF37] font-semibold font-sans'
+                                : 'bg-white border-[#E5E5E0] text-gray-700 hover:border-gray-400 font-sans'
+                            }`}
+                          >
+                            <div className={`w-3.5 h-3.5 border rounded-sm flex items-center justify-center shrink-0 ${
+                              isSelected ? 'border-[#D4AF37] bg-[#D4AF37] text-[#111111]' : 'border-gray-400 bg-white'
+                            }`}>
+                              {isSelected && <span className="text-[10px] leading-none font-bold">✓</span>}
+                            </div>
+                            <span className="truncate">{serviceName}</span>
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
 
