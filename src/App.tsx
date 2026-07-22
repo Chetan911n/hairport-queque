@@ -1383,7 +1383,7 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-xs font-sans text-gray-500 uppercase tracking-widest block">Client Section</label>
+                    <label className="text-xs font-sans text-gray-500 uppercase tracking-widest block">Gender</label>
                     <div className="flex gap-2">
                       {(["Male", "Female"] as const).map((g) => (
                         <button
