@@ -53,9 +53,10 @@ interface Ticket {
   completedAt?: any;
   price?: number;
   paymentMethod?: "Cash" | "UPI" | "Pending";
+  gender?: "Male" | "Female";
 }
 
-const SERVICE_TYPES = [
+const MALE_SERVICES = [
   "Classic Cut",
   "Hot Towel Shave",
   "Beard Sculpting",
@@ -63,12 +64,29 @@ const SERVICE_TYPES = [
   "Color Treatment"
 ];
 
+const FEMALE_SERVICES = [
+  "Haircut & Styling",
+  "Hair Spa & Treatment",
+  "Hair Coloring",
+  "Facials & Skincare",
+  "Threading & Waxing",
+  "Bridal / Festive Makeup"
+];
+
 const SERVICE_PRICES: Record<string, number> = {
-  "Classic Cut": 45,
-  "Hot Towel Shave": 35,
-  "Beard Sculpting": 30,
-  "Executive Grooming": 75,
-  "Color Treatment": 90
+  // Male
+  "Classic Cut": 300,
+  "Hot Towel Shave": 200,
+  "Beard Sculpting": 250,
+  "Executive Grooming": 600,
+  "Color Treatment": 800,
+  // Female
+  "Haircut & Styling": 500,
+  "Hair Spa & Treatment": 800,
+  "Hair Coloring": 1200,
+  "Facials & Skincare": 1000,
+  "Threading & Waxing": 300,
+  "Bridal / Festive Makeup": 3000
 };
 
 // Audio Synthesizer for Notifications
@@ -1197,7 +1215,8 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
   const [activeTab, setActiveTab] = useState<"queue" | "history" | "revenue">("queue");
   const [customerName, setCustomerName] = useState("");
   const [phone, setPhone] = useState("");
-  const [serviceType, setServiceType] = useState(SERVICE_TYPES[0]);
+  const [gender, setGender] = useState<"Male" | "Female">("Male");
+  const [serviceType, setServiceType] = useState(MALE_SERVICES[0]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [stylists, setStylists] = useState<{ id: string, name: string, active: boolean }[]>([]);
   const [newStylistName, setNewStylistName] = useState("");
@@ -1254,12 +1273,13 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
         customerName,
         phone,
         serviceType,
+        gender,
         status: "Waiting",
         timestamp: serverTimestamp()
       });
       setCustomerName("");
       setPhone("");
-      setServiceType(SERVICE_TYPES[0]);
+      setServiceType(gender === "Male" ? MALE_SERVICES[0] : FEMALE_SERVICES[0]);
     } catch (error) {
       console.error("Failed to add client:", error);
     } finally {
@@ -1363,6 +1383,29 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
                   </div>
 
                   <div className="space-y-2">
+                    <label className="text-xs font-sans text-gray-500 uppercase tracking-widest block">Client Section</label>
+                    <div className="flex gap-2">
+                      {(["Male", "Female"] as const).map((g) => (
+                        <button
+                          key={g}
+                          type="button"
+                          onClick={() => {
+                            setGender(g);
+                            setServiceType(g === "Male" ? MALE_SERVICES[0] : FEMALE_SERVICES[0]);
+                          }}
+                          className={`flex-1 py-3 rounded-sm border text-xs font-sans tracking-widest uppercase transition-all duration-300 cursor-pointer font-bold ${
+                            gender === g
+                              ? "bg-[#D4AF37]/20 border-[#D4AF37] text-[#D4AF37] shadow-[0_0_15px_rgba(212,175,55,0.15)]"
+                              : "bg-[#F5F5F0] border-[#E5E5E0] text-gray-500 hover:text-[#111111]"
+                          }`}
+                        >
+                          {g}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
                     <label className="text-xs font-sans text-gray-500 uppercase tracking-widest">Service</label>
                     <div className="relative group/input">
                       <select 
@@ -1370,7 +1413,7 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
                         onChange={(e) => setServiceType(e.target.value)}
                         className="w-full bg-[#F5F5F0] border border-[#E5E5E0] rounded-sm pl-4 pr-10 py-3 focus:outline-none focus:border-[#D4AF37] transition-all text-[#111111] appearance-none cursor-pointer font-sans"
                       >
-                        {SERVICE_TYPES.map(type => (
+                        {(gender === "Male" ? MALE_SERVICES : FEMALE_SERVICES).map(type => (
                           <option key={type} value={type} className="bg-white text-[#111111]">{type}</option>
                         ))}
                       </select>
@@ -1468,6 +1511,15 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
                           <div>
                             <div className="flex items-center gap-3 mb-1">
                               <span className="text-[#111111] font-sans font-medium text-sm">{ticket.id}</span>
+                              {ticket.gender && (
+                                <span className={`text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-sm font-semibold border ${
+                                  ticket.gender === 'Female' 
+                                    ? 'bg-purple-50 text-purple-700 border-purple-200' 
+                                    : 'bg-blue-50 text-blue-700 border-blue-200'
+                                }`}>
+                                  {ticket.gender}
+                                </span>
+                              )}
                               <span className="text-[10px] uppercase tracking-wider text-gray-600 bg-[#E5E5E0] px-2 py-0.5 rounded-sm">{ticket.serviceType}</span>
                             </div>
                             <p className="text-[#111111] font-serif text-lg font-medium">{ticket.customerName}</p>
@@ -1707,7 +1759,7 @@ const TVDisplay: React.FC<TVDisplayProps> = ({ tickets, onExit, onSignOut }) => 
                       </div>
                     </div>
                     <span className="text-2xl font-sans text-[#C5A059] font-bold tracking-widest px-6 py-3 border border-[#C5A059]/30 rounded-sm uppercase bg-white/50">
-                      {ticket.serviceType}
+                      {ticket.gender ? `${ticket.gender} - ` : ''}{ticket.serviceType}
                     </span>
                   </motion.div>
                 ))
