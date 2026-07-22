@@ -316,6 +316,8 @@ interface CompletionModalProps {
       secondaryStylistName: string;
       primaryStylistPrice: number;
       secondaryStylistPrice: number;
+      primaryStylistService?: string;
+      secondaryStylistService?: string;
     }
   ) => Promise<void>;
 }
@@ -333,6 +335,8 @@ const CompletionModal: React.FC<CompletionModalProps> = ({ ticket, onClose, onCo
   const [secondaryStylist, setSecondaryStylist] = useState("");
   const [primaryPrice, setPrimaryPrice] = useState("");
   const [secondaryPrice, setSecondaryPrice] = useState("");
+  const [primaryService, setPrimaryService] = useState("");
+  const [secondaryService, setSecondaryService] = useState("");
 
   useEffect(() => {
     setPrice("");
@@ -340,6 +344,10 @@ const CompletionModal: React.FC<CompletionModalProps> = ({ ticket, onClose, onCo
     setSecondaryPrice("");
     setIsSplit(false);
     setSecondaryStylist("");
+
+    const ticketServices = ticket.serviceType ? ticket.serviceType.split(",").map(s => s.trim()) : [];
+    setPrimaryService(ticketServices[0] || "");
+    setSecondaryService(ticketServices[1] || ticketServices[0] || "");
 
     if (ticket.stylistName) {
       setStylist(ticket.stylistName);
@@ -392,7 +400,9 @@ const CompletionModal: React.FC<CompletionModalProps> = ({ ticket, onClose, onCo
           primaryStylistName: stylist,
           secondaryStylistName: secondaryStylist,
           primaryStylistPrice: pPrice,
-          secondaryStylistPrice: sPrice
+          secondaryStylistPrice: sPrice,
+          primaryStylistService: primaryService,
+          secondaryStylistService: secondaryService
         });
       } catch (err) {
         setError("Failed to complete split ticket. Please try again.");
@@ -418,6 +428,8 @@ const CompletionModal: React.FC<CompletionModalProps> = ({ ticket, onClose, onCo
       }
     }
   };
+
+  const ticketServicesList = ticket.serviceType ? ticket.serviceType.split(",").map(s => s.trim()) : [];
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4">
@@ -497,10 +509,10 @@ const CompletionModal: React.FC<CompletionModalProps> = ({ ticket, onClose, onCo
             <div className="space-y-4 bg-[#1A1A1A]/40 border border-[#2A2A2A] p-4 rounded-sm">
               <span className="text-xs text-gold uppercase tracking-wider font-semibold block mb-2">Split Billing Configuration</span>
               
-              {/* Primary Stylist & Price */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* Primary Stylist & Price & Service */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pb-3 border-b border-[#2A2A2A]/40">
                 <div className="space-y-1">
-                  <label className="text-[10px] text-gray-500 uppercase tracking-wider">Stylist 1</label>
+                  <label className="text-[10px] text-gray-500 uppercase tracking-wider">Stylist 1 (Primary)</label>
                   <select
                     value={stylist}
                     onChange={(e) => setStylist(e.target.value)}
@@ -525,12 +537,24 @@ const CompletionModal: React.FC<CompletionModalProps> = ({ ticket, onClose, onCo
                     className="w-full bg-[#111111] text-white border border-[#2A2A2A] rounded-sm px-3 py-2 text-sm focus:outline-none focus:border-[#D4AF37]"
                   />
                 </div>
+                <div className="sm:col-span-2 space-y-1">
+                  <label className="text-[10px] text-gray-500 uppercase tracking-wider">Service Done by Stylist 1</label>
+                  <select
+                    value={primaryService}
+                    onChange={(e) => setPrimaryService(e.target.value)}
+                    className="w-full bg-[#111111] text-white border border-[#2A2A2A] rounded-sm px-3 py-2 text-sm focus:outline-none focus:border-[#D4AF37] cursor-pointer"
+                  >
+                    {ticketServicesList.map(s => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
-              {/* Secondary Stylist & Price */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* Secondary Stylist & Price & Service */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pb-3">
                 <div className="space-y-1">
-                  <label className="text-[10px] text-gray-500 uppercase tracking-wider">Stylist 2</label>
+                  <label className="text-[10px] text-gray-500 uppercase tracking-wider">Stylist 2 (Secondary)</label>
                   <select
                     value={secondaryStylist}
                     onChange={(e) => setSecondaryStylist(e.target.value)}
@@ -554,6 +578,18 @@ const CompletionModal: React.FC<CompletionModalProps> = ({ ticket, onClose, onCo
                     placeholder="Stylist 2 price"
                     className="w-full bg-[#111111] text-white border border-[#2A2A2A] rounded-sm px-3 py-2 text-sm focus:outline-none focus:border-[#D4AF37]"
                   />
+                </div>
+                <div className="sm:col-span-2 space-y-1">
+                  <label className="text-[10px] text-gray-500 uppercase tracking-wider">Service Done by Stylist 2</label>
+                  <select
+                    value={secondaryService}
+                    onChange={(e) => setSecondaryService(e.target.value)}
+                    className="w-full bg-[#111111] text-white border border-[#2A2A2A] rounded-sm px-3 py-2 text-sm focus:outline-none focus:border-[#D4AF37] cursor-pointer"
+                  >
+                    {ticketServicesList.map(s => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </select>
                 </div>
               </div>
 
@@ -641,6 +677,7 @@ export default function App() {
 
   // Audio notification tracking
   const prevServingCount = useRef(0);
+  const isInitialLoad = useRef(true);
 
   const [currentDateTime, setCurrentDateTime] = useState(new Date());
 
@@ -692,7 +729,7 @@ export default function App() {
 
       // Check for new online bookings from snapshot changes
       snapshot.docChanges().forEach((change) => {
-        if (change.type === "added" && !snapshot.metadata.hasPendingWrites) {
+        if (change.type === "added" && !snapshot.metadata.hasPendingWrites && !isInitialLoad.current) {
           const ticketData = change.doc.data() as Ticket;
           if (ticketData.id && ticketData.id.startsWith("#W")) {
             playChime();
@@ -712,10 +749,11 @@ export default function App() {
       
       // Check for new serving tickets to play audio
       const currentServing = newTickets.filter(t => t.status === "Serving").length;
-      if (currentServing > prevServingCount.current && view === "tv") {
+      if (currentServing > prevServingCount.current && view === "tv" && !isInitialLoad.current) {
         playChime();
       }
       prevServingCount.current = currentServing;
+      isInitialLoad.current = false;
     });
 
     return () => unsubscribe();
@@ -744,6 +782,8 @@ export default function App() {
       secondaryStylistName: string;
       primaryStylistPrice: number;
       secondaryStylistPrice: number;
+      primaryStylistService?: string;
+      secondaryStylistService?: string;
     }
   ) => {
     if (!completingTicket) return;
@@ -761,6 +801,8 @@ export default function App() {
         updateData.secondaryStylistName = splitDetails.secondaryStylistName;
         updateData.primaryStylistPrice = splitDetails.primaryStylistPrice;
         updateData.secondaryStylistPrice = splitDetails.secondaryStylistPrice;
+        updateData.primaryStylistService = splitDetails.primaryStylistService || "";
+        updateData.secondaryStylistService = splitDetails.secondaryStylistService || "";
         updateData.stylistName = `${splitDetails.primaryStylistName} & ${splitDetails.secondaryStylistName}`;
       }
       if (!completingTicket.servedAt) {
@@ -1410,9 +1452,16 @@ const ClientHistoryView: React.FC<ClientHistoryViewProps> = ({ tickets }) => {
                     <td className="py-4 font-medium text-[#111111]">{ticket.customerName}</td>
                     <td className="py-4 text-sm font-mono">{ticket.phone}</td>
                     <td className="py-4">
-                      <span className="text-xs uppercase tracking-wider text-[#111111] bg-[#E5E5E0] px-2.5 py-1 rounded-sm">
-                        {ticket.serviceType}
-                      </span>
+                      <div className="flex flex-col gap-1 items-start">
+                        <span className="text-xs uppercase tracking-wider text-[#111111] bg-[#E5E5E0] px-2.5 py-1 rounded-sm">
+                          {ticket.serviceType}
+                        </span>
+                        {ticket.colourNumber && (
+                          <span className="text-[10px] text-gray-500 font-sans font-semibold">
+                            Shade: {ticket.colourNumber}
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="py-4 font-medium">
                       {ticket.isSplit ? (
@@ -1487,6 +1536,7 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
   const [gender, setGender] = useState<"Male" | "Female">("Male");
   const [serviceCategory, setServiceCategory] = useState<"Hair" | "Skin">("Hair");
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
+  const [colourNumber, setColourNumber] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [stylists, setStylists] = useState<{ id: string, name: string, active: boolean }[]>([]);
   const [newStylistName, setNewStylistName] = useState("");
@@ -1542,11 +1592,18 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
     setIsSubmitting(true);
     
     try {
+      const hasColourService = selectedServices.some(s => 
+        s.toLowerCase().includes("colour") || 
+        s.toLowerCase().includes("highlights") || 
+        s.toLowerCase().includes("touch up")
+      );
+
       await addDoc(collection(db, "tickets"), {
         id: generateNextId(),
         customerName,
         phone,
         serviceType: selectedServices.join(", "),
+        colourNumber: hasColourService ? colourNumber : "",
         gender,
         serviceCategory,
         status: "Waiting",
@@ -1555,6 +1612,7 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
       setCustomerName("");
       setPhone("");
       setSelectedServices([]);
+      setColourNumber("");
     } catch (error) {
       console.error("Failed to add client:", error);
     } finally {
@@ -1765,6 +1823,23 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
                     </div>
                   )}
 
+                  {selectedServices.some(s => 
+                    s.toLowerCase().includes("colour") || 
+                    s.toLowerCase().includes("highlights") || 
+                    s.toLowerCase().includes("touch up")
+                  ) && (
+                    <div className="space-y-2 mt-4 animate-fadeIn">
+                      <label className="text-xs font-sans text-gray-500 uppercase tracking-widest block">Hair Colour Number / Shade</label>
+                      <input 
+                        type="text" 
+                        value={colourNumber}
+                        onChange={(e) => setColourNumber(e.target.value)}
+                        placeholder="e.g. Igora 5-0, Yutika 4.0"
+                        className="w-full bg-[#F5F5F0] border border-[#E5E5E0] rounded-sm px-4 py-3 focus:outline-none focus:border-[#D4AF37] text-[#111111] placeholder-gray-500 font-sans"
+                      />
+                    </div>
+                  )}
+
                   <button 
                     type="submit"
                     disabled={isSubmitting}
@@ -1890,6 +1965,11 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
                                 Notes: "{ticket.notes}"
                               </p>
                             )}
+                            {ticket.colourNumber && (
+                              <p className="text-xs text-[#D4AF37] font-semibold font-sans mt-1">
+                                Shade: {ticket.colourNumber}
+                              </p>
+                            )}
                           </div>
                           
                           <div className="flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -1957,6 +2037,11 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
                             <p className="text-[#111111] font-serif text-lg font-medium">{ticket.customerName}</p>
                             {ticket.stylistName && (
                               <p className="text-xs text-gray-500 font-sans mt-1">with <span className="font-semibold">{ticket.stylistName}</span></p>
+                            )}
+                            {ticket.colourNumber && (
+                              <p className="text-xs text-[#D4AF37] font-semibold font-sans mt-1">
+                                Shade: {ticket.colourNumber}
+                              </p>
                             )}
                           </div>
                           
@@ -2482,6 +2567,11 @@ const StaffLineView: React.FC<{ tickets: Ticket[], user: User, onCompleteTicket:
                   {ticket.notes && (
                     <p className={`text-xs mt-1 italic font-sans ${ticket.status === 'Waiting' ? 'text-gray-400' : 'text-[#0A0A0A]/70'}`}>
                       Notes: "{ticket.notes}"
+                    </p>
+                  )}
+                  {ticket.colourNumber && (
+                    <p className={`text-xs mt-1 font-semibold font-sans ${ticket.status === 'Waiting' ? 'text-[#D4AF37]' : 'text-amber-950'}`}>
+                      Shade: {ticket.colourNumber}
                     </p>
                   )}
                 </div>
