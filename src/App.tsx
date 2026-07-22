@@ -52,6 +52,7 @@ interface Ticket {
   servedAt?: any;
   completedAt?: any;
   price?: number;
+  paymentMethod?: "Cash" | "UPI" | "Pending";
 }
 
 const SERVICE_TYPES = [
@@ -354,13 +355,14 @@ const Login: React.FC<{ onLogin: (user: User) => void }> = ({ onLogin }) => {
 interface CompletionModalProps {
   ticket: Ticket;
   onClose: () => void;
-  onConfirm: (price: number, stylistName: string) => Promise<void>;
+  onConfirm: (price: number, stylistName: string, paymentMethod: "Cash" | "UPI" | "Pending") => Promise<void>;
 }
 
 const CompletionModal: React.FC<CompletionModalProps> = ({ ticket, onClose, onConfirm }) => {
   const [price, setPrice] = useState<string>("");
   const [stylist, setStylist] = useState<string>("");
   const [stylists, setStylists] = useState<{ id: string, name: string }[]>([]);
+  const [paymentMethod, setPaymentMethod] = useState<"Cash" | "UPI" | "Pending">("UPI");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
@@ -403,7 +405,7 @@ const CompletionModal: React.FC<CompletionModalProps> = ({ ticket, onClose, onCo
 
     setSubmitting(true);
     try {
-      await onConfirm(parsedPrice, stylist);
+      await onConfirm(parsedPrice, stylist, paymentMethod);
     } catch (err) {
       setError("Failed to complete ticket. Please try again.");
       setSubmitting(false);
@@ -463,6 +465,28 @@ const CompletionModal: React.FC<CompletionModalProps> = ({ ticket, onClose, onCo
               className="w-full bg-[#1A1A1A] text-white border border-[#2A2A2A] rounded-sm px-4 py-3 focus:outline-none focus:border-[#D4AF37]"
               placeholder="0.00"
             />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-xs text-gray-500 uppercase tracking-widest block">Payment Status / Method</label>
+            <div className="flex gap-2">
+              {(["UPI", "Cash", "Pending"] as const).map((method) => (
+                <button
+                  key={method}
+                  type="button"
+                  onClick={() => setPaymentMethod(method)}
+                  className={`flex-1 py-3 rounded-sm border text-[10px] font-sans tracking-wider uppercase transition-all duration-300 cursor-pointer font-bold ${
+                    paymentMethod === method
+                      ? method === "Pending"
+                        ? "bg-red-600/20 border-red-500 text-red-400 shadow-[0_0_15px_rgba(239,68,68,0.15)]"
+                        : "bg-[#D4AF37]/20 border-[#D4AF37] text-[#D4AF37] shadow-[0_0_15px_rgba(212,175,55,0.15)]"
+                      : "bg-[#1A1A1A] border-[#2A2A2A] text-gray-500 hover:text-white"
+                  }`}
+                >
+                  {method}
+                </button>
+              ))}
+            </div>
           </div>
 
           {error && <p className="text-red-500 text-xs">{error}</p>}
@@ -536,13 +560,14 @@ export default function App() {
     }
   }, [user]);
 
-  const handleConfirmCompletion = async (price: number, stylistName: string) => {
+  const handleConfirmCompletion = async (price: number, stylistName: string, paymentMethod: "Cash" | "UPI" | "Pending") => {
     if (!completingTicket) return;
     try {
       const updateData: any = {
         status: "Completed",
         price,
         stylistName,
+        paymentMethod,
         completedAt: serverTimestamp()
       };
       if (!completingTicket.servedAt) {
@@ -551,7 +576,12 @@ export default function App() {
       await updateDoc(doc(db, "tickets", completingTicket.docId), updateData);
       
       // Auto-compose and trigger native SMS to thank the client
-      const smsBody = `Hi ${completingTicket.customerName}, thank you for visiting Hairport! Your haircut with ${stylistName} is complete. Your total spent was ₹${price}. We hope you love your new look. Please visit again!`;
+      let smsBody = "";
+      if (paymentMethod === "Pending") {
+        smsBody = `Hi ${completingTicket.customerName}, thank you for visiting Hairport! Your haircut with ${stylistName} is complete. Your total bill is ₹${price} (marked as pending). We hope you loved our service! Please visit again.`;
+      } else {
+        smsBody = `Hi ${completingTicket.customerName}, thank you for visiting Hairport! Your haircut with ${stylistName} is complete. Your payment of ₹${price} via ${paymentMethod} has been received. We hope you love your new look. Please visit again!`;
+      }
       const smsUrl = `sms:${completingTicket.phone}?body=${encodeURIComponent(smsBody)}`;
       window.location.href = smsUrl;
 
@@ -768,6 +798,10 @@ const RevenueAnalyticsView: React.FC<RevenueAnalyticsViewProps> = ({ tickets }) 
   const lastMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
   const lastMonthKey = `${lastMonthDate.getFullYear()}-${(lastMonthDate.getMonth() + 1).toString().padStart(2, '0')}`;
 
+  let cashRevenue = 0;
+  let upiRevenue = 0;
+  let pendingRevenue = 0;
+
   completedTickets.forEach(ticket => {
     const date = getTicketDate(ticket);
     if (!date) return;
@@ -779,7 +813,20 @@ const RevenueAnalyticsView: React.FC<RevenueAnalyticsViewProps> = ({ tickets }) 
 
     const dayKey = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
     dailyData[dayKey] = (dailyData[dayKey] || 0) + price;
+
+    if (ticket.paymentMethod === "Cash") {
+      cashRevenue += price;
+    } else if (ticket.paymentMethod === "Pending") {
+      pendingRevenue += price;
+    } else {
+      upiRevenue += price;
+    }
   });
+
+  const totalBreakdown = cashRevenue + upiRevenue + pendingRevenue;
+  const cashPercent = totalBreakdown > 0 ? (cashRevenue / totalBreakdown) * 100 : 0;
+  const upiPercent = totalBreakdown > 0 ? (upiRevenue / totalBreakdown) * 100 : 0;
+  const pendingPercent = totalBreakdown > 0 ? (pendingRevenue / totalBreakdown) * 100 : 0;
 
   const thisMonthRevenue = monthlyData[currentMonthKey] || 0;
   const lastMonthRevenue = monthlyData[lastMonthKey] || 0;
@@ -890,6 +937,66 @@ const RevenueAnalyticsView: React.FC<RevenueAnalyticsViewProps> = ({ tickets }) 
         </div>
       </div>
 
+      <div className="bg-white border border-[#111111] p-8 rounded-sm shadow-xl flex flex-col gap-6">
+        <h3 className="text-lg font-serif uppercase tracking-wider text-[#111111]">
+          Payment Breakdown & Outstanding Balances
+        </h3>
+        
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+          <div className="border border-[#E5E5E0] p-4 rounded-sm bg-[#F5F5F0]/50 flex flex-col gap-1">
+            <span className="text-gray-500 text-[10px] uppercase tracking-widest font-semibold">UPI Revenue</span>
+            <span className="text-2xl font-bold text-blue-600">₹{upiRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+            <span className="text-[10px] text-gray-400 font-medium">{upiPercent.toFixed(1)}% of total</span>
+          </div>
+          
+          <div className="border border-[#E5E5E0] p-4 rounded-sm bg-[#F5F5F0]/50 flex flex-col gap-1">
+            <span className="text-gray-500 text-[10px] uppercase tracking-widest font-semibold">Cash Revenue</span>
+            <span className="text-2xl font-bold text-green-700">₹{cashRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+            <span className="text-[10px] text-gray-400 font-medium">{cashPercent.toFixed(1)}% of total</span>
+          </div>
+
+          <div className="border border-[#E5E5E0] p-4 rounded-sm bg-red-50/30 border-red-100 flex flex-col gap-1">
+            <span className="text-red-500 text-[10px] uppercase tracking-widest font-semibold">Pending Balance</span>
+            <span className="text-2xl font-bold text-red-600">₹{pendingRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+            <span className="text-[10px] text-red-400 font-medium">{pendingPercent.toFixed(1)}% outstanding</span>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-2 mt-2">
+          <div className="h-4 w-full bg-gray-100 rounded-full overflow-hidden flex border border-gray-200">
+            <div 
+              style={{ width: `${upiPercent}%` }} 
+              className="bg-blue-500 transition-all duration-500"
+              title={`UPI: ${upiPercent.toFixed(1)}%`}
+            />
+            <div 
+              style={{ width: `${cashPercent}%` }} 
+              className="bg-green-600 transition-all duration-500"
+              title={`Cash: ${cashPercent.toFixed(1)}%`}
+            />
+            <div 
+              style={{ width: `${pendingPercent}%` }} 
+              className="bg-red-500 transition-all duration-500"
+              title={`Pending: ${pendingPercent.toFixed(1)}%`}
+            />
+          </div>
+          <div className="flex flex-wrap gap-4 justify-between text-[10px] font-semibold uppercase tracking-wider mt-1">
+            <span className="text-blue-600 flex items-center gap-1.5">
+              <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+              UPI ({upiPercent.toFixed(0)}%)
+            </span>
+            <span className="text-green-700 flex items-center gap-1.5">
+              <span className="w-2 h-2 bg-green-600 rounded-full"></span>
+              Cash ({cashPercent.toFixed(0)}%)
+            </span>
+            <span className="text-red-600 flex items-center gap-1.5">
+              <span className="w-2 h-2 bg-red-500 rounded-full"></span>
+              Pending ({pendingPercent.toFixed(0)}%)
+            </span>
+          </div>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
         
         <div className="bg-white border border-[#111111] p-8 rounded-sm shadow-xl flex flex-col gap-6">
@@ -989,13 +1096,24 @@ const ClientHistoryView: React.FC<ClientHistoryViewProps> = ({ tickets }) => {
       t.customerName.toLowerCase().includes(query) ||
       t.phone.toLowerCase().includes(query) ||
       (t.stylistName && t.stylistName.toLowerCase().includes(query)) ||
-      t.serviceType.toLowerCase().includes(query)
+      t.serviceType.toLowerCase().includes(query) ||
+      (t.paymentMethod && t.paymentMethod.toLowerCase().includes(query))
     );
   }).sort((a, b) => {
     const aTime = a.completedAt?.toDate ? a.completedAt.toDate().getTime() : (a.completedAt?.seconds * 1000 || 0);
     const bTime = b.completedAt?.toDate ? b.completedAt.toDate().getTime() : (b.completedAt?.seconds * 1000 || 0);
     return bTime - aTime;
   });
+
+  const handleSettlePayment = async (docId: string, method: "UPI" | "Cash") => {
+    try {
+      await updateDoc(doc(db, "tickets", docId), {
+        paymentMethod: method
+      });
+    } catch (err) {
+      console.error("Error settling payment:", err);
+    }
+  };
 
   const totalVisits = completedTickets.length;
   const totalRevenue = completedTickets.reduce((sum, t) => sum + (t.price || 0), 0);
@@ -1046,6 +1164,7 @@ const ClientHistoryView: React.FC<ClientHistoryViewProps> = ({ tickets }) => {
                 <th className="py-4 font-semibold">Service Type</th>
                 <th className="py-4 font-semibold">Assigned Stylist</th>
                 <th className="py-4 font-semibold">Date Completed</th>
+                <th className="py-4 font-semibold">Status</th>
                 <th className="py-4 font-semibold text-right">Amount Paid</th>
               </tr>
             </thead>
@@ -1065,15 +1184,46 @@ const ClientHistoryView: React.FC<ClientHistoryViewProps> = ({ tickets }) => {
                     </td>
                     <td className="py-4 font-medium">{ticket.stylistName || 'Unassigned'}</td>
                     <td className="py-4 text-xs text-gray-500">{formattedDate}</td>
+                    <td className="py-4">
+                      <span className={`text-[10px] font-sans tracking-wider uppercase px-2 py-0.5 rounded-sm font-bold border ${
+                        ticket.paymentMethod === 'Pending'
+                          ? 'bg-red-50 text-red-600 border-red-200'
+                          : ticket.paymentMethod === 'UPI'
+                            ? 'bg-blue-50 text-blue-600 border-blue-200'
+                            : 'bg-green-50 text-green-700 border-green-200'
+                      }`}>
+                        {ticket.paymentMethod || 'UPI'}
+                      </span>
+                    </td>
                     <td className="py-4 text-right font-mono font-bold text-[#111111]">
-                      ₹{(ticket.price || 0).toFixed(2)}
+                      {ticket.paymentMethod === 'Pending' ? (
+                        <div className="flex flex-col items-end gap-1">
+                          <span className="text-red-600 font-bold">₹{(ticket.price || 0).toFixed(2)}</span>
+                          <div className="flex gap-1">
+                            <button
+                              onClick={() => handleSettlePayment(ticket.docId, "UPI")}
+                              className="bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-600 px-2 py-0.5 rounded-sm text-[9px] font-sans font-bold border border-blue-200 transition-colors cursor-pointer"
+                            >
+                              Settle UPI
+                            </button>
+                            <button
+                              onClick={() => handleSettlePayment(ticket.docId, "Cash")}
+                              className="bg-green-50 hover:bg-green-700 hover:text-white text-green-700 px-2 py-0.5 rounded-sm text-[9px] font-sans font-bold border border-green-200 transition-colors cursor-pointer"
+                            >
+                              Settle Cash
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <span>₹{(ticket.price || 0).toFixed(2)}</span>
+                      )}
                     </td>
                   </tr>
                 );
               })}
               {filteredTickets.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="py-10 text-center text-gray-400 italic">
+                  <td colSpan={7} className="py-10 text-center text-gray-400 italic">
                     No matching records found.
                   </td>
                 </tr>
