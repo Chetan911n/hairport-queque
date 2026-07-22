@@ -72,36 +72,18 @@ const MALE_SERVICES = [
 ];
 
 const FEMALE_SERVICES = [
-  "Haircut & Styling",
-  "Hair Spa & Treatment",
-  "Hair Coloring",
-  "Facials & Skincare",
-  "Threading & Waxing",
-  "Bridal / Festive Makeup"
+  "Haircut",
+  "Hair Spa",
+  "Hair Colour & Highlights",
+  "Root Touch Up",
+  "Oil Massage",
+  "Hair Fall Treatment",
+  "Threading",
+  "Facial",
+  "Clean Up",
+  "Regular Pedicure & Spa"
 ];
 
-const SERVICE_PRICES: Record<string, number> = {
-  // Male
-  "Haircut": 300,
-  "Hair Colour": 400,
-  "Hair Spa": 600,
-  "Manicure": 400,
-  "Pedicure": 500,
-  "Facial": 800,
-  "Cleanup": 500,
-  "Head Massage": 300,
-  "Beard Style": 200,
-  "Clean Shave": 150,
-  "Face Massage": 300,
-  "Hair Styling": 250,
-  // Female
-  "Haircut & Styling": 500,
-  "Hair Spa & Treatment": 800,
-  "Hair Coloring": 1200,
-  "Facials & Skincare": 1000,
-  "Threading & Waxing": 300,
-  "Bridal / Festive Makeup": 3000
-};
 
 // Audio Synthesizer for Notifications
 const playChime = () => {
