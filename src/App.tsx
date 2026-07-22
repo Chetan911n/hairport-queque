@@ -55,6 +55,16 @@ interface Ticket {
   paymentMethod?: "Cash" | "UPI" | "Pending";
   gender?: "Male" | "Female";
   serviceCategory?: "Hair" | "Skin";
+  isSplit?: boolean;
+  primaryStylistName?: string;
+  primaryStylistPrice?: number;
+  primaryStylistService?: string;
+  secondaryStylistName?: string;
+  secondaryStylistPrice?: number;
+  secondaryStylistService?: string;
+  tertiaryStylistName?: string;
+  tertiaryStylistPrice?: number;
+  tertiaryStylistService?: string;
 }
 
 const SERVICES_CONFIG = {
@@ -314,10 +324,13 @@ interface CompletionModalProps {
       isSplit: boolean;
       primaryStylistName: string;
       secondaryStylistName: string;
+      tertiaryStylistName?: string;
       primaryStylistPrice: number;
       secondaryStylistPrice: number;
+      tertiaryStylistPrice?: number;
       primaryStylistService?: string;
       secondaryStylistService?: string;
+      tertiaryStylistService?: string;
     }
   ) => Promise<void>;
 }
@@ -331,23 +344,29 @@ const CompletionModal: React.FC<CompletionModalProps> = ({ ticket, onClose, onCo
   const [error, setError] = useState("");
 
   // Split billing states
-  const [isSplit, setIsSplit] = useState(false);
+  const [splitMode, setSplitMode] = useState<"single" | "2-split" | "3-split">("single");
   const [secondaryStylist, setSecondaryStylist] = useState("");
+  const [tertiaryStylist, setTertiaryStylist] = useState("");
   const [primaryPrice, setPrimaryPrice] = useState("");
   const [secondaryPrice, setSecondaryPrice] = useState("");
+  const [tertiaryPrice, setTertiaryPrice] = useState("");
   const [primaryService, setPrimaryService] = useState("");
   const [secondaryService, setSecondaryService] = useState("");
+  const [tertiaryService, setTertiaryService] = useState("");
 
   useEffect(() => {
     setPrice("");
     setPrimaryPrice("");
     setSecondaryPrice("");
-    setIsSplit(false);
+    setTertiaryPrice("");
+    setSplitMode("single");
     setSecondaryStylist("");
+    setTertiaryStylist("");
 
     const ticketServices = ticket.serviceType ? ticket.serviceType.split(",").map(s => s.trim()) : [];
     setPrimaryService(ticketServices[0] || "");
     setSecondaryService(ticketServices[1] || ticketServices[0] || "");
+    setTertiaryService(ticketServices[2] || ticketServices[0] || "");
 
     if (ticket.stylistName) {
       setStylist(ticket.stylistName);
@@ -369,15 +388,17 @@ const CompletionModal: React.FC<CompletionModalProps> = ({ ticket, onClose, onCo
     return () => unsubscribe();
   }, [ticket]);
 
-  const computedTotal = isSplit 
+  const computedTotal = splitMode === "2-split"
     ? (parseFloat(primaryPrice) || 0) + (parseFloat(secondaryPrice) || 0)
-    : parseFloat(price) || 0;
+    : splitMode === "3-split"
+      ? (parseFloat(primaryPrice) || 0) + (parseFloat(secondaryPrice) || 0) + (parseFloat(tertiaryPrice) || 0)
+      : parseFloat(price) || 0;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
-    if (isSplit) {
+    if (splitMode === "2-split") {
       const pPrice = parseFloat(primaryPrice);
       const sPrice = parseFloat(secondaryPrice);
       if (isNaN(pPrice) || pPrice < 0 || isNaN(sPrice) || sPrice < 0) {
@@ -403,6 +424,41 @@ const CompletionModal: React.FC<CompletionModalProps> = ({ ticket, onClose, onCo
           secondaryStylistPrice: sPrice,
           primaryStylistService: primaryService,
           secondaryStylistService: secondaryService
+        });
+      } catch (err) {
+        setError("Failed to complete split ticket. Please try again.");
+        setSubmitting(false);
+      }
+    } else if (splitMode === "3-split") {
+      const pPrice = parseFloat(primaryPrice);
+      const sPrice = parseFloat(secondaryPrice);
+      const tPrice = parseFloat(tertiaryPrice);
+      if (isNaN(pPrice) || pPrice < 0 || isNaN(sPrice) || sPrice < 0 || isNaN(tPrice) || tPrice < 0) {
+        setError("Please enter valid prices for all three stylists.");
+        return;
+      }
+      if (!stylist || !secondaryStylist || !tertiaryStylist) {
+        setError("Please select all three stylists.");
+        return;
+      }
+      if (stylist === secondaryStylist || stylist === tertiaryStylist || secondaryStylist === tertiaryStylist) {
+        setError("Please select three different stylists for split billing.");
+        return;
+      }
+
+      setSubmitting(true);
+      try {
+        await onConfirm(pPrice + sPrice + tPrice, stylist, paymentMethod, {
+          isSplit: true,
+          primaryStylistName: stylist,
+          secondaryStylistName: secondaryStylist,
+          tertiaryStylistName: tertiaryStylist,
+          primaryStylistPrice: pPrice,
+          secondaryStylistPrice: sPrice,
+          tertiaryStylistPrice: tPrice,
+          primaryStylistService: primaryService,
+          secondaryStylistService: secondaryService,
+          tertiaryStylistService: tertiaryService
         });
       } catch (err) {
         setError("Failed to complete split ticket. Please try again.");
@@ -454,24 +510,24 @@ const CompletionModal: React.FC<CompletionModalProps> = ({ ticket, onClose, onCo
             <span className="text-lg text-[#D4AF37] font-medium">{ticket.serviceType}</span>
           </div>
 
-          {/* Split Option Checkbox */}
-          <div className="flex items-center gap-2 border-b border-[#2A2A2A] pb-4">
-            <input
-              type="checkbox"
-              id="split-billing"
-              checked={isSplit}
+          {/* Split Option Selection */}
+          <div className="space-y-2 border-b border-[#2A2A2A] pb-4">
+            <label className="text-xs text-gray-500 uppercase tracking-widest block">Stylist Billing Mode</label>
+            <select
+              value={splitMode}
               onChange={(e) => {
-                setIsSplit(e.target.checked);
+                setSplitMode(e.target.value as any);
                 setError("");
               }}
-              className="w-4 h-4 rounded-sm border-gray-600 bg-[#1A1A1A] accent-[#D4AF37] cursor-pointer"
-            />
-            <label htmlFor="split-billing" className="text-xs text-gray-400 uppercase tracking-widest font-sans cursor-pointer select-none">
-              Split Service between two Barbers
-            </label>
+              className="w-full bg-[#1A1A1A] text-white border border-[#2A2A2A] rounded-sm px-4 py-3 focus:outline-none focus:border-[#D4AF37] cursor-pointer"
+            >
+              <option value="single">Single Stylist</option>
+              <option value="2-split">Split between 2 Stylists</option>
+              <option value="3-split">Split between 3 Stylists</option>
+            </select>
           </div>
 
-          {!isSplit ? (
+          {splitMode === "single" && (
             <>
               <div className="space-y-2">
                 <label className="text-xs text-gray-500 uppercase tracking-widest block">Stylist Assigned</label>
@@ -505,9 +561,11 @@ const CompletionModal: React.FC<CompletionModalProps> = ({ ticket, onClose, onCo
                 />
               </div>
             </>
-          ) : (
+          )}
+
+          {splitMode === "2-split" && (
             <div className="space-y-4 bg-[#1A1A1A]/40 border border-[#2A2A2A] p-4 rounded-sm">
-              <span className="text-xs text-gold uppercase tracking-wider font-semibold block mb-2">Split Billing Configuration</span>
+              <span className="text-xs text-gold uppercase tracking-wider font-semibold block mb-2">Split Billing Configuration (2 Stylists)</span>
               
               {/* Primary Stylist & Price & Service */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pb-3 border-b border-[#2A2A2A]/40">
@@ -601,6 +659,144 @@ const CompletionModal: React.FC<CompletionModalProps> = ({ ticket, onClose, onCo
             </div>
           )}
 
+          {splitMode === "3-split" && (
+            <div className="space-y-4 bg-[#1A1A1A]/40 border border-[#2A2A2A] p-4 rounded-sm">
+              <span className="text-xs text-gold uppercase tracking-wider font-semibold block mb-2">Split Billing Configuration (3 Stylists)</span>
+              
+              {/* Primary Stylist & Price & Service */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pb-3 border-b border-[#2A2A2A]/40">
+                <div className="space-y-1">
+                  <label className="text-[10px] text-gray-500 uppercase tracking-wider">Stylist 1 (Primary)</label>
+                  <select
+                    value={stylist}
+                    onChange={(e) => setStylist(e.target.value)}
+                    className="w-full bg-[#111111] text-white border border-[#2A2A2A] rounded-sm px-3 py-2 text-sm focus:outline-none focus:border-[#D4AF37] cursor-pointer"
+                  >
+                    <option value="">Select Stylist 1</option>
+                    {stylists.map(s => (
+                      <option key={s.id} value={s.name}>{s.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] text-gray-500 uppercase tracking-wider">Cost 1 (₹)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={primaryPrice}
+                    onChange={(e) => setPrimaryPrice(e.target.value)}
+                    required
+                    placeholder="Stylist 1 price"
+                    className="w-full bg-[#111111] text-white border border-[#2A2A2A] rounded-sm px-3 py-2 text-sm focus:outline-none focus:border-[#D4AF37]"
+                  />
+                </div>
+                <div className="sm:col-span-2 space-y-1">
+                  <label className="text-[10px] text-gray-500 uppercase tracking-wider">Service Done by Stylist 1</label>
+                  <select
+                    value={primaryService}
+                    onChange={(e) => setPrimaryService(e.target.value)}
+                    className="w-full bg-[#111111] text-white border border-[#2A2A2A] rounded-sm px-3 py-2 text-sm focus:outline-none focus:border-[#D4AF37] cursor-pointer"
+                  >
+                    {ticketServicesList.map(s => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Secondary Stylist & Price & Service */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pb-3 border-b border-[#2A2A2A]/40">
+                <div className="space-y-1">
+                  <label className="text-[10px] text-gray-500 uppercase tracking-wider">Stylist 2 (Secondary)</label>
+                  <select
+                    value={secondaryStylist}
+                    onChange={(e) => setSecondaryStylist(e.target.value)}
+                    className="w-full bg-[#111111] text-white border border-[#2A2A2A] rounded-sm px-3 py-2 text-sm focus:outline-none focus:border-[#D4AF37] cursor-pointer"
+                  >
+                    <option value="">Select Stylist 2</option>
+                    {stylists.map(s => (
+                      <option key={s.id} value={s.name}>{s.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] text-gray-500 uppercase tracking-wider">Cost 2 (₹)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={secondaryPrice}
+                    onChange={(e) => setSecondaryPrice(e.target.value)}
+                    required
+                    placeholder="Stylist 2 price"
+                    className="w-full bg-[#111111] text-white border border-[#2A2A2A] rounded-sm px-3 py-2 text-sm focus:outline-none focus:border-[#D4AF37]"
+                  />
+                </div>
+                <div className="sm:col-span-2 space-y-1">
+                  <label className="text-[10px] text-gray-500 uppercase tracking-wider">Service Done by Stylist 2</label>
+                  <select
+                    value={secondaryService}
+                    onChange={(e) => setSecondaryService(e.target.value)}
+                    className="w-full bg-[#111111] text-white border border-[#2A2A2A] rounded-sm px-3 py-2 text-sm focus:outline-none focus:border-[#D4AF37] cursor-pointer"
+                  >
+                    {ticketServicesList.map(s => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Tertiary Stylist & Price & Service */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pb-3">
+                <div className="space-y-1">
+                  <label className="text-[10px] text-gray-500 uppercase tracking-wider">Stylist 3 (Tertiary)</label>
+                  <select
+                    value={tertiaryStylist}
+                    onChange={(e) => setTertiaryStylist(e.target.value)}
+                    className="w-full bg-[#111111] text-white border border-[#2A2A2A] rounded-sm px-3 py-2 text-sm focus:outline-none focus:border-[#D4AF37] cursor-pointer"
+                  >
+                    <option value="">Select Stylist 3</option>
+                    {stylists.map(s => (
+                      <option key={s.id} value={s.name}>{s.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] text-gray-500 uppercase tracking-wider">Cost 3 (₹)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={tertiaryPrice}
+                    onChange={(e) => setTertiaryPrice(e.target.value)}
+                    required
+                    placeholder="Stylist 3 price"
+                    className="w-full bg-[#111111] text-white border border-[#2A2A2A] rounded-sm px-3 py-2 text-sm focus:outline-none focus:border-[#D4AF37]"
+                  />
+                </div>
+                <div className="sm:col-span-2 space-y-1">
+                  <label className="text-[10px] text-gray-500 uppercase tracking-wider">Service Done by Stylist 3</label>
+                  <select
+                    value={tertiaryService}
+                    onChange={(e) => setTertiaryService(e.target.value)}
+                    className="w-full bg-[#111111] text-white border border-[#2A2A2A] rounded-sm px-3 py-2 text-sm focus:outline-none focus:border-[#D4AF37] cursor-pointer"
+                  >
+                    {ticketServicesList.map(s => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Computed Sum Display */}
+              <div className="pt-2 border-t border-[#2A2A2A] flex justify-between items-center text-sm font-semibold">
+                <span className="text-gray-400">Total Price:</span>
+                <span className="text-[#D4AF37] text-lg">₹{computedTotal.toFixed(2)}</span>
+              </div>
+            </div>
+          )}
+
           <div className="space-y-2">
             <label className="text-xs text-gray-500 uppercase tracking-widest block">Payment Status / Method</label>
             <div className="flex gap-2">
@@ -648,9 +844,9 @@ const CompletionModal: React.FC<CompletionModalProps> = ({ ticket, onClose, onCo
   );
 };
 
-export default function App() {
+const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(() => {
-    const saved = localStorage.getItem("hairport_user");
+    const saved = localStorage.getItem('hairport_user');
     if (saved) {
       try {
         return JSON.parse(saved);
@@ -660,7 +856,7 @@ export default function App() {
     }
     return null;
   });
-  const [view, setView] = useState<"reception" | "staff" | "tv" | "owner">("reception");
+  const [view, setView] = useState<"reception" | "staff" | "tv" | "owner" | "analytics">("reception");
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
   const [completingTicket, setCompletingTicket] = useState<Ticket | null>(null);
@@ -780,10 +976,13 @@ export default function App() {
       isSplit: boolean;
       primaryStylistName: string;
       secondaryStylistName: string;
+      tertiaryStylistName?: string;
       primaryStylistPrice: number;
       secondaryStylistPrice: number;
+      tertiaryStylistPrice?: number;
       primaryStylistService?: string;
       secondaryStylistService?: string;
+      tertiaryStylistService?: string;
     }
   ) => {
     if (!completingTicket) return;
@@ -803,7 +1002,16 @@ export default function App() {
         updateData.secondaryStylistPrice = splitDetails.secondaryStylistPrice;
         updateData.primaryStylistService = splitDetails.primaryStylistService || "";
         updateData.secondaryStylistService = splitDetails.secondaryStylistService || "";
-        updateData.stylistName = `${splitDetails.primaryStylistName} & ${splitDetails.secondaryStylistName}`;
+        
+        let stylistsDisplay = `${splitDetails.primaryStylistName} & ${splitDetails.secondaryStylistName}`;
+        
+        if (splitDetails.tertiaryStylistName) {
+          updateData.tertiaryStylistName = splitDetails.tertiaryStylistName;
+          updateData.tertiaryStylistPrice = splitDetails.tertiaryStylistPrice;
+          updateData.tertiaryStylistService = splitDetails.tertiaryStylistService || "";
+          stylistsDisplay += ` & ${splitDetails.tertiaryStylistName}`;
+        }
+        updateData.stylistName = stylistsDisplay;
       }
       if (!completingTicket.servedAt) {
         updateData.servedAt = serverTimestamp();
@@ -850,7 +1058,7 @@ export default function App() {
     );
   }
 
-  const isDarkView = view === 'tv' || view === 'staff' || view === 'owner';
+  const isDarkView = view === 'tv' || view === 'staff' || view === 'owner' || view === 'analytics';
 
   return (
     <div className={`min-h-screen font-sans selection:bg-[#D4AF37]/30 overflow-x-hidden flex flex-col transition-colors duration-500 ${isDarkView ? 'bg-[#0A0A0A] text-gray-100' : 'bg-[#F5F5F0] text-[#111111]'}`}>
@@ -940,6 +1148,19 @@ export default function App() {
                   <span className="hidden xs:inline">OWNER</span>
                 </button>
               )}
+              {(user?.role === "owner" || user?.role === "owner_stylist") && (
+                <button
+                  onClick={() => setView("analytics")}
+                  className={`flex items-center justify-center gap-1.5 px-3 sm:px-6 py-2.5 rounded-sm text-xs sm:text-sm font-medium transition-all duration-300 cursor-pointer flex-1 lg:flex-none ${
+                    view === "analytics" 
+                      ? "bg-[#2A2A2A] text-[#D4AF37] shadow-[0_2px_10px_rgba(0,0,0,0.5)] border-b border-[#D4AF37]/50" 
+                      : isDarkView ? "text-gray-500 hover:text-gray-300" : "text-gray-500 hover:text-gray-800"
+                  }`}
+                >
+                  <Search className="w-3.5 h-3.5" />
+                  <span className="hidden xs:inline">ANALYTICS</span>
+                </button>
+              )}
               {(user?.role === "receptionist" || user?.role === "owner" || user?.role === "owner_stylist") && (
                 <button
                   onClick={() => setView("reception")}
@@ -1006,6 +1227,9 @@ export default function App() {
           <AnimatePresence mode="wait">
             {view === "owner" && (
               <OwnerDashboard key="owner" tickets={tickets} />
+            )}
+            {view === "analytics" && (
+              <StaffAnalyticsDashboard key="analytics" tickets={tickets} />
             )}
             {view === "reception" && (
               <ReceptionDashboard key="reception" tickets={tickets} onCompleteTicket={setCompletingTicket} />
@@ -1458,16 +1682,25 @@ const ClientHistoryView: React.FC<ClientHistoryViewProps> = ({ tickets }) => {
                         </span>
                         {ticket.colourNumber && (
                           <span className="text-[10px] text-gray-500 font-sans font-semibold">
-                            Shade: {ticket.colourNumber}
+                            Shade: {ticket.colourBook ? `${ticket.colourBook} - ` : ""}{ticket.colourNumber}
                           </span>
                         )}
                       </div>
                     </td>
                     <td className="py-4 font-medium">
                       {ticket.isSplit ? (
-                        <div className="flex flex-col gap-0.5 text-xs">
-                          <span className="font-semibold text-gray-800">{ticket.primaryStylistName} (₹{ticket.primaryStylistPrice})</span>
-                          <span className="text-gray-500 font-normal">&amp; {ticket.secondaryStylistName} (₹{ticket.secondaryStylistPrice})</span>
+                        <div className="flex flex-col gap-1 text-xs">
+                          <span className="font-semibold text-gray-800">
+                            {ticket.primaryStylistName} (₹{ticket.primaryStylistPrice}){ticket.primaryStylistService && ` - ${ticket.primaryStylistService}`}
+                          </span>
+                          <span className="text-gray-600 font-semibold">
+                            &amp; {ticket.secondaryStylistName} (₹{ticket.secondaryStylistPrice}){ticket.secondaryStylistService && ` - ${ticket.secondaryStylistService}`}
+                          </span>
+                          {ticket.tertiaryStylistName && (
+                            <span className="text-gray-600 font-semibold">
+                              &amp; {ticket.tertiaryStylistName} (₹{ticket.tertiaryStylistPrice}){ticket.tertiaryStylistService && ` - ${ticket.tertiaryStylistService}`}
+                            </span>
+                          )}
                         </div>
                       ) : (
                         ticket.stylistName || 'Unassigned'
@@ -2275,6 +2508,401 @@ const LiveStylistTimer: React.FC<{ servedAt: any, baseSeconds: number }> = ({ se
 // ---------------------------------------------------------
 // OWNER DASHBOARD COMPONENT
 // ---------------------------------------------------------
+// Staff Analytics Dashboard
+// ---------------------------------------------------------
+interface StaffAnalyticsProps {
+  tickets: Ticket[];
+}
+
+const StaffAnalyticsDashboard: React.FC<StaffAnalyticsProps> = ({ tickets }) => {
+  const [stylists, setStylists] = useState<StylistDoc[]>([]);
+  const [selectedStylist, setSelectedStylist] = useState<string>("all");
+  const [dateRange, setDateRange] = useState<"today" | "week" | "month" | "all">("month");
+
+  useEffect(() => {
+    const q = query(collection(db, "stylists"), orderBy("name", "asc"));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const data = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as StylistDoc[];
+      setStylists(data.filter(s => s.role !== 'receptionist'));
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const getTicketDate = (ticket: Ticket): Date | null => {
+    if (!ticket.completedAt) return null;
+    if (typeof ticket.completedAt.toDate === 'function') return ticket.completedAt.toDate();
+    if (ticket.completedAt.seconds) return new Date(ticket.completedAt.seconds * 1000);
+    return null;
+  };
+
+  const isInRange = (ticket: Ticket): boolean => {
+    const d = getTicketDate(ticket);
+    if (!d) return false;
+    const now = new Date();
+    if (dateRange === "today") {
+      return d.getDate() === now.getDate() && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    }
+    if (dateRange === "week") {
+      const weekAgo = new Date(now); weekAgo.setDate(now.getDate() - 7);
+      return d >= weekAgo;
+    }
+    if (dateRange === "month") {
+      return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    }
+    return true; // "all"
+  };
+
+  const completedTickets = tickets.filter(t => t.status === "Completed" && isInRange(t));
+
+  // Per-stylist revenue calculation (handles split up to 3 ways)
+  const getStylistEarnings = (stylistName: string, ticketList: Ticket[]): number => {
+    return ticketList.reduce((sum, t) => {
+      if (t.isSplit) {
+        if (t.primaryStylistName === stylistName) return sum + (t.primaryStylistPrice || 0);
+        if (t.secondaryStylistName === stylistName) return sum + (t.secondaryStylistPrice || 0);
+        if ((t as any).tertiaryStylistName === stylistName) return sum + ((t as any).tertiaryStylistPrice || 0);
+        return sum;
+      }
+      if (t.stylistName === stylistName) return sum + (t.price || 0);
+      return sum;
+    }, 0);
+  };
+
+  const getStylistTickets = (stylistName: string, ticketList: Ticket[]): Ticket[] => {
+    return ticketList.filter(t =>
+      t.stylistName === stylistName ||
+      t.primaryStylistName === stylistName ||
+      t.secondaryStylistName === stylistName ||
+      (t as any).tertiaryStylistName === stylistName
+    );
+  };
+
+  const allStylistStats = stylists.map(stylist => {
+    const stylistTickets = getStylistTickets(stylist.name, completedTickets);
+    const revenue = getStylistEarnings(stylist.name, completedTickets);
+    const cashRevenue = getStylistEarnings(stylist.name, completedTickets.filter(t => t.paymentMethod === "Cash"));
+    const upiRevenue = getStylistEarnings(stylist.name, completedTickets.filter(t => t.paymentMethod === "UPI"));
+    const pendingRevenue = getStylistEarnings(stylist.name, completedTickets.filter(t => t.paymentMethod === "Pending"));
+    const clientCount = stylistTickets.length;
+
+    // Top services
+    const serviceCounts: Record<string, number> = {};
+    stylistTickets.forEach(t => {
+      if (t.serviceType) {
+        t.serviceType.split(",").forEach(s => {
+          const svc = s.trim();
+          serviceCounts[svc] = (serviceCounts[svc] || 0) + 1;
+        });
+      }
+    });
+    const topServices = Object.entries(serviceCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+
+    // Last 7 days daily earnings
+    const dailyEarnings: { label: string; amount: number }[] = [];
+    for (let i = 6; i >= 0; i--) {
+      const day = new Date(); day.setDate(day.getDate() - i);
+      const dayStr = day.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric' });
+      const dayTickets = completedTickets.filter(t => {
+        const d = getTicketDate(t);
+        return d && d.getDate() === day.getDate() && d.getMonth() === day.getMonth() && d.getFullYear() === day.getFullYear();
+      });
+      dailyEarnings.push({ label: dayStr, amount: getStylistEarnings(stylist.name, dayTickets) });
+    }
+
+    return { stylist, revenue, cashRevenue, upiRevenue, pendingRevenue, clientCount, topServices, dailyEarnings, stylistTickets };
+  }).sort((a, b) => b.revenue - a.revenue);
+
+  const totalRevenue = allStylistStats.reduce((sum, s) => sum + s.revenue, 0);
+  const totalClients = completedTickets.length;
+
+  const filteredStats = selectedStylist === "all" ? allStylistStats : allStylistStats.filter(s => s.stylist.name === selectedStylist);
+  const maxRevenue = Math.max(...allStylistStats.map(s => s.revenue), 1);
+
+  const GOLD = "#D4AF37";
+  const DARK = "#111111";
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      className="max-w-7xl mx-auto w-full flex flex-col gap-8 flex-1 relative z-10"
+    >
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#D4AF37]/30 pb-6">
+        <div>
+          <h2 className="text-4xl font-serif text-[#D4AF37] tracking-wider uppercase mb-1">Staff Analytics</h2>
+          <p className="text-gray-500 font-sans tracking-[0.2em] uppercase text-sm">Revenue & Performance Breakdown by Stylist</p>
+        </div>
+        <div className="flex gap-2 flex-wrap">
+          {(["today", "week", "month", "all"] as const).map(r => (
+            <button
+              key={r}
+              onClick={() => setDateRange(r)}
+              className={`px-4 py-2 rounded-sm text-xs font-sans tracking-wider uppercase font-semibold transition-all cursor-pointer border ${
+                dateRange === r
+                  ? "bg-[#D4AF37] text-[#111111] border-[#D4AF37]"
+                  : "bg-[#1A1A1A] border-[#2A2A2A] text-gray-400 hover:text-white hover:border-[#D4AF37]/40"
+              }`}
+            >
+              {r === "all" ? "All Time" : r === "today" ? "Today" : r === "week" ? "7 Days" : "This Month"}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+        <div className="bg-[#111111] border border-[#2A2A2A] p-6 rounded-sm flex flex-col gap-1">
+          <span className="text-gray-500 text-xs font-sans uppercase tracking-widest">Total Revenue</span>
+          <span className="text-3xl font-serif font-bold text-[#D4AF37]">₹{totalRevenue.toLocaleString('en-IN')}</span>
+          <span className="text-xs text-gray-600 font-sans">{dateRange === "today" ? "Today" : dateRange === "week" ? "Last 7 days" : dateRange === "month" ? "This month" : "All time"}</span>
+        </div>
+        <div className="bg-[#111111] border border-[#2A2A2A] p-6 rounded-sm flex flex-col gap-1">
+          <span className="text-gray-500 text-xs font-sans uppercase tracking-widest">Clients Served</span>
+          <span className="text-3xl font-serif font-bold text-white">{totalClients}</span>
+          <span className="text-xs text-gray-600 font-sans">Completed appointments</span>
+        </div>
+        <div className="bg-[#111111] border border-[#2A2A2A] p-6 rounded-sm flex flex-col gap-1">
+          <span className="text-gray-500 text-xs font-sans uppercase tracking-widest">Avg Revenue / Client</span>
+          <span className="text-3xl font-serif font-bold text-green-400">₹{totalClients > 0 ? Math.round(totalRevenue / totalClients).toLocaleString('en-IN') : 0}</span>
+          <span className="text-xs text-gray-600 font-sans">Per completed service</span>
+        </div>
+      </div>
+
+      {/* Revenue Leaderboard Bar Chart */}
+      <div className="bg-[#111111] border border-[#2A2A2A] rounded-sm p-6">
+        <div className="flex items-center justify-between mb-5">
+          <h3 className="text-sm font-sans uppercase tracking-widest text-[#D4AF37] font-semibold">Revenue Leaderboard</h3>
+          <select
+            value={selectedStylist}
+            onChange={e => setSelectedStylist(e.target.value)}
+            className="bg-[#1A1A1A] text-white border border-[#2A2A2A] rounded-sm px-3 py-1.5 text-xs focus:outline-none focus:border-[#D4AF37] cursor-pointer"
+          >
+            <option value="all">All Stylists</option>
+            {stylists.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
+          </select>
+        </div>
+        <div className="flex flex-col gap-3">
+          {allStylistStats.map((stat, i) => {
+            const pct = totalRevenue > 0 ? (stat.revenue / maxRevenue) * 100 : 0;
+            const isTop = i === 0;
+            return (
+              <div key={stat.stylist.id} className="flex items-center gap-4">
+                <div className="w-6 text-center">
+                  {isTop && stat.revenue > 0 ? (
+                    <span className="text-[#D4AF37] text-sm">★</span>
+                  ) : (
+                    <span className="text-gray-600 text-xs font-mono">#{i + 1}</span>
+                  )}
+                </div>
+                <div className="w-28 flex-shrink-0">
+                  <span className="text-sm font-medium text-white truncate block">{stat.stylist.name}</span>
+                  <span className="text-[10px] text-gray-500">{stat.clientCount} clients</span>
+                </div>
+                <div className="flex-1 relative h-7 bg-[#1A1A1A] rounded-sm overflow-hidden">
+                  <div
+                    className={`h-full rounded-sm transition-all duration-700 ${isTop && stat.revenue > 0 ? 'bg-gradient-to-r from-[#D4AF37] to-[#F0CE5E]' : 'bg-gradient-to-r from-[#2A2A2A] to-[#3A3A3A]'}`}
+                    style={{ width: `${pct}%` }}
+                  />
+                  <span className="absolute inset-0 flex items-center px-2 text-xs font-mono font-bold text-white">
+                    ₹{stat.revenue.toLocaleString('en-IN')}
+                  </span>
+                </div>
+                <div className="w-20 text-right">
+                  <span className="text-[10px] font-sans text-gray-500">{totalRevenue > 0 ? ((stat.revenue / totalRevenue) * 100).toFixed(1) : 0}%</span>
+                </div>
+              </div>
+            );
+          })}
+          {allStylistStats.length === 0 && (
+            <p className="text-gray-600 text-sm font-sans text-center py-4">No data for selected period</p>
+          )}
+        </div>
+      </div>
+
+      {/* Per-Stylist Detailed Cards */}
+      {filteredStats.map(stat => (
+        <div key={stat.stylist.id} className="bg-[#111111] border border-[#2A2A2A] rounded-sm p-6 flex flex-col gap-6">
+          {/* Stylist Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#2A2A2A] pb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#D4AF37] to-[#8B7523] flex items-center justify-center text-black font-bold font-serif text-lg">
+                {stat.stylist.name.charAt(0).toUpperCase()}
+              </div>
+              <div>
+                <h4 className="text-lg font-serif text-white">{stat.stylist.name}</h4>
+                <span className="text-[10px] font-sans uppercase tracking-widest text-gray-500">{stat.stylist.role}</span>
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="text-2xl font-serif text-[#D4AF37] font-bold">₹{stat.revenue.toLocaleString('en-IN')}</div>
+              <div className="text-xs text-gray-500 font-sans">{stat.clientCount} services completed</div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Payment Breakdown */}
+            <div className="flex flex-col gap-3">
+              <h5 className="text-[10px] font-sans uppercase tracking-widest text-gray-500">Payment Breakdown</h5>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2.5 h-2.5 rounded-full bg-blue-400" />
+                    <span className="text-xs text-gray-300 font-sans">UPI</span>
+                  </div>
+                  <span className="text-xs font-mono font-bold text-blue-400">₹{stat.upiRevenue.toLocaleString('en-IN')}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2.5 h-2.5 rounded-full bg-green-400" />
+                    <span className="text-xs text-gray-300 font-sans">Cash</span>
+                  </div>
+                  <span className="text-xs font-mono font-bold text-green-400">₹{stat.cashRevenue.toLocaleString('en-IN')}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2.5 h-2.5 rounded-full bg-red-400" />
+                    <span className="text-xs text-gray-300 font-sans">Pending</span>
+                  </div>
+                  <span className="text-xs font-mono font-bold text-red-400">₹{stat.pendingRevenue.toLocaleString('en-IN')}</span>
+                </div>
+              </div>
+              {/* Stacked payment bar */}
+              {stat.revenue > 0 && (
+                <div className="flex h-2 rounded-full overflow-hidden mt-1">
+                  <div className="bg-blue-400 transition-all" style={{ width: `${(stat.upiRevenue / stat.revenue) * 100}%` }} />
+                  <div className="bg-green-400 transition-all" style={{ width: `${(stat.cashRevenue / stat.revenue) * 100}%` }} />
+                  <div className="bg-red-400 transition-all" style={{ width: `${(stat.pendingRevenue / stat.revenue) * 100}%` }} />
+                </div>
+              )}
+            </div>
+
+            {/* Top Services */}
+            <div className="flex flex-col gap-3">
+              <h5 className="text-[10px] font-sans uppercase tracking-widest text-gray-500">Top Services</h5>
+              {stat.topServices.length > 0 ? (
+                <div className="space-y-2">
+                  {stat.topServices.map(([svc, count], i) => {
+                    const maxCount = stat.topServices[0][1];
+                    return (
+                      <div key={svc} className="flex items-center gap-2">
+                        <div className="w-24 text-[10px] text-gray-400 font-sans truncate">{svc}</div>
+                        <div className="flex-1 h-4 bg-[#1A1A1A] rounded-sm overflow-hidden">
+                          <div
+                            className="h-full rounded-sm transition-all duration-500"
+                            style={{
+                              width: `${(count / maxCount) * 100}%`,
+                              background: i === 0 ? 'linear-gradient(90deg,#D4AF37,#F0CE5E)' : '#2A2A2A'
+                            }}
+                          />
+                        </div>
+                        <div className="w-6 text-[10px] text-gray-400 text-right font-mono">{count}x</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="text-gray-600 text-xs font-sans">No services yet</p>
+              )}
+            </div>
+
+            {/* Last 7-Day Bar Chart */}
+            <div className="flex flex-col gap-3">
+              <h5 className="text-[10px] font-sans uppercase tracking-widest text-gray-500">Daily Earnings (Last 7 Days)</h5>
+              <div className="flex items-end gap-1 h-24">
+                {stat.dailyEarnings.map(({ label, amount }) => {
+                  const maxDay = Math.max(...stat.dailyEarnings.map(d => d.amount), 1);
+                  const height = Math.max((amount / maxDay) * 100, amount > 0 ? 4 : 0);
+                  return (
+                    <div key={label} className="flex-1 flex flex-col items-center gap-1 group relative">
+                      <div
+                        className={`w-full rounded-t-sm transition-all duration-500 cursor-default ${amount > 0 ? 'bg-gradient-to-t from-[#D4AF37]/70 to-[#D4AF37]' : 'bg-[#1A1A1A]'}`}
+                        style={{ height: `${height}%` }}
+                      />
+                      {/* Tooltip */}
+                      {amount > 0 && (
+                        <div className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 bg-[#D4AF37] text-black text-[9px] font-bold px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
+                          ₹{amount.toLocaleString('en-IN')}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="flex gap-1">
+                {stat.dailyEarnings.map(({ label }) => (
+                  <div key={label} className="flex-1 text-center text-[8px] text-gray-600 font-sans truncate">{label}</div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Recent Transactions */}
+          {stat.stylistTickets.length > 0 && (
+            <div>
+              <h5 className="text-[10px] font-sans uppercase tracking-widest text-gray-500 mb-3">Recent Transactions</h5>
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[480px]">
+                  <thead>
+                    <tr className="text-[10px] text-gray-600 uppercase tracking-widest border-b border-[#2A2A2A]">
+                      <th className="text-left pb-2 font-sans font-medium">Client</th>
+                      <th className="text-left pb-2 font-sans font-medium">Service</th>
+                      <th className="text-left pb-2 font-sans font-medium">Date</th>
+                      <th className="text-left pb-2 font-sans font-medium">Method</th>
+                      <th className="text-right pb-2 font-sans font-medium">Earned</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#1A1A1A]">
+                    {stat.stylistTickets.slice(0, 8).map(t => {
+                      const earned = t.isSplit
+                        ? t.primaryStylistName === stat.stylist.name ? (t.primaryStylistPrice || 0)
+                        : t.secondaryStylistName === stat.stylist.name ? (t.secondaryStylistPrice || 0)
+                        : ((t as any).tertiaryStylistName === stat.stylist.name ? ((t as any).tertiaryStylistPrice || 0) : (t.price || 0))
+                        : (t.price || 0);
+                      const d = getTicketDate(t);
+                      return (
+                        <tr key={t.docId} className="hover:bg-[#1A1A1A]/40 transition-colors">
+                          <td className="py-2.5 text-xs text-white font-medium">{t.customerName}</td>
+                          <td className="py-2.5 text-xs text-gray-400 max-w-[120px] truncate">{t.serviceType}</td>
+                          <td className="py-2.5 text-xs text-gray-500 font-mono">{d ? d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : '—'}</td>
+                          <td className="py-2.5">
+                            <span className={`text-[9px] px-2 py-0.5 rounded-sm font-bold uppercase font-sans border ${
+                              t.paymentMethod === 'Pending' ? 'bg-red-950/40 text-red-400 border-red-800/40'
+                              : t.paymentMethod === 'UPI' ? 'bg-blue-950/40 text-blue-400 border-blue-800/40'
+                              : 'bg-green-950/40 text-green-400 border-green-800/40'
+                            }`}>{t.paymentMethod || 'UPI'}</span>
+                          </td>
+                          <td className={`py-2.5 text-right text-xs font-mono font-bold ${t.paymentMethod === 'Pending' ? 'text-red-400' : 'text-[#D4AF37]'}`}>
+                            ₹{earned.toLocaleString('en-IN')}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </div>
+      ))}
+
+      {filteredStats.length === 0 && (
+        <div className="flex flex-col items-center justify-center py-20 gap-3">
+          <span className="text-5xl">📊</span>
+          <p className="text-gray-500 font-sans text-sm">No analytics data available for this period.</p>
+        </div>
+      )}
+    </motion.div>
+  );
+};
+
+// ---------------------------------------------------------
+// Owner Dashboard
+// ---------------------------------------------------------
 interface StylistDoc {
   id: string;
   name: string;
@@ -2400,7 +3028,10 @@ const OwnerDashboard: React.FC<OwnerDashboardProps> = ({ tickets }) => {
               <tbody className="divide-y divide-[#2A2A2A]">
                 {stylists.map(stylist => {
                   const completedList = completedTickets.filter(t => 
-                    (t.stylistName === stylist.name || t.primaryStylistName === stylist.name || t.secondaryStylistName === stylist.name) 
+                    (t.stylistName === stylist.name || 
+                     t.primaryStylistName === stylist.name || 
+                     t.secondaryStylistName === stylist.name || 
+                     t.tertiaryStylistName === stylist.name) 
                     && isCompletedToday(t)
                   );
                   
@@ -2418,6 +3049,8 @@ const OwnerDashboard: React.FC<OwnerDashboardProps> = ({ tickets }) => {
                         earningsToday += t.primaryStylistPrice || 0;
                       } else if (t.secondaryStylistName === stylist.name) {
                         earningsToday += t.secondaryStylistPrice || 0;
+                      } else if (t.tertiaryStylistName === stylist.name) {
+                        earningsToday += t.tertiaryStylistPrice || 0;
                       }
                     } else {
                       earningsToday += t.price || 0;
@@ -2651,3 +3284,4 @@ const StaffLineView: React.FC<{ tickets: Ticket[], user: User, onCompleteTicket:
     </motion.div>
   )
 }
+export default App;
