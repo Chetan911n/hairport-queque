@@ -1201,43 +1201,43 @@ const RevenueAnalyticsView: React.FC<RevenueAnalyticsViewProps> = ({ tickets }) 
   const lastMonthPercent = totalComparison > 0 ? (lastMonthRevenue / totalComparison) * 100 : 50;
 
   return (
-    <div className="flex flex-col gap-10 w-full text-[#111111] font-sans">
+    <div className="flex flex-col gap-10 w-full text-white font-sans">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white border border-[#E5E5E0] p-6 rounded-sm shadow-sm flex flex-col gap-2 relative overflow-hidden">
-          <span className="text-gray-500 text-xs uppercase tracking-widest font-semibold">This Month's Revenue</span>
-          <span className="text-4xl font-serif font-bold text-[#111111]">₹{thisMonthRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-          <span className="text-[10px] text-gray-400 uppercase tracking-wider">{now.toLocaleString(undefined, { month: 'long', year: 'numeric' })}</span>
+        <div className="bg-[#141414]/90 border border-[#D4AF37]/30 p-6 rounded-sm shadow-xl flex flex-col gap-2 relative overflow-hidden backdrop-blur-md">
+          <span className="text-gray-400 text-xs uppercase tracking-widest font-semibold">This Month's Revenue</span>
+          <span className="text-4xl font-serif font-bold text-[#D4AF37]">₹{thisMonthRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+          <span className="text-[10px] text-gray-500 uppercase tracking-wider">{now.toLocaleString(undefined, { month: 'long', year: 'numeric' })}</span>
         </div>
 
-        <div className="bg-white border border-[#E5E5E0] p-6 rounded-sm shadow-sm flex flex-col gap-2 relative overflow-hidden">
-          <span className="text-gray-500 text-xs uppercase tracking-widest font-semibold">Last Month's Revenue</span>
-          <span className="text-4xl font-serif font-bold text-gray-600">₹{lastMonthRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-          <span className="text-[10px] text-gray-400 uppercase tracking-wider">
+        <div className="bg-[#141414]/90 border border-[#2A2A2A] p-6 rounded-sm shadow-xl flex flex-col gap-2 relative overflow-hidden backdrop-blur-md">
+          <span className="text-gray-400 text-xs uppercase tracking-widest font-semibold">Last Month's Revenue</span>
+          <span className="text-4xl font-serif font-bold text-gray-300">₹{lastMonthRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+          <span className="text-[10px] text-gray-500 uppercase tracking-wider">
             {new Date(now.getFullYear(), now.getMonth() - 1, 1).toLocaleString(undefined, { month: 'long', year: 'numeric' })}
           </span>
         </div>
 
-        <div className="bg-white border border-[#E5E5E0] p-6 rounded-sm shadow-sm flex flex-col justify-between gap-2">
+        <div className="bg-[#141414]/90 border border-[#2A2A2A] p-6 rounded-sm shadow-xl flex flex-col justify-between gap-2 backdrop-blur-md">
           <div className="flex flex-col gap-1">
-            <span className="text-gray-500 text-xs uppercase tracking-widest font-semibold">Monthly Performance Change</span>
-            <span className={`text-4xl font-serif font-bold ${hasGrowth ? 'text-green-600' : 'text-red-600'}`}>
+            <span className="text-gray-400 text-xs uppercase tracking-widest font-semibold">Monthly Performance Change</span>
+            <span className={`text-4xl font-serif font-bold ${hasGrowth ? 'text-green-400' : 'text-red-400'}`}>
               {hasGrowth ? '+' : ''}{percentageChange.toFixed(1)}%
             </span>
           </div>
-          <span className="text-[10px] text-gray-400 uppercase tracking-wider">Compared to previous month</span>
+          <span className="text-[10px] text-gray-500 uppercase tracking-wider">Compared to previous month</span>
         </div>
       </div>
 
-      <div className="bg-white border border-[#111111] p-8 rounded-sm shadow-xl flex flex-col gap-6">
-        <h3 className="text-lg font-serif uppercase tracking-wider text-[#111111]">
+      <div className="bg-[#141414]/90 border border-[#2A2A2A] p-8 rounded-sm shadow-2xl flex flex-col gap-6 backdrop-blur-md">
+        <h3 className="text-lg font-serif uppercase tracking-wider text-[#D4AF37]">
           Monthly Revenue Balance Check
         </h3>
         
         <div className="flex flex-col gap-2">
-          <div className="h-6 w-full bg-gray-100 rounded-full overflow-hidden flex border border-gray-200">
+          <div className="h-6 w-full bg-[#1A1A1A] rounded-full overflow-hidden flex border border-[#2A2A2A]">
             <div 
               style={{ width: `${lastMonthPercent}%` }} 
-              className="bg-gray-400 transition-all duration-500 animate-pulse-once"
+              className="bg-gray-600 transition-all duration-500 animate-pulse-once"
               title={`Last Month: ${lastMonthPercent.toFixed(1)}%`}
             />
             <div 
@@ -1248,8 +1248,8 @@ const RevenueAnalyticsView: React.FC<RevenueAnalyticsViewProps> = ({ tickets }) 
           </div>
           
           <div className="flex justify-between text-xs font-semibold uppercase tracking-wider mt-1">
-            <span className="text-gray-500 flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 bg-gray-400 rounded-full"></span>
+            <span className="text-gray-400 flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 bg-gray-500 rounded-full"></span>
               Last Month ({lastMonthPercent.toFixed(0)}%)
             </span>
             <span className="text-[#D4AF37] flex items-center gap-1.5">
@@ -1260,33 +1260,33 @@ const RevenueAnalyticsView: React.FC<RevenueAnalyticsViewProps> = ({ tickets }) 
         </div>
       </div>
 
-      <div className="bg-white border border-[#111111] p-8 rounded-sm shadow-xl flex flex-col gap-6">
-        <h3 className="text-lg font-serif uppercase tracking-wider text-[#111111]">
+      <div className="bg-[#141414]/90 border border-[#2A2A2A] p-8 rounded-sm shadow-2xl flex flex-col gap-6 backdrop-blur-md">
+        <h3 className="text-lg font-serif uppercase tracking-wider text-[#D4AF37]">
           Payment Breakdown & Outstanding Balances
         </h3>
         
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-          <div className="border border-[#E5E5E0] p-4 rounded-sm bg-[#F5F5F0]/50 flex flex-col gap-1">
-            <span className="text-gray-500 text-[10px] uppercase tracking-widest font-semibold">UPI Revenue</span>
-            <span className="text-2xl font-bold text-blue-600">₹{upiRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-            <span className="text-[10px] text-gray-400 font-medium">{upiPercent.toFixed(1)}% of total</span>
+          <div className="border border-[#2A2A2A] p-4 rounded-sm bg-[#1A1A1A]/80 flex flex-col gap-1">
+            <span className="text-gray-400 text-[10px] uppercase tracking-widest font-semibold">UPI Revenue</span>
+            <span className="text-2xl font-bold text-blue-400">₹{upiRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+            <span className="text-[10px] text-gray-500 font-medium">{upiPercent.toFixed(1)}% of total</span>
           </div>
           
-          <div className="border border-[#E5E5E0] p-4 rounded-sm bg-[#F5F5F0]/50 flex flex-col gap-1">
-            <span className="text-gray-500 text-[10px] uppercase tracking-widest font-semibold">Cash Revenue</span>
-            <span className="text-2xl font-bold text-green-700">₹{cashRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-            <span className="text-[10px] text-gray-400 font-medium">{cashPercent.toFixed(1)}% of total</span>
+          <div className="border border-[#2A2A2A] p-4 rounded-sm bg-[#1A1A1A]/80 flex flex-col gap-1">
+            <span className="text-gray-400 text-[10px] uppercase tracking-widest font-semibold">Cash Revenue</span>
+            <span className="text-2xl font-bold text-green-400">₹{cashRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+            <span className="text-[10px] text-gray-500 font-medium">{cashPercent.toFixed(1)}% of total</span>
           </div>
 
-          <div className="border border-[#E5E5E0] p-4 rounded-sm bg-red-50/30 border-red-100 flex flex-col gap-1">
-            <span className="text-red-500 text-[10px] uppercase tracking-widest font-semibold">Pending Balance</span>
-            <span className="text-2xl font-bold text-red-600">₹{pendingRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-            <span className="text-[10px] text-red-400 font-medium">{pendingPercent.toFixed(1)}% outstanding</span>
+          <div className="border border-red-900/40 p-4 rounded-sm bg-red-950/20 flex flex-col gap-1">
+            <span className="text-red-400 text-[10px] uppercase tracking-widest font-semibold">Pending Balance</span>
+            <span className="text-2xl font-bold text-red-500">₹{pendingRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+            <span className="text-[10px] text-red-400/70 font-medium">{pendingPercent.toFixed(1)}% outstanding</span>
           </div>
         </div>
 
         <div className="flex flex-col gap-2 mt-2">
-          <div className="h-4 w-full bg-gray-100 rounded-full overflow-hidden flex border border-gray-200">
+          <div className="h-4 w-full bg-[#1A1A1A] rounded-full overflow-hidden flex border border-[#2A2A2A]">
             <div 
               style={{ width: `${upiPercent}%` }} 
               className="bg-blue-500 transition-all duration-500"
@@ -1294,7 +1294,7 @@ const RevenueAnalyticsView: React.FC<RevenueAnalyticsViewProps> = ({ tickets }) 
             />
             <div 
               style={{ width: `${cashPercent}%` }} 
-              className="bg-green-600 transition-all duration-500"
+              className="bg-green-500 transition-all duration-500"
               title={`Cash: ${cashPercent.toFixed(1)}%`}
             />
             <div 
@@ -1304,15 +1304,15 @@ const RevenueAnalyticsView: React.FC<RevenueAnalyticsViewProps> = ({ tickets }) 
             />
           </div>
           <div className="flex flex-wrap gap-4 justify-between text-[10px] font-semibold uppercase tracking-wider mt-1">
-            <span className="text-blue-600 flex items-center gap-1.5">
+            <span className="text-blue-400 flex items-center gap-1.5">
               <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
               UPI ({upiPercent.toFixed(0)}%)
             </span>
-            <span className="text-green-700 flex items-center gap-1.5">
-              <span className="w-2 h-2 bg-green-600 rounded-full"></span>
+            <span className="text-green-400 flex items-center gap-1.5">
+              <span className="w-2 h-2 bg-green-500 rounded-full"></span>
               Cash ({cashPercent.toFixed(0)}%)
             </span>
-            <span className="text-red-600 flex items-center gap-1.5">
+            <span className="text-red-400 flex items-center gap-1.5">
               <span className="w-2 h-2 bg-red-500 rounded-full"></span>
               Pending ({pendingPercent.toFixed(0)}%)
             </span>
@@ -1322,35 +1322,35 @@ const RevenueAnalyticsView: React.FC<RevenueAnalyticsViewProps> = ({ tickets }) 
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
         
-        <div className="bg-white border border-[#111111] p-8 rounded-sm shadow-xl flex flex-col gap-6">
+        <div className="bg-[#141414]/90 border border-[#2A2A2A] p-8 rounded-sm shadow-2xl flex flex-col gap-6 backdrop-blur-md">
           <div>
-            <h3 className="text-xl font-serif uppercase tracking-wider text-[#111111] mb-1">
+            <h3 className="text-xl font-serif uppercase tracking-wider text-[#D4AF37] mb-1">
               Daily Income Overview
             </h3>
-            <p className="text-xs text-gray-500 font-sans uppercase tracking-widest">Last 7 Days of Business Operations</p>
+            <p className="text-xs text-gray-400 font-sans uppercase tracking-widest">Last 7 Days of Business Operations</p>
           </div>
 
-          <div className="flex items-end justify-between h-64 pt-8 pb-2 px-4 bg-[#F5F5F0] border border-[#E5E5E0] rounded-sm relative">
+          <div className="flex items-end justify-between h-64 pt-8 pb-2 px-4 bg-[#1A1A1A] border border-[#2A2A2A] rounded-sm relative">
             <div className="absolute inset-y-8 left-0 right-0 flex flex-col justify-between pointer-events-none">
-              <div className="border-b border-gray-200/80 w-full"></div>
-              <div className="border-b border-gray-200/80 w-full"></div>
-              <div className="border-b border-gray-200/80 w-full"></div>
+              <div className="border-b border-[#2A2A2A] w-full"></div>
+              <div className="border-b border-[#2A2A2A] w-full"></div>
+              <div className="border-b border-[#2A2A2A] w-full"></div>
             </div>
 
             {dailyChartData.map((item, idx) => {
               const pct = (item.value / maxDaily) * 100;
               return (
                 <div key={idx} className="flex flex-col items-center flex-1 group relative z-10 font-sans">
-                  <div className="absolute bottom-full mb-2 opacity-0 group-hover:opacity-100 transition-opacity bg-[#111111] text-white text-xs px-2.5 py-1.5 rounded-sm shadow-md font-mono z-30 pointer-events-none">
+                  <div className="absolute bottom-full mb-2 opacity-0 group-hover:opacity-100 transition-opacity bg-black border border-[#D4AF37]/50 text-white text-xs px-2.5 py-1.5 rounded-sm shadow-md font-mono z-30 pointer-events-none">
                     ₹{item.value.toFixed(2)}
                   </div>
                   <div 
                     style={{ height: `${Math.min(100, Math.max(4, pct))}%` }}
                     className={`w-8 sm:w-10 transition-all duration-500 rounded-t-sm ${
-                      item.value > 0 ? 'bg-gradient-to-t from-[#C5A059] to-[#D4AF37] hover:brightness-110 shadow-sm' : 'bg-gray-200'
+                      item.value > 0 ? 'bg-gradient-to-t from-[#C5A059] to-[#D4AF37] hover:brightness-110 shadow-sm' : 'bg-gray-800'
                     }`}
                   ></div>
-                  <span className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold mt-2.5 font-sans">
+                  <span className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold mt-2.5 font-sans">
                     {item.label}
                   </span>
                 </div>
@@ -1359,19 +1359,19 @@ const RevenueAnalyticsView: React.FC<RevenueAnalyticsViewProps> = ({ tickets }) 
           </div>
         </div>
 
-        <div className="bg-white border border-[#111111] p-8 rounded-sm shadow-xl flex flex-col gap-6">
+        <div className="bg-[#141414]/90 border border-[#2A2A2A] p-8 rounded-sm shadow-2xl flex flex-col gap-6 backdrop-blur-md">
           <div>
-            <h3 className="text-xl font-serif uppercase tracking-wider text-[#111111] mb-1">
+            <h3 className="text-xl font-serif uppercase tracking-wider text-[#D4AF37] mb-1">
               Monthly Trend Comparison
             </h3>
-            <p className="text-xs text-gray-500 font-sans uppercase tracking-widest">Last 6 Months of Revenue Flow</p>
+            <p className="text-xs text-gray-400 font-sans uppercase tracking-widest">Last 6 Months of Revenue Flow</p>
           </div>
 
-          <div className="flex items-end justify-between h-64 pt-8 pb-2 px-4 bg-[#F5F5F0] border border-[#E5E5E0] rounded-sm relative">
+          <div className="flex items-end justify-between h-64 pt-8 pb-2 px-4 bg-[#1A1A1A] border border-[#2A2A2A] rounded-sm relative">
             <div className="absolute inset-y-8 left-0 right-0 flex flex-col justify-between pointer-events-none">
-              <div className="border-b border-gray-200/80 w-full"></div>
-              <div className="border-b border-gray-200/80 w-full"></div>
-              <div className="border-b border-gray-200/80 w-full"></div>
+              <div className="border-b border-[#2A2A2A] w-full"></div>
+              <div className="border-b border-[#2A2A2A] w-full"></div>
+              <div className="border-b border-[#2A2A2A] w-full"></div>
             </div>
 
             {monthlyChartData.map((item, idx) => {
@@ -1563,36 +1563,36 @@ const ClientHistoryView: React.FC<ClientHistoryViewProps> = ({ tickets }) => {
   const avgSpend = totalVisits > 0 ? totalRevenue / totalVisits : 0;
 
   return (
-    <div className="flex flex-col gap-8 w-full text-[#111111] font-sans">
+    <div className="flex flex-col gap-8 w-full text-white font-sans">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        <div className="bg-white border border-[#E5E5E0] p-6 rounded-sm shadow-sm flex flex-col gap-2">
-          <span className="text-gray-500 text-xs uppercase tracking-widest font-semibold">Total Completed Visits</span>
-          <span className="text-4xl font-serif font-bold text-[#111111]">{totalVisits}</span>
+        <div className="bg-[#141414]/90 border border-[#2A2A2A] p-6 rounded-sm shadow-xl flex flex-col gap-2 backdrop-blur-md">
+          <span className="text-gray-400 text-xs uppercase tracking-widest font-semibold">Total Completed Visits</span>
+          <span className="text-4xl font-serif font-bold text-white">{totalVisits}</span>
         </div>
-        <div className="bg-white border border-[#E5E5E0] p-6 rounded-sm shadow-sm flex flex-col gap-2">
-          <span className="text-gray-500 text-xs uppercase tracking-widest font-semibold">Total Revenue Generated</span>
+        <div className="bg-[#141414]/90 border border-[#D4AF37]/30 p-6 rounded-sm shadow-xl flex flex-col gap-2 backdrop-blur-md">
+          <span className="text-gray-400 text-xs uppercase tracking-widest font-semibold">Total Revenue Generated</span>
           <span className="text-4xl font-serif font-bold text-[#D4AF37]">₹{totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
         </div>
-        <div className="bg-white border border-[#E5E5E0] p-6 rounded-sm shadow-sm flex flex-col gap-2">
-          <span className="text-gray-500 text-xs uppercase tracking-widest font-semibold">Average Ticket Value</span>
-          <span className="text-4xl font-serif font-bold text-[#111111]">₹{avgSpend.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+        <div className="bg-[#141414]/90 border border-[#2A2A2A] p-6 rounded-sm shadow-xl flex flex-col gap-2 backdrop-blur-md">
+          <span className="text-gray-400 text-xs uppercase tracking-widest font-semibold">Average Ticket Value</span>
+          <span className="text-4xl font-serif font-bold text-white">₹{avgSpend.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
         </div>
       </div>
 
-      <div className="bg-white border border-[#111111] p-8 rounded-sm shadow-xl flex flex-col gap-6">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#E5E5E0] pb-4">
-          <h3 className="text-xl font-serif uppercase tracking-wider text-[#111111]">
+      <div className="bg-[#141414]/90 border border-[#2A2A2A] p-8 rounded-sm shadow-2xl flex flex-col gap-6 backdrop-blur-md">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#2A2A2A] pb-4">
+          <h3 className="text-xl font-serif uppercase tracking-wider text-[#D4AF37]">
             Client Database & Billing Logs
           </h3>
           <div className="relative w-full md:w-80">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Search className="h-4 w-4 text-gray-400" />
+              <Search className="h-4 w-4 text-gray-500" />
             </div>
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-[#F5F5F0] border border-[#E5E5E0] rounded-sm pl-10 pr-4 py-2 text-sm focus:outline-none focus:border-[#D4AF37] transition-all text-[#111111] placeholder-gray-500 font-sans"
+              className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-sm pl-10 pr-4 py-2 text-sm focus:outline-none focus:border-[#D4AF37] transition-all text-white placeholder-gray-500 font-sans"
               placeholder="Search by client, stylist, or service..."
             />
           </div>
@@ -1601,7 +1601,7 @@ const ClientHistoryView: React.FC<ClientHistoryViewProps> = ({ tickets }) => {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-[#E5E5E0] text-gray-500 text-xs uppercase tracking-widest">
+              <tr className="border-b border-[#2A2A2A] text-gray-400 text-xs uppercase tracking-widest">
                 <th className="py-4 font-semibold">Client Name</th>
                 <th className="py-4 font-semibold">Contact</th>
                 <th className="py-4 font-semibold">Service Type</th>
@@ -1612,22 +1612,22 @@ const ClientHistoryView: React.FC<ClientHistoryViewProps> = ({ tickets }) => {
                 <th className="py-4 font-semibold text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#E5E5E0]">
+            <tbody className="divide-y divide-[#2A2A2A]">
               {filteredTickets.map(ticket => {
                 const date = ticket.completedAt?.toDate ? ticket.completedAt.toDate() : (ticket.completedAt?.seconds ? new Date(ticket.completedAt.seconds * 1000) : null);
                 const formattedDate = date ? date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'N/A';
 
                 return (
-                  <tr key={ticket.docId} className="text-gray-700 hover:bg-[#F5F5F0]/50 transition-colors">
-                    <td className="py-4 font-medium text-[#111111]">{ticket.customerName}</td>
-                    <td className="py-4 text-sm font-mono">{ticket.phone}</td>
+                  <tr key={ticket.docId} className="text-gray-300 hover:bg-[#1A1A1A]/80 transition-colors">
+                    <td className="py-4 font-medium text-white">{ticket.customerName}</td>
+                    <td className="py-4 text-sm font-mono text-gray-400">{ticket.phone}</td>
                     <td className="py-4">
                       <div className="flex flex-col gap-1 items-start">
-                        <span className="text-xs uppercase tracking-wider text-[#111111] bg-[#E5E5E0] px-2.5 py-1 rounded-sm">
+                        <span className="text-xs uppercase tracking-wider text-white bg-[#2A2A2A] px-2.5 py-1 rounded-sm border border-[#333333]">
                           {ticket.serviceType}
                         </span>
                         {ticket.colourNumber && (
-                          <span className="text-[10px] text-gray-500 font-sans font-semibold">
+                          <span className="text-[10px] text-[#D4AF37] font-sans font-semibold">
                             Shade: {ticket.colourBook ? `${ticket.colourBook} - ` : ""}{ticket.colourNumber}
                           </span>
                         )}
@@ -1636,23 +1636,23 @@ const ClientHistoryView: React.FC<ClientHistoryViewProps> = ({ tickets }) => {
                     <td className="py-4 font-medium">
                       {ticket.isSplit ? (
                         <div className="flex flex-col gap-1 text-xs">
-                          <span className="font-semibold text-gray-800">
+                          <span className="font-semibold text-gray-200">
                             {ticket.primaryStylistName} (₹{ticket.primaryStylistPrice}){ticket.primaryStylistService && ` - ${ticket.primaryStylistService}`}
                           </span>
-                          <span className="text-gray-600 font-semibold">
+                          <span className="text-gray-400 font-semibold">
                             &amp; {ticket.secondaryStylistName} (₹{ticket.secondaryStylistPrice}){ticket.secondaryStylistService && ` - ${ticket.secondaryStylistService}`}
                           </span>
                           {ticket.tertiaryStylistName && (
-                            <span className="text-gray-600 font-semibold">
+                            <span className="text-gray-400 font-semibold">
                               &amp; {ticket.tertiaryStylistName} (₹{ticket.tertiaryStylistPrice}){ticket.tertiaryStylistService && ` - ${ticket.tertiaryStylistService}`}
                             </span>
                           )}
                         </div>
                       ) : (
-                        ticket.stylistName || 'Unassigned'
+                        <span className="text-gray-300">{ticket.stylistName || 'Unassigned'}</span>
                       )}
                     </td>
-                    <td className="py-4 text-xs text-gray-500">{formattedDate}</td>
+                    <td className="py-4 text-xs text-gray-400 font-mono">{formattedDate}</td>
                     <td className="py-4">
                       <span className={`text-[10px] font-sans tracking-wider uppercase px-2 py-0.5 rounded-sm font-bold border ${
                         ticket.paymentMethod === 'Pending'
@@ -2101,49 +2101,49 @@ const ExpenseTrackerView: React.FC = () => {
   const CATEGORIES = ["Salon Supplies", "Refreshments & Tea", "Utilities & Bills", "Staff / Salary", "Maintenance", "Misc"];
 
   return (
-    <div className="flex flex-col gap-8 w-full text-[#111111] font-sans">
+    <div className="flex flex-col gap-8 w-full text-white font-sans">
       {/* Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-6">
-        <div className="bg-white border border-[#E5E5E0] p-6 rounded-sm shadow-sm flex flex-col gap-1">
-          <span className="text-gray-500 text-xs uppercase tracking-widest font-semibold">Today's Expenses</span>
-          <span className="text-3xl font-serif font-bold text-red-600">₹{todayTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+        <div className="bg-[#141414]/90 border border-red-900/30 p-6 rounded-sm shadow-xl flex flex-col gap-1 backdrop-blur-md">
+          <span className="text-gray-400 text-xs uppercase tracking-widest font-semibold">Today's Expenses</span>
+          <span className="text-3xl font-serif font-bold text-red-500">₹{todayTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
         </div>
-        <div className="bg-white border border-[#E5E5E0] p-6 rounded-sm shadow-sm flex flex-col gap-1">
-          <span className="text-gray-500 text-xs uppercase tracking-widest font-semibold">Period Expenses ({dateFilter})</span>
-          <span className="text-3xl font-serif font-bold text-[#111111]">₹{totalFiltered.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+        <div className="bg-[#141414]/90 border border-[#2A2A2A] p-6 rounded-sm shadow-xl flex flex-col gap-1 backdrop-blur-md">
+          <span className="text-gray-400 text-xs uppercase tracking-widest font-semibold">Period Expenses ({dateFilter})</span>
+          <span className="text-3xl font-serif font-bold text-white">₹{totalFiltered.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
         </div>
-        <div className="bg-white border border-[#E5E5E0] p-6 rounded-sm shadow-sm flex flex-col gap-1">
-          <span className="text-gray-500 text-xs uppercase tracking-widest font-semibold">Cash Spent</span>
-          <span className="text-3xl font-serif font-bold text-green-700">₹{cashFiltered.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+        <div className="bg-[#141414]/90 border border-green-900/30 p-6 rounded-sm shadow-xl flex flex-col gap-1 backdrop-blur-md">
+          <span className="text-gray-400 text-xs uppercase tracking-widest font-semibold">Cash Spent</span>
+          <span className="text-3xl font-serif font-bold text-green-400">₹{cashFiltered.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
         </div>
-        <div className="bg-white border border-[#E5E5E0] p-6 rounded-sm shadow-sm flex flex-col gap-1">
-          <span className="text-gray-500 text-xs uppercase tracking-widest font-semibold">UPI Spent</span>
-          <span className="text-3xl font-serif font-bold text-blue-600">₹{upiFiltered.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+        <div className="bg-[#141414]/90 border border-blue-900/30 p-6 rounded-sm shadow-xl flex flex-col gap-1 backdrop-blur-md">
+          <span className="text-gray-400 text-xs uppercase tracking-widest font-semibold">UPI Spent</span>
+          <span className="text-3xl font-serif font-bold text-blue-400">₹{upiFiltered.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
         </div>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
         {/* Add Expense Form */}
-        <div className="xl:col-span-4 bg-white border border-[#111111] p-8 rounded-sm shadow-xl flex flex-col gap-6">
-          <h3 className="text-xl font-serif uppercase tracking-wider text-[#111111] border-b border-[#E5E5E0] pb-4">
+        <div className="xl:col-span-4 bg-[#141414]/90 border border-[#D4AF37]/30 p-8 rounded-sm shadow-2xl flex flex-col gap-6 backdrop-blur-md">
+          <h3 className="text-xl font-serif uppercase tracking-wider text-[#D4AF37] border-b border-[#2A2A2A] pb-4">
             Record New Expense
           </h3>
 
           <form onSubmit={handleAddExpense} className="space-y-5">
             <div className="space-y-1">
-              <label className="text-xs font-sans text-gray-500 uppercase tracking-widest">Expense Description</label>
+              <label className="text-xs font-sans text-gray-400 uppercase tracking-widest">Expense Description</label>
               <input
                 type="text"
                 required
                 value={title}
                 onChange={e => setTitle(e.target.value)}
                 placeholder="e.g. Towels & Shampoo restock"
-                className="w-full bg-[#F5F5F0] border border-[#E5E5E0] rounded-sm px-4 py-3 focus:outline-none focus:border-[#D4AF37] transition-all text-[#111111] placeholder-gray-400 text-sm font-sans"
+                className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-sm px-4 py-3 focus:outline-none focus:border-[#D4AF37] transition-all text-white placeholder-gray-500 text-sm font-sans"
               />
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-sans text-gray-500 uppercase tracking-widest">Amount Spent (₹)</label>
+              <label className="text-xs font-sans text-gray-400 uppercase tracking-widest">Amount Spent (₹)</label>
               <input
                 type="number"
                 step="0.01"
@@ -2152,16 +2152,16 @@ const ExpenseTrackerView: React.FC = () => {
                 value={amount}
                 onChange={e => setAmount(e.target.value)}
                 placeholder="Enter amount (₹)"
-                className="w-full bg-[#F5F5F0] border border-[#E5E5E0] rounded-sm px-4 py-3 focus:outline-none focus:border-[#D4AF37] transition-all text-[#111111] placeholder-gray-400 text-sm font-sans"
+                className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-sm px-4 py-3 focus:outline-none focus:border-[#D4AF37] transition-all text-white placeholder-gray-500 text-sm font-sans"
               />
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-sans text-gray-500 uppercase tracking-widest">Category</label>
+              <label className="text-xs font-sans text-gray-400 uppercase tracking-widest">Category</label>
               <select
                 value={category}
                 onChange={e => setCategory(e.target.value)}
-                className="w-full bg-[#F5F5F0] border border-[#E5E5E0] rounded-sm px-4 py-3 focus:outline-none focus:border-[#D4AF37] text-[#111111] text-sm font-sans cursor-pointer"
+                className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-sm px-4 py-3 focus:outline-none focus:border-[#D4AF37] text-white text-sm font-sans cursor-pointer"
               >
                 {CATEGORIES.map(cat => (
                   <option key={cat} value={cat}>{cat}</option>
@@ -2170,7 +2170,7 @@ const ExpenseTrackerView: React.FC = () => {
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-sans text-gray-500 uppercase tracking-widest block mb-1">Payment Method</label>
+              <label className="text-xs font-sans text-gray-400 uppercase tracking-widest block mb-1">Payment Method</label>
               <div className="flex gap-2">
                 {(["Cash", "UPI"] as const).map(method => (
                   <button
@@ -2180,7 +2180,7 @@ const ExpenseTrackerView: React.FC = () => {
                     className={`flex-1 py-3 rounded-sm border text-xs font-sans tracking-widest uppercase transition-all duration-300 cursor-pointer font-bold ${
                       paymentMethod === method
                         ? "bg-[#D4AF37]/20 border-[#D4AF37] text-[#D4AF37] shadow-sm"
-                        : "bg-[#F5F5F0] border-[#E5E5E0] text-gray-500 hover:text-[#111111]"
+                        : "bg-[#1A1A1A] border-[#2A2A2A] text-gray-400 hover:text-white"
                     }`}
                   >
                     {method}
@@ -2190,13 +2190,13 @@ const ExpenseTrackerView: React.FC = () => {
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-sans text-gray-500 uppercase tracking-widest">Recorded By</label>
+              <label className="text-xs font-sans text-gray-400 uppercase tracking-widest">Recorded By</label>
               <input
                 type="text"
                 value={addedBy}
                 onChange={e => setAddedBy(e.target.value)}
                 placeholder="e.g. Reception"
-                className="w-full bg-[#F5F5F0] border border-[#E5E5E0] rounded-sm px-4 py-3 focus:outline-none focus:border-[#D4AF37] text-[#111111] text-sm font-sans"
+                className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-sm px-4 py-3 focus:outline-none focus:border-[#D4AF37] text-white text-sm font-sans"
               />
             </div>
 
@@ -2211,9 +2211,9 @@ const ExpenseTrackerView: React.FC = () => {
         </div>
 
         {/* Expenses List & Logs */}
-        <div className="xl:col-span-8 bg-white border border-[#111111] p-8 rounded-sm shadow-xl flex flex-col gap-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#E5E5E0] pb-4">
-            <h3 className="text-xl font-serif uppercase tracking-wider text-[#111111]">
+        <div className="xl:col-span-8 bg-[#141414]/90 border border-[#2A2A2A] p-8 rounded-sm shadow-2xl flex flex-col gap-6 backdrop-blur-md">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#2A2A2A] pb-4">
+            <h3 className="text-xl font-serif uppercase tracking-wider text-[#D4AF37]">
               Expense Log ({filteredExpenses.length})
             </h3>
             <div className="flex gap-2">
@@ -2224,8 +2224,8 @@ const ExpenseTrackerView: React.FC = () => {
                   onClick={() => setDateFilter(f)}
                   className={`px-3 py-1.5 rounded-sm text-xs font-sans uppercase tracking-wider font-semibold border transition-all cursor-pointer ${
                     dateFilter === f
-                      ? "bg-[#111111] text-[#D4AF37] border-[#111111]"
-                      : "bg-[#F5F5F0] text-gray-600 border-[#E5E5E0] hover:text-[#111111]"
+                      ? "bg-[#D4AF37] text-[#111111] border-[#D4AF37]"
+                      : "bg-[#1A1A1A] text-gray-400 border-[#2A2A2A] hover:text-white"
                   }`}
                 >
                   {f === "today" ? "Today" : f === "week" ? "This Week" : f === "month" ? "This Month" : "All"}
@@ -2237,7 +2237,7 @@ const ExpenseTrackerView: React.FC = () => {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-[#E5E5E0] text-gray-500 text-xs uppercase tracking-widest">
+                <tr className="border-b border-[#2A2A2A] text-gray-400 text-xs uppercase tracking-widest">
                   <th className="py-4 font-semibold">Date & Time</th>
                   <th className="py-4 font-semibold">Description</th>
                   <th className="py-4 font-semibold">Category</th>
@@ -2247,37 +2247,37 @@ const ExpenseTrackerView: React.FC = () => {
                   <th className="py-4 font-semibold text-right">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#E5E5E0]">
+              <tbody className="divide-y divide-[#2A2A2A]">
                 {filteredExpenses.map(item => {
                   const date = item.timestamp?.toDate ? item.timestamp.toDate() : (item.timestamp?.seconds ? new Date(item.timestamp.seconds * 1000) : new Date());
                   const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
                   return (
-                    <tr key={item.docId} className="text-gray-700 hover:bg-[#F5F5F0]/50 transition-colors">
-                      <td className="py-4 text-xs text-gray-500 font-mono">{formattedDate}</td>
-                      <td className="py-4 font-medium text-[#111111]">{item.title}</td>
+                    <tr key={item.docId} className="text-gray-300 hover:bg-[#1A1A1A]/80 transition-colors">
+                      <td className="py-4 text-xs text-gray-400 font-mono">{formattedDate}</td>
+                      <td className="py-4 font-medium text-white">{item.title}</td>
                       <td className="py-4">
-                        <span className="text-[10px] font-sans uppercase tracking-wider bg-[#E5E5E0] text-gray-800 px-2 py-0.5 rounded-sm font-semibold">
+                        <span className="text-[10px] font-sans uppercase tracking-wider bg-[#2A2A2A] text-white border border-[#333333] px-2 py-0.5 rounded-sm font-semibold">
                           {item.category}
                         </span>
                       </td>
-                      <td className="py-4 text-xs text-gray-600 font-medium">{item.addedBy}</td>
+                      <td className="py-4 text-xs text-gray-300 font-medium">{item.addedBy}</td>
                       <td className="py-4">
                         <span className={`text-[10px] font-sans tracking-wider uppercase px-2 py-0.5 rounded-sm font-bold border ${
                           item.paymentMethod === "Cash"
-                            ? "bg-green-50 text-green-700 border-green-200"
-                            : "bg-blue-50 text-blue-600 border-blue-200"
+                            ? "bg-green-950/40 text-green-400 border-green-800/40"
+                            : "bg-blue-950/40 text-blue-400 border-blue-800/40"
                         }`}>
                           {item.paymentMethod}
                         </span>
                       </td>
-                      <td className="py-4 text-right font-mono font-bold text-red-600">
+                      <td className="py-4 text-right font-mono font-bold text-red-400">
                         ₹{(item.amount || 0).toFixed(2)}
                       </td>
                       <td className="py-4 text-right">
                         <button
                           onClick={() => handleDeleteExpense(item.docId, item.title)}
-                          className="bg-red-50 text-red-600 hover:bg-red-600 hover:text-white p-1.5 rounded-sm transition-all border border-red-200 cursor-pointer inline-flex items-center justify-center"
+                          className="bg-red-950/40 text-red-400 hover:bg-red-600 hover:text-white p-1.5 rounded-sm transition-all border border-red-800/40 cursor-pointer inline-flex items-center justify-center"
                           title="Delete Expense"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -2446,45 +2446,53 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
   };
 
   return (
-    <div className="max-w-7xl mx-auto w-full flex flex-col gap-6 flex-1 text-[#111111]">
+    <div 
+      style={{
+        backgroundImage: 'linear-gradient(to bottom, rgba(12, 12, 12, 0.90), rgba(16, 16, 16, 0.95)), url("/abstract_beauty.jpg")',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed'
+      }}
+      className="max-w-7xl mx-auto w-full flex flex-col gap-6 flex-1 text-white p-6 sm:p-8 rounded-sm shadow-2xl border border-[#2A2A2A] backdrop-blur-md"
+    >
       {/* Tab Selector */}
-      <div className="flex border-b border-[#E5E5E0] pb-2 gap-6 overflow-x-auto whitespace-nowrap hide-scrollbar">
+      <div className="flex border-b border-[#2A2A2A] pb-2 gap-3 overflow-x-auto whitespace-nowrap hide-scrollbar">
         <button
           onClick={() => setActiveTab("queue")}
-          className={`pb-2 text-sm font-sans uppercase tracking-widest font-semibold border-b-2 transition-all cursor-pointer ${
+          className={`pb-2.5 px-4 py-2 text-xs sm:text-sm font-sans uppercase tracking-widest font-bold border-b-2 rounded-t-sm transition-all cursor-pointer ${
             activeTab === "queue"
-              ? "border-[#D4AF37] text-[#111111]"
-              : "border-transparent text-gray-400 hover:text-gray-600"
+              ? "border-[#D4AF37] text-[#D4AF37] bg-[#1F1F1F]/80 backdrop-blur-md shadow-sm"
+              : "border-transparent text-gray-400 hover:text-white hover:bg-[#1A1A1A]/40"
           }`}
         >
           Queue Management
         </button>
         <button
           onClick={() => setActiveTab("history")}
-          className={`pb-2 text-sm font-sans uppercase tracking-widest font-semibold border-b-2 transition-all cursor-pointer ${
+          className={`pb-2.5 px-4 py-2 text-xs sm:text-sm font-sans uppercase tracking-widest font-bold border-b-2 rounded-t-sm transition-all cursor-pointer ${
             activeTab === "history"
-              ? "border-[#D4AF37] text-[#111111]"
-              : "border-transparent text-gray-400 hover:text-gray-600"
+              ? "border-[#D4AF37] text-[#D4AF37] bg-[#1F1F1F]/80 backdrop-blur-md shadow-sm"
+              : "border-transparent text-gray-400 hover:text-white hover:bg-[#1A1A1A]/40"
           }`}
         >
           Client History & CRM
         </button>
         <button
           onClick={() => setActiveTab("revenue")}
-          className={`pb-2 text-sm font-sans uppercase tracking-widest font-semibold border-b-2 transition-all cursor-pointer ${
+          className={`pb-2.5 px-4 py-2 text-xs sm:text-sm font-sans uppercase tracking-widest font-bold border-b-2 rounded-t-sm transition-all cursor-pointer ${
             activeTab === "revenue"
-              ? "border-[#D4AF37] text-[#111111]"
-              : "border-transparent text-gray-400 hover:text-gray-600"
+              ? "border-[#D4AF37] text-[#D4AF37] bg-[#1F1F1F]/80 backdrop-blur-md shadow-sm"
+              : "border-transparent text-gray-400 hover:text-white hover:bg-[#1A1A1A]/40"
           }`}
         >
           Revenue Analytics
         </button>
         <button
           onClick={() => setActiveTab("expenses")}
-          className={`pb-2 text-sm font-sans uppercase tracking-widest font-semibold border-b-2 transition-all cursor-pointer ${
+          className={`pb-2.5 px-4 py-2 text-xs sm:text-sm font-sans uppercase tracking-widest font-bold border-b-2 rounded-t-sm transition-all cursor-pointer ${
             activeTab === "expenses"
-              ? "border-[#D4AF37] text-[#111111]"
-              : "border-transparent text-gray-400 hover:text-gray-600"
+              ? "border-[#D4AF37] text-[#D4AF37] bg-[#1F1F1F]/80 backdrop-blur-md shadow-sm"
+              : "border-transparent text-gray-400 hover:text-white hover:bg-[#1A1A1A]/40"
           }`}
         >
           Daily Expenses
@@ -2502,23 +2510,23 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
           >
             {/* Left Column: Form & Stylists */}
             <div className="xl:col-span-4 flex flex-col gap-6">
-              <div className="bg-white border border-[#111111] p-8 rounded-sm shadow-xl">
-                <h2 className="text-2xl font-serif text-[#111111] mb-8 border-b border-[#E5E5E0] pb-4 tracking-wide">
+              <div className="bg-[#141414]/90 border border-[#D4AF37]/30 p-8 rounded-sm shadow-2xl backdrop-blur-md">
+                <h2 className="text-2xl font-serif text-[#D4AF37] mb-8 border-b border-[#2A2A2A] pb-4 tracking-wide uppercase">
                   Add Client
                 </h2>
 
                 <form onSubmit={handleDeployTicket} className="space-y-6">
                   <div className="space-y-2">
-                    <label className="text-xs font-sans text-gray-500 uppercase tracking-widest">Client Name</label>
+                    <label className="text-xs font-sans text-gray-400 uppercase tracking-widest">Client Name</label>
                     <div className="relative group/input">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <User className="h-4 w-4 text-gray-400 group-focus-within/input:text-[#D4AF37] transition-colors" />
+                        <User className="h-4 w-4 text-gray-500 group-focus-within/input:text-[#D4AF37] transition-colors" />
                       </div>
                       <input 
                         type="text" 
                         value={customerName}
                         onChange={(e) => setCustomerName(e.target.value)}
-                        className="w-full bg-[#F5F5F0] border border-[#E5E5E0] rounded-sm pl-10 pr-4 py-3 focus:outline-none focus:border-[#D4AF37] transition-all text-[#111111] placeholder-gray-500 font-sans"
+                        className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-sm pl-10 pr-4 py-3 focus:outline-none focus:border-[#D4AF37] transition-all text-white placeholder-gray-500 font-sans"
                         placeholder="Enter name"
                         required
                       />
@@ -2526,16 +2534,16 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-xs font-sans text-gray-500 uppercase tracking-widest">Contact Number</label>
+                    <label className="text-xs font-sans text-gray-400 uppercase tracking-widest">Contact Number</label>
                     <div className="relative group/input">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <Phone className="h-4 w-4 text-gray-400 group-focus-within/input:text-[#D4AF37] transition-colors" />
+                        <Phone className="h-4 w-4 text-gray-500 group-focus-within/input:text-[#D4AF37] transition-colors" />
                       </div>
                       <input 
                         type="tel" 
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
-                        className="w-full bg-[#F5F5F0] border border-[#E5E5E0] rounded-sm pl-10 pr-4 py-3 focus:outline-none focus:border-[#D4AF37] transition-all text-[#111111] placeholder-gray-500 font-sans"
+                        className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-sm pl-10 pr-4 py-3 focus:outline-none focus:border-[#D4AF37] transition-all text-white placeholder-gray-500 font-sans"
                         placeholder="Enter phone number"
                         required
                       />
@@ -2543,7 +2551,7 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-xs font-sans text-gray-500 uppercase tracking-widest block">Gender</label>
+                    <label className="text-xs font-sans text-gray-400 uppercase tracking-widest block">Gender</label>
                     <div className="flex gap-2">
                       {(["Male", "Female"] as const).map((g) => (
                         <button
@@ -2556,7 +2564,7 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
                           className={`flex-1 py-3 rounded-sm border text-xs font-sans tracking-widest uppercase transition-all duration-300 cursor-pointer font-bold ${
                             gender === g
                               ? "bg-[#D4AF37]/20 border-[#D4AF37] text-[#D4AF37] shadow-[0_0_15px_rgba(212,175,55,0.15)]"
-                              : "bg-[#F5F5F0] border-[#E5E5E0] text-gray-500 hover:text-[#111111]"
+                              : "bg-[#1A1A1A] border-[#2A2A2A] text-gray-400 hover:text-white"
                           }`}
                         >
                           {g}
@@ -2566,7 +2574,7 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-xs font-sans text-gray-500 uppercase tracking-widest block">Service Category</label>
+                    <label className="text-xs font-sans text-gray-400 uppercase tracking-widest block">Service Category</label>
                     <div className="flex gap-2">
                       {(["Hair", "Skin", "Waxing"] as const).map((cat) => (
                         <button
@@ -2578,7 +2586,7 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
                           className={`flex-1 py-3 rounded-sm border text-xs font-sans tracking-widest uppercase transition-all duration-300 cursor-pointer font-bold ${
                             serviceCategory === cat
                               ? "bg-[#D4AF37]/20 border-[#D4AF37] text-[#D4AF37] shadow-[0_0_15px_rgba(212,175,55,0.15)]"
-                              : "bg-[#F5F5F0] border-[#E5E5E0] text-gray-500 hover:text-[#111111]"
+                              : "bg-[#1A1A1A] border-[#2A2A2A] text-gray-400 hover:text-white"
                           }`}
                         >
                           {cat}
@@ -2588,8 +2596,8 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-xs font-sans text-gray-500 uppercase tracking-widest block mb-2">Select Services (Multiple)</label>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-2 border border-[#E5E5E0] p-3 rounded-sm bg-[#F5F5F0]">
+                    <label className="text-xs font-sans text-gray-400 uppercase tracking-widest block mb-2">Select Services (Multiple)</label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-2 border border-[#2A2A2A] p-3 rounded-sm bg-[#1A1A1A]">
                       {SERVICES_CONFIG[gender][serviceCategory].map((serviceName) => {
                         const isSelected = selectedServices.includes(serviceName);
                         return (
@@ -2605,12 +2613,12 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
                             }}
                             className={`flex items-center gap-2 px-3 py-2 rounded-sm border text-xs font-sans text-left transition-colors cursor-pointer ${
                               isSelected
-                                ? 'bg-[#D4AF37]/10 border-[#D4AF37] text-[#D4AF37] font-semibold font-sans'
-                                : 'bg-white border-[#E5E5E0] text-gray-700 hover:border-gray-400 font-sans'
+                                ? 'bg-[#D4AF37]/20 border-[#D4AF37] text-[#D4AF37] font-semibold font-sans'
+                                : 'bg-[#222222] border-[#333333] text-gray-300 hover:border-gray-500 font-sans'
                             }`}
                           >
                             <div className={`w-3.5 h-3.5 border rounded-sm flex items-center justify-center shrink-0 ${
-                              isSelected ? 'border-[#D4AF37] bg-[#D4AF37] text-[#111111]' : 'border-gray-400 bg-white'
+                              isSelected ? 'border-[#D4AF37] bg-[#D4AF37] text-[#111111]' : 'border-gray-500 bg-[#1A1A1A]'
                             }`}>
                               {isSelected && <span className="text-[10px] leading-none font-bold">✓</span>}
                             </div>
@@ -2622,25 +2630,25 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
                   </div>
 
                   {selectedServices.length > 0 && (
-                    <div className="bg-[#D4AF37]/5 border border-[#D4AF37]/20 p-3 rounded-sm space-y-2 mt-4">
+                    <div className="bg-[#D4AF37]/10 border border-[#D4AF37]/30 p-3 rounded-sm space-y-2 mt-4">
                       <div className="flex justify-between items-center">
-                        <span className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Selected ({selectedServices.length})</span>
+                        <span className="text-[10px] text-[#D4AF37] uppercase tracking-widest font-bold">Selected ({selectedServices.length})</span>
                         <button 
                           type="button" 
                           onClick={() => setSelectedServices([])}
-                          className="text-[10px] text-red-500 hover:text-red-700 underline uppercase tracking-wider font-bold cursor-pointer"
+                          className="text-[10px] text-red-400 hover:text-red-300 underline uppercase tracking-wider font-bold cursor-pointer"
                         >
                           Clear All
                         </button>
                       </div>
                       <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto pr-1">
                         {selectedServices.map(s => (
-                          <span key={s} className="text-[10px] bg-white border border-[#E5E5E0] text-gray-800 px-2.5 py-1 rounded-sm font-sans flex items-center gap-1.5 font-medium">
+                          <span key={s} className="text-[10px] bg-[#1A1A1A] border border-[#2A2A2A] text-white px-2.5 py-1 rounded-sm font-sans flex items-center gap-1.5 font-medium">
                             {s}
                             <button 
                               type="button" 
                               onClick={() => setSelectedServices(prev => prev.filter(item => item !== s))}
-                              className="text-red-500 hover:text-red-700 font-bold text-xs cursor-pointer focus:outline-none"
+                              className="text-red-400 hover:text-red-300 font-bold text-xs cursor-pointer focus:outline-none"
                             >
                               ×
                             </button>
@@ -2656,13 +2664,13 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
                     s.toLowerCase().includes("touch up")
                   ) && (
                     <div className="space-y-2 mt-4 animate-fadeIn">
-                      <label className="text-xs font-sans text-gray-500 uppercase tracking-widest block">Hair Colour Number / Shade</label>
+                      <label className="text-xs font-sans text-gray-400 uppercase tracking-widest block">Hair Colour Number / Shade</label>
                       <input 
                         type="text" 
                         value={colourNumber}
                         onChange={(e) => setColourNumber(e.target.value)}
                         placeholder="e.g. Igora 5-0, Yutika 4.0"
-                        className="w-full bg-[#F5F5F0] border border-[#E5E5E0] rounded-sm px-4 py-3 focus:outline-none focus:border-[#D4AF37] text-[#111111] placeholder-gray-500 font-sans"
+                        className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-sm px-4 py-3 focus:outline-none focus:border-[#D4AF37] text-white placeholder-gray-500 font-sans"
                       />
                     </div>
                   )}
@@ -2679,8 +2687,8 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
               </div>
 
               {/* Stylists Section */}
-              <div className="bg-white border border-[#111111] p-8 rounded-sm shadow-xl flex-1 flex flex-col min-h-[350px]">
-                <h2 className="text-2xl font-serif text-[#111111] mb-6 border-b border-[#E5E5E0] pb-4 tracking-wide uppercase">
+              <div className="bg-[#141414]/90 border border-[#2A2A2A] p-8 rounded-sm shadow-2xl flex-1 flex flex-col min-h-[350px] backdrop-blur-md">
+                <h2 className="text-2xl font-serif text-[#D4AF37] mb-6 border-b border-[#2A2A2A] pb-4 tracking-wide uppercase">
                   Duty Stylists
                 </h2>
                 
@@ -2690,11 +2698,11 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
                     value={newStylistName}
                     onChange={(e) => setNewStylistName(e.target.value)}
                     placeholder="New Stylist Name" 
-                    className="flex-1 bg-[#F5F5F0] border border-[#E5E5E0] rounded-sm px-4 py-2 text-sm focus:outline-none focus:border-[#D4AF37] transition-all text-[#111111] placeholder-gray-500 font-sans"
+                    className="flex-1 bg-[#1A1A1A] border border-[#2A2A2A] rounded-sm px-4 py-2 text-sm focus:outline-none focus:border-[#D4AF37] transition-all text-white placeholder-gray-500 font-sans"
                   />
                   <button 
                     type="submit"
-                    className="bg-[#111111] hover:bg-[#2A2A2A] text-white px-4 py-2 rounded-sm text-xs font-sans tracking-widest uppercase transition-colors"
+                    className="bg-[#D4AF37] hover:bg-[#C5A059] text-[#111111] font-bold px-4 py-2 rounded-sm text-xs font-sans tracking-widest uppercase transition-colors"
                   >
                     Add
                   </button>
@@ -2702,17 +2710,17 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
 
                 <div className="flex-1 overflow-y-auto space-y-4 max-h-[300px] hide-scrollbar">
                   {stylists.length === 0 ? (
-                    <p className="text-gray-500 font-serif italic text-sm text-center py-6">No stylists active.</p>
+                    <p className="text-gray-400 font-serif italic text-sm text-center py-6">No stylists active.</p>
                   ) : (
                     stylists.map(stylist => (
-                      <div key={stylist.id} className="flex items-center justify-between p-3 border border-[#E5E5E0] rounded-sm bg-[#F5F5F0]">
-                        <span className="font-serif text-[#111111] font-medium">{stylist.name}</span>
+                      <div key={stylist.id} className="flex items-center justify-between p-3 border border-[#2A2A2A] rounded-sm bg-[#1A1A1A]">
+                        <span className="font-serif text-white font-medium">{stylist.name}</span>
                         <button
                           onClick={() => toggleStylistActive(stylist.id, stylist.active)}
                           className={`px-3 py-1 rounded-sm text-[10px] font-sans tracking-widest uppercase font-bold transition-all border cursor-pointer ${
                             stylist.active 
-                              ? 'bg-green-50/50 text-green-700 border-green-200' 
-                              : 'bg-gray-50 text-gray-500 border-gray-200'
+                              ? 'bg-green-950/40 text-green-400 border-green-800/40' 
+                              : 'bg-gray-800 text-gray-400 border-gray-700'
                           }`}
                         >
                           {stylist.active ? 'Active' : 'Offline'}
@@ -2728,9 +2736,9 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
             <div className="xl:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-10">
               
               {/* Waiting Column */}
-              <div className="bg-white border border-[#111111] p-6 rounded-sm shadow-xl flex flex-col h-[calc(100vh-180px)] xl:h-auto">
-                <div className="flex items-center justify-between mb-6 border-b border-[#E5E5E0] pb-4">
-                  <h3 className="font-serif text-lg tracking-widest text-[#111111] flex items-center gap-2 uppercase">
+              <div className="bg-[#141414]/90 border border-[#2A2A2A] p-6 rounded-sm shadow-2xl flex flex-col h-[calc(100vh-180px)] xl:h-auto backdrop-blur-md">
+                <div className="flex items-center justify-between mb-6 border-b border-[#2A2A2A] pb-4">
+                  <h3 className="font-serif text-lg tracking-widest text-[#D4AF37] flex items-center gap-2 uppercase">
                     Waiting Lounge
                   </h3>
                   <span className="text-[#D4AF37] font-serif font-bold text-xl">{waitingTickets.length}</span>
@@ -2739,8 +2747,8 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
                 <div className="overflow-y-auto flex-1 hide-scrollbar space-y-4 pr-2">
                   <AnimatePresence>
                     {waitingTickets.length === 0 ? (
-                      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-12 border border-[#E5E5E0] border-dashed rounded-sm">
-                        <p className="text-gray-500 font-serif italic text-sm">No clients waiting.</p>
+                      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-12 border border-[#2A2A2A] border-dashed rounded-sm">
+                        <p className="text-gray-400 font-serif italic text-sm">No clients waiting.</p>
                       </motion.div>
                     ) : (
                       waitingTickets.map((ticket) => (
@@ -2750,21 +2758,21 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, scale: 0.95 }}
-                          className="bg-[#F5F5F0] border border-[#E5E5E0] p-5 rounded-sm flex items-center justify-between group hover:border-[#D4AF37] transition-colors"
+                          className="bg-[#1A1A1A] border border-[#2A2A2A] p-5 rounded-sm flex items-center justify-between group hover:border-[#D4AF37] transition-colors shadow-md"
                         >
                           <div>
                             <div className="flex items-center gap-3 mb-1">
-                              <span className="text-[#111111] font-sans font-medium text-sm">{ticket.id}</span>
+                              <span className="text-white font-sans font-medium text-sm">{ticket.id}</span>
                               {ticket.appointmentTime && (
-                                <span className="text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-sm font-semibold border bg-green-50 text-green-700 border-green-200">
+                                <span className="text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-sm font-semibold border bg-green-950/40 text-green-400 border-green-800/40">
                                   Online
                                 </span>
                               )}
                               {ticket.gender && (
                                 <span className={`text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-sm font-semibold border ${
                                   ticket.gender === 'Female' 
-                                    ? 'bg-purple-50 text-purple-700 border-purple-200' 
-                                    : 'bg-blue-50 text-blue-700 border-blue-200'
+                                    ? 'bg-purple-950/40 text-purple-300 border-purple-800/40' 
+                                    : 'bg-blue-950/40 text-blue-300 border-blue-800/40'
                                 }`}>
                                   {ticket.gender}
                                 </span>
@@ -2772,25 +2780,25 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
                               {ticket.serviceCategory && (
                                 <span className={`text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-sm font-semibold border ${
                                   ticket.serviceCategory === 'Hair'
-                                    ? 'bg-amber-50 text-amber-700 border-amber-200'
+                                    ? 'bg-amber-950/40 text-amber-300 border-amber-800/40'
                                     : ticket.serviceCategory === 'Skin'
-                                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                                      : 'bg-rose-50 text-rose-700 border-rose-200'
+                                      ? 'bg-emerald-950/40 text-emerald-300 border-emerald-800/40'
+                                      : 'bg-rose-950/40 text-rose-300 border-rose-800/40'
                                 }`}>
                                   {ticket.serviceCategory}
                                 </span>
                               )}
-                              <span className="text-[10px] uppercase tracking-wider text-gray-600 bg-[#E5E5E0] px-2 py-0.5 rounded-sm">{ticket.serviceType}</span>
+                              <span className="text-[10px] uppercase tracking-wider text-gray-300 bg-[#2A2A2A] px-2 py-0.5 rounded-sm border border-[#333333]">{ticket.serviceType}</span>
                             </div>
-                            <p className="text-[#111111] font-serif text-lg font-medium">{ticket.customerName}</p>
-                            <p className="text-xs text-gray-500 font-sans mt-1">{ticket.phone}</p>
+                            <p className="text-white font-serif text-lg font-medium">{ticket.customerName}</p>
+                            <p className="text-xs text-gray-400 font-sans mt-1">{ticket.phone}</p>
                             {ticket.appointmentTime && (
-                              <p className="text-xs text-green-600 font-medium font-sans mt-1.5 flex items-center gap-1">
+                              <p className="text-xs text-green-400 font-medium font-sans mt-1.5 flex items-center gap-1">
                                 <Clock className="w-3.5 h-3.5" /> Appt: {ticket.appointmentTime}
                               </p>
                             )}
                             {ticket.notes && (
-                              <p className="text-xs text-gray-500 italic font-sans mt-1">
+                              <p className="text-xs text-gray-400 italic font-sans mt-1">
                                 Notes: "{ticket.notes}"
                               </p>
                             )}
@@ -2804,28 +2812,28 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
                           <div className="flex flex-col gap-2">
                             <button 
                               onClick={() => updateStatus(ticket.docId, "Serving")}
-                              className="bg-[#D4AF37]/10 text-[#D4AF37] hover:bg-[#D4AF37] hover:text-[#111111] p-2 rounded-sm transition-colors border border-[#D4AF37]/20 cursor-pointer flex items-center justify-center"
+                              className="bg-[#D4AF37]/20 text-[#D4AF37] hover:bg-[#D4AF37] hover:text-[#111111] p-2 rounded-sm transition-colors border border-[#D4AF37]/40 cursor-pointer flex items-center justify-center font-bold"
                               title="Seat Client"
                             >
                               <Play className="w-4 h-4 ml-0.5" />
                             </button>
                             <button
                               onClick={() => openEdit(ticket)}
-                              className="bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white p-2 rounded-sm transition-colors border border-blue-200 cursor-pointer flex items-center justify-center"
+                              className="bg-blue-950/40 text-blue-400 hover:bg-blue-600 hover:text-white p-2 rounded-sm transition-colors border border-blue-800/40 cursor-pointer flex items-center justify-center"
                               title="Edit Entry"
                             >
                               <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                             </button>
                             <a 
                               href={`sms:${ticket.phone}?body=${encodeURIComponent(`Hi ${ticket.customerName}, welcome to Hairport! You are next in line. Your stylist will be ready for you shortly. Thank you for waiting!`)}`}
-                              className="bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white p-2 rounded-sm transition-colors border border-blue-200 cursor-pointer flex items-center justify-center"
+                              className="bg-blue-950/40 text-blue-400 hover:bg-blue-600 hover:text-white p-2 rounded-sm transition-colors border border-blue-800/40 cursor-pointer flex items-center justify-center"
                               title="Send Waitlist SMS"
                             >
                               <Phone className="w-4 h-4" />
                             </a>
                             <button 
                               onClick={() => { if (window.confirm(`Delete ticket for ${ticket.customerName}?`)) deleteTicket(ticket.docId); }}
-                              className="bg-red-50 text-red-600 hover:bg-red-600 hover:text-white p-2 rounded-sm transition-colors border border-red-200 cursor-pointer flex items-center justify-center"
+                              className="bg-red-950/40 text-red-400 hover:bg-red-600 hover:text-white p-2 rounded-sm transition-colors border border-red-800/40 cursor-pointer flex items-center justify-center"
                               title="Cancel Appointment"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -2839,8 +2847,8 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
               </div>
 
               {/* Serving Column */}
-              <div className="bg-white border border-[#111111] p-6 rounded-sm shadow-xl flex flex-col h-[calc(100vh-180px)] xl:h-auto">
-                <div className="flex items-center justify-between mb-6 border-b border-[#E5E5E0] pb-4">
+              <div className="bg-[#141414]/90 border border-[#D4AF37]/50 p-6 rounded-sm shadow-2xl flex flex-col h-[calc(100vh-180px)] xl:h-auto backdrop-blur-md">
+                <div className="flex items-center justify-between mb-6 border-b border-[#2A2A2A] pb-4">
                   <h3 className="font-serif text-lg tracking-widest text-[#D4AF37] flex items-center gap-2 uppercase">
                     Now Serving
                   </h3>
@@ -2850,8 +2858,8 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
                 <div className="overflow-y-auto flex-1 hide-scrollbar space-y-4 pr-2">
                   <AnimatePresence>
                     {servingTickets.length === 0 ? (
-                      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-12 border border-[#E5E5E0] border-dashed rounded-sm">
-                        <p className="text-gray-500 font-serif italic text-sm">All stations available.</p>
+                      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-12 border border-[#2A2A2A] border-dashed rounded-sm">
+                        <p className="text-gray-400 font-serif italic text-sm">All stations available.</p>
                       </motion.div>
                     ) : (
                       servingTickets.map((ticket) => (
@@ -2861,18 +2869,18 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, scale: 0.95 }}
-                          className="relative bg-[#F5F5F0] border border-[#D4AF37] p-5 rounded-sm flex items-center justify-between group"
+                          className="relative bg-[#1A1A1A] border border-[#D4AF37]/50 p-5 rounded-sm flex items-center justify-between group shadow-md"
                         >
                           <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#D4AF37]"></div>
                           
                           <div className="pl-2">
                             <div className="flex items-center gap-3 mb-1">
-                              <span className="text-[#111111] font-sans font-medium text-sm">{ticket.id}</span>
-                              <span className="text-[10px] uppercase tracking-wider text-[#111111] bg-[#D4AF37] px-2 py-0.5 rounded-sm">{ticket.serviceType}</span>
+                              <span className="text-white font-sans font-medium text-sm">{ticket.id}</span>
+                              <span className="text-[10px] uppercase tracking-wider text-[#111111] bg-[#D4AF37] px-2 py-0.5 rounded-sm font-bold">{ticket.serviceType}</span>
                             </div>
-                            <p className="text-[#111111] font-serif text-lg font-medium">{ticket.customerName}</p>
+                            <p className="text-white font-serif text-lg font-medium">{ticket.customerName}</p>
                             {ticket.stylistName && (
-                              <p className="text-xs text-gray-500 font-sans mt-1">with <span className="font-semibold">{ticket.stylistName}</span></p>
+                              <p className="text-xs text-gray-400 font-sans mt-1">with <span className="font-semibold text-gray-200">{ticket.stylistName}</span></p>
                             )}
                             {ticket.colourNumber && (
                               <p className="text-xs text-[#D4AF37] font-semibold font-sans mt-1">
@@ -2884,7 +2892,7 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
                           <div className="flex flex-col gap-2">
                             <button 
                               onClick={() => onCompleteTicket(ticket)}
-                              className="flex items-center gap-2 bg-white border border-[#E5E5E0] text-gray-500 hover:text-[#111111] hover:border-[#D4AF37] px-3 py-1.5 rounded-sm transition-colors font-sans text-xs uppercase tracking-widest cursor-pointer"
+                              className="flex items-center gap-2 bg-[#D4AF37] text-[#111111] hover:bg-[#C5A059] font-bold px-3 py-1.5 rounded-sm transition-colors font-sans text-xs uppercase tracking-widest cursor-pointer shadow-sm"
                               title="Complete Service"
                             >
                               <CheckCircle className="w-4 h-4" />
@@ -2893,7 +2901,7 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
                             <div className="flex gap-2">
                               <button
                                 onClick={() => openEdit(ticket)}
-                                className="flex-1 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white py-1 px-2 rounded-sm transition-colors border border-blue-200 cursor-pointer flex items-center justify-center text-xs font-bold gap-1"
+                                className="flex-1 bg-blue-950/40 text-blue-400 hover:bg-blue-600 hover:text-white py-1 px-2 rounded-sm transition-colors border border-blue-800/40 cursor-pointer flex items-center justify-center text-xs font-bold gap-1"
                                 title="Edit Entry"
                               >
                                 <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
@@ -2901,7 +2909,7 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
                               </button>
                               <button 
                                 onClick={() => { if (window.confirm(`Delete ticket for ${ticket.customerName}?`)) deleteTicket(ticket.docId); }}
-                                className="bg-red-50 text-red-600 hover:bg-red-600 hover:text-white py-1 px-2.5 rounded-sm transition-colors border border-red-200 cursor-pointer flex items-center justify-center text-xs font-bold gap-1"
+                                className="bg-red-950/40 text-red-400 hover:bg-red-600 hover:text-white py-1 px-2.5 rounded-sm transition-colors border border-red-800/40 cursor-pointer flex items-center justify-center text-xs font-bold gap-1"
                                 title="Cancel Appointment"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
@@ -2964,15 +2972,15 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white border border-[#E5E5E0] rounded-sm shadow-2xl w-full max-w-md p-8 text-[#111111] max-h-[90vh] overflow-y-auto"
+              className="bg-[#141414] border border-[#D4AF37]/40 rounded-sm shadow-2xl w-full max-w-md p-8 text-white max-h-[90vh] overflow-y-auto"
             >
-              <div className="flex items-center justify-between mb-6 border-b border-[#E5E5E0] pb-4">
-                <h3 className="text-xl font-serif text-[#111111] uppercase tracking-wider">
+              <div className="flex items-center justify-between mb-6 border-b border-[#2A2A2A] pb-4">
+                <h3 className="text-xl font-serif text-[#D4AF37] uppercase tracking-wider">
                   Edit Client — {editingTicket.id}
                 </h3>
                 <button
                   onClick={() => setEditingTicket(null)}
-                  className="text-gray-400 hover:text-red-500 transition-colors cursor-pointer"
+                  className="text-gray-400 hover:text-red-400 transition-colors cursor-pointer"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                 </button>
@@ -2981,29 +2989,29 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
               <div className="space-y-5">
                 {/* Name */}
                 <div className="space-y-1">
-                  <label className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Client Name</label>
+                  <label className="text-[10px] text-gray-400 uppercase tracking-widest font-bold">Client Name</label>
                   <input
                     type="text"
                     value={editName}
                     onChange={e => setEditName(e.target.value)}
-                    className="w-full bg-[#F5F5F0] border border-[#E5E5E0] rounded-sm px-4 py-2.5 focus:outline-none focus:border-[#D4AF37] text-[#111111] font-sans text-sm"
+                    className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-sm px-4 py-2.5 focus:outline-none focus:border-[#D4AF37] text-white font-sans text-sm"
                   />
                 </div>
 
                 {/* Phone */}
                 <div className="space-y-1">
-                  <label className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Phone</label>
+                  <label className="text-[10px] text-gray-400 uppercase tracking-widest font-bold">Phone</label>
                   <input
                     type="tel"
                     value={editPhone}
                     onChange={e => setEditPhone(e.target.value)}
-                    className="w-full bg-[#F5F5F0] border border-[#E5E5E0] rounded-sm px-4 py-2.5 focus:outline-none focus:border-[#D4AF37] text-[#111111] font-sans text-sm"
+                    className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-sm px-4 py-2.5 focus:outline-none focus:border-[#D4AF37] text-white font-sans text-sm"
                   />
                 </div>
 
                 {/* Gender */}
                 <div className="space-y-1">
-                  <label className="text-[10px] text-gray-500 uppercase tracking-widest font-bold block">Gender</label>
+                  <label className="text-[10px] text-gray-400 uppercase tracking-widest font-bold block">Gender</label>
                   <div className="flex gap-2">
                     {(["Male", "Female"] as const).map(g => (
                       <button
@@ -3013,7 +3021,7 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
                         className={`flex-1 py-2 rounded-sm border text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
                           editGender === g
                             ? "bg-[#D4AF37]/20 border-[#D4AF37] text-[#D4AF37]"
-                            : "bg-[#F5F5F0] border-[#E5E5E0] text-gray-500 hover:text-[#111111]"
+                            : "bg-[#1A1A1A] border-[#2A2A2A] text-gray-400 hover:text-white"
                         }`}
                       >{g}</button>
                     ))}
@@ -3022,7 +3030,7 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
 
                 {/* Category */}
                 <div className="space-y-1">
-                  <label className="text-[10px] text-gray-500 uppercase tracking-widest font-bold block">Category</label>
+                  <label className="text-[10px] text-gray-400 uppercase tracking-widest font-bold block">Category</label>
                   <div className="flex gap-2">
                     {(["Hair", "Skin", "Waxing"] as const).map(cat => (
                       <button
@@ -3032,7 +3040,7 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
                         className={`flex-1 py-2 rounded-sm border text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
                           editCategory === cat
                             ? "bg-[#D4AF37]/20 border-[#D4AF37] text-[#D4AF37]"
-                            : "bg-[#F5F5F0] border-[#E5E5E0] text-gray-500 hover:text-[#111111]"
+                            : "bg-[#1A1A1A] border-[#2A2A2A] text-gray-400 hover:text-white"
                         }`}
                       >{cat}</button>
                     ))}
@@ -3041,8 +3049,8 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
 
                 {/* Services */}
                 <div className="space-y-1">
-                  <label className="text-[10px] text-gray-500 uppercase tracking-widest font-bold block">Services</label>
-                  <div className="grid grid-cols-2 gap-1.5 max-h-40 overflow-y-auto border border-[#E5E5E0] rounded-sm p-2 bg-[#F5F5F0]">
+                  <label className="text-[10px] text-gray-400 uppercase tracking-widest font-bold block">Services</label>
+                  <div className="grid grid-cols-2 gap-1.5 max-h-40 overflow-y-auto border border-[#2A2A2A] rounded-sm p-2 bg-[#1A1A1A]">
                     {SERVICES_CONFIG[editGender][editCategory].map(svc => {
                       const sel = editServices.includes(svc);
                       return (
@@ -3051,10 +3059,10 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
                           type="button"
                           onClick={() => setEditServices(prev => sel ? prev.filter(s => s !== svc) : [...prev, svc])}
                           className={`flex items-center gap-1.5 px-2 py-1.5 rounded-sm border text-[11px] font-sans text-left transition-colors cursor-pointer ${
-                            sel ? "bg-[#D4AF37]/10 border-[#D4AF37] text-[#D4AF37] font-semibold" : "bg-white border-[#E5E5E0] text-gray-700 hover:border-gray-400"
+                            sel ? "bg-[#D4AF37]/20 border-[#D4AF37] text-[#D4AF37] font-semibold" : "bg-[#222222] border-[#333333] text-gray-300 hover:border-gray-500"
                           }`}
                         >
-                          <div className={`w-3 h-3 border rounded-sm flex items-center justify-center shrink-0 ${sel ? "border-[#D4AF37] bg-[#D4AF37] text-[#111111]" : "border-gray-400 bg-white"}`}>
+                          <div className={`w-3 h-3 border rounded-sm flex items-center justify-center shrink-0 ${sel ? "border-[#D4AF37] bg-[#D4AF37] text-[#111111]" : "border-gray-500 bg-[#1A1A1A]"}`}>
                             {sel && <span className="text-[8px] font-bold">✓</span>}
                           </div>
                           <span className="truncate">{svc}</span>
@@ -3067,7 +3075,7 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
                       {editServices.map(s => (
                         <span key={s} className="text-[10px] bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-[#D4AF37] px-2 py-0.5 rounded-sm flex items-center gap-1">
                           {s}
-                          <button type="button" onClick={() => setEditServices(prev => prev.filter(x => x !== s))} className="text-red-400 hover:text-red-600 cursor-pointer">×</button>
+                          <button type="button" onClick={() => setEditServices(prev => prev.filter(x => x !== s))} className="text-red-400 hover:text-red-300 cursor-pointer">×</button>
                         </span>
                       ))}
                     </div>
@@ -3077,13 +3085,13 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
                 {/* Colour Number */}
                 {editServices.some(s => s.toLowerCase().includes("colour") || s.toLowerCase().includes("highlights") || s.toLowerCase().includes("touch up")) && (
                   <div className="space-y-1">
-                    <label className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Hair Colour Number / Shade</label>
+                    <label className="text-[10px] text-gray-400 uppercase tracking-widest font-bold">Hair Colour Number / Shade</label>
                     <input
                       type="text"
                       value={editColour}
                       onChange={e => setEditColour(e.target.value)}
                       placeholder="e.g. Igora 5-0, Yutika 4.0"
-                      className="w-full bg-[#F5F5F0] border border-[#E5E5E0] rounded-sm px-4 py-2.5 focus:outline-none focus:border-[#D4AF37] text-[#111111] font-sans text-sm"
+                      className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-sm px-4 py-2.5 focus:outline-none focus:border-[#D4AF37] text-white font-sans text-sm"
                     />
                   </div>
                 )}
@@ -3093,7 +3101,7 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
                   <button
                     type="button"
                     onClick={() => setEditingTicket(null)}
-                    className="flex-1 py-3 border border-gray-300 text-gray-500 rounded-sm text-xs font-bold uppercase tracking-wider hover:bg-gray-50 transition-colors cursor-pointer"
+                    className="flex-1 py-3 border border-[#333333] text-gray-400 rounded-sm text-xs font-bold uppercase tracking-wider hover:bg-[#2A2A2A] transition-colors cursor-pointer"
                   >
                     Cancel
                   </button>
