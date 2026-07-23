@@ -900,23 +900,23 @@ const App: React.FC = () => {
   return (
     <div className="min-h-screen font-sans selection:bg-[#D4AF37]/30 overflow-x-hidden flex flex-col bg-[#0A0A0A] text-gray-100">
       
-      {/* Elegant Background Texture & Universal Dark Luxury Wallpaper */}
+      {/* Universal High-Res Option 3 Luxury Dark Wallpaper */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
         <div 
           style={{
-            backgroundImage: 'linear-gradient(to bottom, rgba(10, 10, 10, 0.92), rgba(15, 15, 15, 0.97)), url("/option3_bg.jpg")',
+            backgroundImage: 'linear-gradient(to bottom, rgba(5, 5, 5, 0.40), rgba(10, 10, 10, 0.60)), url("/option3_bg.jpg")',
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             backgroundAttachment: 'fixed'
           }}
           className="absolute inset-0"
         />
-        <div className="absolute inset-0 opacity-[0.03] mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
+        <div className="absolute inset-0 opacity-[0.02] mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
       </div>
 
-      {/* Header (Hide in TV View to make it fully full-screen as requested) */}
+      {/* Header */}
       {view !== 'tv' && (
-        <header className={`relative z-20 flex flex-col lg:flex-row justify-between items-center px-4 sm:px-8 py-4 sm:py-6 gap-4 sm:gap-6 border-b transition-colors duration-500 ${isDarkView ? 'bg-[#0A0A0A]/90 border-[#2A2A2A]' : 'bg-white/90 border-[#111111]'} backdrop-blur-md`}>
+        <header className="relative z-20 flex flex-col lg:flex-row justify-between items-center px-4 sm:px-8 py-4 sm:py-6 gap-4 sm:gap-6 border-b transition-colors duration-500 bg-black/60 border-[#D4AF37]/30 backdrop-blur-md">
           <div className="flex items-center justify-between w-full lg:w-auto gap-4">
             <div className="flex items-center gap-3 sm:gap-4">
               <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-sm border transition-colors duration-500 flex items-center justify-center ${isDarkView ? 'border-[#D4AF37]/50 bg-[#1A1A1A]' : 'border-[#111111] bg-[#111111]'}`}>
@@ -1211,13 +1211,13 @@ const RevenueAnalyticsView: React.FC<RevenueAnalyticsViewProps> = ({ tickets }) 
   return (
     <div className="flex flex-col gap-10 w-full text-white font-sans">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-[#141414]/90 border border-[#D4AF37]/30 p-6 rounded-sm shadow-xl flex flex-col gap-2 relative overflow-hidden backdrop-blur-md">
+        <div className="bg-black/60 border border-[#D4AF37]/40 p-6 rounded-sm shadow-2xl flex flex-col gap-2 relative overflow-hidden backdrop-blur-md">
           <span className="text-gray-400 text-xs uppercase tracking-widest font-semibold">This Month's Revenue</span>
           <span className="text-4xl font-serif font-bold text-[#D4AF37]">₹{thisMonthRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
           <span className="text-[10px] text-gray-500 uppercase tracking-wider">{now.toLocaleString(undefined, { month: 'long', year: 'numeric' })}</span>
         </div>
 
-        <div className="bg-[#141414]/90 border border-[#2A2A2A] p-6 rounded-sm shadow-xl flex flex-col gap-2 relative overflow-hidden backdrop-blur-md">
+        <div className="bg-black/60 border border-[#D4AF37]/30 p-6 rounded-sm shadow-2xl flex flex-col gap-2 relative overflow-hidden backdrop-blur-md">
           <span className="text-gray-400 text-xs uppercase tracking-widest font-semibold">Last Month's Revenue</span>
           <span className="text-4xl font-serif font-bold text-gray-300">₹{lastMonthRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
           <span className="text-[10px] text-gray-500 uppercase tracking-wider">
@@ -1225,7 +1225,7 @@ const RevenueAnalyticsView: React.FC<RevenueAnalyticsViewProps> = ({ tickets }) 
           </span>
         </div>
 
-        <div className="bg-[#141414]/90 border border-[#2A2A2A] p-6 rounded-sm shadow-xl flex flex-col justify-between gap-2 backdrop-blur-md">
+        <div className="bg-black/60 border border-[#D4AF37]/30 p-6 rounded-sm shadow-2xl flex flex-col justify-between gap-2 backdrop-blur-md">
           <div className="flex flex-col gap-1">
             <span className="text-gray-400 text-xs uppercase tracking-widest font-semibold">Monthly Performance Change</span>
             <span className={`text-4xl font-serif font-bold ${hasGrowth ? 'text-green-400' : 'text-red-400'}`}>
@@ -1236,13 +1236,13 @@ const RevenueAnalyticsView: React.FC<RevenueAnalyticsViewProps> = ({ tickets }) 
         </div>
       </div>
 
-      <div className="bg-[#141414]/90 border border-[#2A2A2A] p-8 rounded-sm shadow-2xl flex flex-col gap-6 backdrop-blur-md">
+      <div className="bg-black/60 border border-[#D4AF37]/30 p-8 rounded-sm shadow-2xl flex flex-col gap-6 backdrop-blur-md">
         <h3 className="text-lg font-serif uppercase tracking-wider text-[#D4AF37]">
           Monthly Revenue Balance Check
         </h3>
         
         <div className="flex flex-col gap-2">
-          <div className="h-6 w-full bg-[#1A1A1A] rounded-full overflow-hidden flex border border-[#2A2A2A]">
+          <div className="h-6 w-full bg-[#1A1A1A]/80 rounded-full overflow-hidden flex border border-[#2A2A2A]">
             <div 
               style={{ width: `${lastMonthPercent}%` }} 
               className="bg-gray-600 transition-all duration-500 animate-pulse-once"
@@ -1268,7 +1268,7 @@ const RevenueAnalyticsView: React.FC<RevenueAnalyticsViewProps> = ({ tickets }) 
         </div>
       </div>
 
-      <div className="bg-[#141414]/90 border border-[#2A2A2A] p-8 rounded-sm shadow-2xl flex flex-col gap-6 backdrop-blur-md">
+      <div className="bg-black/60 border border-[#D4AF37]/30 p-8 rounded-sm shadow-2xl flex flex-col gap-6 backdrop-blur-md">
         <h3 className="text-lg font-serif uppercase tracking-wider text-[#D4AF37]">
           Payment Breakdown & Outstanding Balances
         </h3>
@@ -1330,7 +1330,7 @@ const RevenueAnalyticsView: React.FC<RevenueAnalyticsViewProps> = ({ tickets }) 
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
         
-        <div className="bg-[#141414]/90 border border-[#2A2A2A] p-8 rounded-sm shadow-2xl flex flex-col gap-6 backdrop-blur-md">
+        <div className="bg-black/60 border border-[#D4AF37]/30 p-8 rounded-sm shadow-2xl flex flex-col gap-6 backdrop-blur-md">
           <div>
             <h3 className="text-xl font-serif uppercase tracking-wider text-[#D4AF37] mb-1">
               Daily Income Overview
@@ -1367,7 +1367,7 @@ const RevenueAnalyticsView: React.FC<RevenueAnalyticsViewProps> = ({ tickets }) 
           </div>
         </div>
 
-        <div className="bg-[#141414]/90 border border-[#2A2A2A] p-8 rounded-sm shadow-2xl flex flex-col gap-6 backdrop-blur-md">
+        <div className="bg-black/60 border border-[#D4AF37]/30 p-8 rounded-sm shadow-2xl flex flex-col gap-6 backdrop-blur-md">
           <div>
             <h3 className="text-xl font-serif uppercase tracking-wider text-[#D4AF37] mb-1">
               Monthly Trend Comparison
@@ -1573,21 +1573,21 @@ const ClientHistoryView: React.FC<ClientHistoryViewProps> = ({ tickets }) => {
   return (
     <div className="flex flex-col gap-8 w-full text-white font-sans">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        <div className="bg-[#141414]/90 border border-[#2A2A2A] p-6 rounded-sm shadow-xl flex flex-col gap-2 backdrop-blur-md">
+        <div className="bg-black/60 border border-[#D4AF37]/30 p-6 rounded-sm shadow-2xl flex flex-col gap-2 backdrop-blur-md">
           <span className="text-gray-400 text-xs uppercase tracking-widest font-semibold">Total Completed Visits</span>
           <span className="text-4xl font-serif font-bold text-white">{totalVisits}</span>
         </div>
-        <div className="bg-[#141414]/90 border border-[#D4AF37]/30 p-6 rounded-sm shadow-xl flex flex-col gap-2 backdrop-blur-md">
+        <div className="bg-black/60 border border-[#D4AF37]/40 p-6 rounded-sm shadow-2xl flex flex-col gap-2 backdrop-blur-md">
           <span className="text-gray-400 text-xs uppercase tracking-widest font-semibold">Total Revenue Generated</span>
           <span className="text-4xl font-serif font-bold text-[#D4AF37]">₹{totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
         </div>
-        <div className="bg-[#141414]/90 border border-[#2A2A2A] p-6 rounded-sm shadow-xl flex flex-col gap-2 backdrop-blur-md">
+        <div className="bg-black/60 border border-[#D4AF37]/30 p-6 rounded-sm shadow-2xl flex flex-col gap-2 backdrop-blur-md">
           <span className="text-gray-400 text-xs uppercase tracking-widest font-semibold">Average Ticket Value</span>
           <span className="text-4xl font-serif font-bold text-white">₹{avgSpend.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
         </div>
       </div>
 
-      <div className="bg-[#141414]/90 border border-[#2A2A2A] p-8 rounded-sm shadow-2xl flex flex-col gap-6 backdrop-blur-md">
+      <div className="bg-black/60 border border-[#D4AF37]/30 p-8 rounded-sm shadow-2xl flex flex-col gap-6 backdrop-blur-md">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#2A2A2A] pb-4">
           <h3 className="text-xl font-serif uppercase tracking-wider text-[#D4AF37]">
             Client Database & Billing Logs
@@ -2112,19 +2112,19 @@ const ExpenseTrackerView: React.FC = () => {
     <div className="flex flex-col gap-8 w-full text-white font-sans">
       {/* Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-6">
-        <div className="bg-[#141414]/90 border border-red-900/30 p-6 rounded-sm shadow-xl flex flex-col gap-1 backdrop-blur-md">
+        <div className="bg-black/60 border border-red-900/40 p-6 rounded-sm shadow-2xl flex flex-col gap-1 backdrop-blur-md">
           <span className="text-gray-400 text-xs uppercase tracking-widest font-semibold">Today's Expenses</span>
           <span className="text-3xl font-serif font-bold text-red-500">₹{todayTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
         </div>
-        <div className="bg-[#141414]/90 border border-[#2A2A2A] p-6 rounded-sm shadow-xl flex flex-col gap-1 backdrop-blur-md">
+        <div className="bg-black/60 border border-[#D4AF37]/30 p-6 rounded-sm shadow-2xl flex flex-col gap-1 backdrop-blur-md">
           <span className="text-gray-400 text-xs uppercase tracking-widest font-semibold">Period Expenses ({dateFilter})</span>
           <span className="text-3xl font-serif font-bold text-white">₹{totalFiltered.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
         </div>
-        <div className="bg-[#141414]/90 border border-green-900/30 p-6 rounded-sm shadow-xl flex flex-col gap-1 backdrop-blur-md">
+        <div className="bg-black/60 border border-green-900/40 p-6 rounded-sm shadow-2xl flex flex-col gap-1 backdrop-blur-md">
           <span className="text-gray-400 text-xs uppercase tracking-widest font-semibold">Cash Spent</span>
           <span className="text-3xl font-serif font-bold text-green-400">₹{cashFiltered.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
         </div>
-        <div className="bg-[#141414]/90 border border-blue-900/30 p-6 rounded-sm shadow-xl flex flex-col gap-1 backdrop-blur-md">
+        <div className="bg-black/60 border border-blue-900/40 p-6 rounded-sm shadow-2xl flex flex-col gap-1 backdrop-blur-md">
           <span className="text-gray-400 text-xs uppercase tracking-widest font-semibold">UPI Spent</span>
           <span className="text-3xl font-serif font-bold text-blue-400">₹{upiFiltered.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
         </div>
@@ -2132,7 +2132,7 @@ const ExpenseTrackerView: React.FC = () => {
 
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
         {/* Add Expense Form */}
-        <div className="xl:col-span-4 bg-[#141414]/90 border border-[#D4AF37]/30 p-8 rounded-sm shadow-2xl flex flex-col gap-6 backdrop-blur-md">
+        <div className="xl:col-span-4 bg-black/60 border border-[#D4AF37]/30 p-8 rounded-sm shadow-2xl flex flex-col gap-6 backdrop-blur-md">
           <h3 className="text-xl font-serif uppercase tracking-wider text-[#D4AF37] border-b border-[#2A2A2A] pb-4">
             Record New Expense
           </h3>
@@ -2219,7 +2219,7 @@ const ExpenseTrackerView: React.FC = () => {
         </div>
 
         {/* Expenses List & Logs */}
-        <div className="xl:col-span-8 bg-[#141414]/90 border border-[#2A2A2A] p-8 rounded-sm shadow-2xl flex flex-col gap-6 backdrop-blur-md">
+        <div className="xl:col-span-8 bg-black/60 border border-[#D4AF37]/30 p-8 rounded-sm shadow-2xl flex flex-col gap-6 backdrop-blur-md">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#2A2A2A] pb-4">
             <h3 className="text-xl font-serif uppercase tracking-wider text-[#D4AF37]">
               Expense Log ({filteredExpenses.length})
@@ -2454,15 +2454,7 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
   };
 
   return (
-    <div 
-      style={{
-        backgroundImage: 'linear-gradient(to bottom, rgba(12, 12, 12, 0.90), rgba(16, 16, 16, 0.95)), url("/option3_bg.jpg")',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundAttachment: 'fixed'
-      }}
-      className="max-w-7xl mx-auto w-full flex flex-col gap-6 flex-1 text-white p-6 sm:p-8 rounded-sm shadow-2xl border border-[#2A2A2A] backdrop-blur-md"
-    >
+    <div className="max-w-7xl mx-auto w-full flex flex-col gap-6 flex-1 text-white p-4 sm:p-6 rounded-sm bg-black/40 backdrop-blur-md border border-[#D4AF37]/30 shadow-2xl">
       {/* Tab Selector */}
       <div className="flex border-b border-[#2A2A2A] pb-2 gap-3 overflow-x-auto whitespace-nowrap hide-scrollbar">
         <button
@@ -2518,7 +2510,7 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
           >
             {/* Left Column: Form & Stylists */}
             <div className="xl:col-span-4 flex flex-col gap-6">
-              <div className="bg-[#141414]/90 border border-[#D4AF37]/30 p-8 rounded-sm shadow-2xl backdrop-blur-md">
+              <div className="bg-black/60 border border-[#D4AF37]/30 p-8 rounded-sm shadow-2xl backdrop-blur-md">
                 <h2 className="text-2xl font-serif text-[#D4AF37] mb-8 border-b border-[#2A2A2A] pb-4 tracking-wide uppercase">
                   Add Client
                 </h2>
@@ -2534,7 +2526,7 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
                         type="text" 
                         value={customerName}
                         onChange={(e) => setCustomerName(e.target.value)}
-                        className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-sm pl-10 pr-4 py-3 focus:outline-none focus:border-[#D4AF37] transition-all text-white placeholder-gray-500 font-sans"
+                        className="w-full bg-[#1A1A1A]/80 border border-[#2A2A2A] rounded-sm pl-10 pr-4 py-3 focus:outline-none focus:border-[#D4AF37] transition-all text-white placeholder-gray-500 font-sans"
                         placeholder="Enter name"
                         required
                       />
@@ -2551,7 +2543,7 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
                         type="tel" 
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
-                        className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-sm pl-10 pr-4 py-3 focus:outline-none focus:border-[#D4AF37] transition-all text-white placeholder-gray-500 font-sans"
+                        className="w-full bg-[#1A1A1A]/80 border border-[#2A2A2A] rounded-sm pl-10 pr-4 py-3 focus:outline-none focus:border-[#D4AF37] transition-all text-white placeholder-gray-500 font-sans"
                         placeholder="Enter phone number"
                         required
                       />
@@ -2572,7 +2564,7 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
                           className={`flex-1 py-3 rounded-sm border text-xs font-sans tracking-widest uppercase transition-all duration-300 cursor-pointer font-bold ${
                             gender === g
                               ? "bg-[#D4AF37]/20 border-[#D4AF37] text-[#D4AF37] shadow-[0_0_15px_rgba(212,175,55,0.15)]"
-                              : "bg-[#1A1A1A] border-[#2A2A2A] text-gray-400 hover:text-white"
+                              : "bg-[#1A1A1A]/80 border-[#2A2A2A] text-gray-400 hover:text-white"
                           }`}
                         >
                           {g}
@@ -2594,7 +2586,7 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
                           className={`flex-1 py-3 rounded-sm border text-xs font-sans tracking-widest uppercase transition-all duration-300 cursor-pointer font-bold ${
                             serviceCategory === cat
                               ? "bg-[#D4AF37]/20 border-[#D4AF37] text-[#D4AF37] shadow-[0_0_15px_rgba(212,175,55,0.15)]"
-                              : "bg-[#1A1A1A] border-[#2A2A2A] text-gray-400 hover:text-white"
+                              : "bg-[#1A1A1A]/80 border-[#2A2A2A] text-gray-400 hover:text-white"
                           }`}
                         >
                           {cat}
@@ -2605,7 +2597,7 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
 
                   <div className="space-y-2">
                     <label className="text-xs font-sans text-gray-400 uppercase tracking-widest block mb-2">Select Services (Multiple)</label>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-2 border border-[#2A2A2A] p-3 rounded-sm bg-[#1A1A1A]">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-2 border border-[#2A2A2A] p-3 rounded-sm bg-[#1A1A1A]/80">
                       {SERVICES_CONFIG[gender][serviceCategory].map((serviceName) => {
                         const isSelected = selectedServices.includes(serviceName);
                         return (
@@ -2622,7 +2614,7 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
                             className={`flex items-center gap-2 px-3 py-2 rounded-sm border text-xs font-sans text-left transition-colors cursor-pointer ${
                               isSelected
                                 ? 'bg-[#D4AF37]/20 border-[#D4AF37] text-[#D4AF37] font-semibold font-sans'
-                                : 'bg-[#222222] border-[#333333] text-gray-300 hover:border-gray-500 font-sans'
+                                : 'bg-[#222222]/80 border-[#333333] text-gray-300 hover:border-gray-500 font-sans'
                             }`}
                           >
                             <div className={`w-3.5 h-3.5 border rounded-sm flex items-center justify-center shrink-0 ${
@@ -2678,7 +2670,7 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
                         value={colourNumber}
                         onChange={(e) => setColourNumber(e.target.value)}
                         placeholder="e.g. Igora 5-0, Yutika 4.0"
-                        className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-sm px-4 py-3 focus:outline-none focus:border-[#D4AF37] text-white placeholder-gray-500 font-sans"
+                        className="w-full bg-[#1A1A1A]/80 border border-[#2A2A2A] rounded-sm px-4 py-3 focus:outline-none focus:border-[#D4AF37] text-white placeholder-gray-500 font-sans"
                       />
                     </div>
                   )}
@@ -2686,7 +2678,7 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
                   <button 
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full mt-8 bg-[#D4AF37] hover:bg-[#C5A059] text-[#111111] font-serif font-bold tracking-widest uppercase py-4 px-6 rounded-sm transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    className="w-full mt-8 bg-[#D4AF37] hover:bg-[#C5A059] text-[#111111] font-serif font-bold tracking-widest uppercase py-4 px-6 rounded-sm transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg"
                   >
                     {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : null}
                     {isSubmitting ? "Adding..." : "Add to Queue"}
@@ -2695,7 +2687,7 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
               </div>
 
               {/* Stylists Section */}
-              <div className="bg-[#141414]/90 border border-[#2A2A2A] p-8 rounded-sm shadow-2xl flex-1 flex flex-col min-h-[350px] backdrop-blur-md">
+              <div className="bg-black/60 border border-[#D4AF37]/30 p-8 rounded-sm shadow-2xl flex-1 flex flex-col min-h-[350px] backdrop-blur-md">
                 <h2 className="text-2xl font-serif text-[#D4AF37] mb-6 border-b border-[#2A2A2A] pb-4 tracking-wide uppercase">
                   Duty Stylists
                 </h2>
@@ -2706,7 +2698,7 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
                     value={newStylistName}
                     onChange={(e) => setNewStylistName(e.target.value)}
                     placeholder="New Stylist Name" 
-                    className="flex-1 bg-[#1A1A1A] border border-[#2A2A2A] rounded-sm px-4 py-2 text-sm focus:outline-none focus:border-[#D4AF37] transition-all text-white placeholder-gray-500 font-sans"
+                    className="flex-1 bg-[#1A1A1A]/80 border border-[#2A2A2A] rounded-sm px-4 py-2 text-sm focus:outline-none focus:border-[#D4AF37] transition-all text-white placeholder-gray-500 font-sans"
                   />
                   <button 
                     type="submit"
@@ -2721,7 +2713,7 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
                     <p className="text-gray-400 font-serif italic text-sm text-center py-6">No stylists active.</p>
                   ) : (
                     stylists.map(stylist => (
-                      <div key={stylist.id} className="flex items-center justify-between p-3 border border-[#2A2A2A] rounded-sm bg-[#1A1A1A]">
+                      <div key={stylist.id} className="flex items-center justify-between p-3 border border-[#2A2A2A] rounded-sm bg-[#1A1A1A]/80">
                         <span className="font-serif text-white font-medium">{stylist.name}</span>
                         <button
                           onClick={() => toggleStylistActive(stylist.id, stylist.active)}
@@ -2744,7 +2736,7 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
             <div className="xl:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-10">
               
               {/* Waiting Column */}
-              <div className="bg-[#141414]/90 border border-[#2A2A2A] p-6 rounded-sm shadow-2xl flex flex-col h-[calc(100vh-180px)] xl:h-auto backdrop-blur-md">
+              <div className="bg-black/60 border border-[#D4AF37]/30 p-6 rounded-sm shadow-2xl flex flex-col h-[calc(100vh-180px)] xl:h-auto backdrop-blur-md">
                 <div className="flex items-center justify-between mb-6 border-b border-[#2A2A2A] pb-4">
                   <h3 className="font-serif text-lg tracking-widest text-[#D4AF37] flex items-center gap-2 uppercase">
                     Waiting Lounge
@@ -2766,7 +2758,7 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, scale: 0.95 }}
-                          className="bg-[#1A1A1A] border border-[#2A2A2A] p-5 rounded-sm flex items-center justify-between group hover:border-[#D4AF37] transition-colors shadow-md"
+                          className="bg-[#1A1A1A]/90 border border-[#2A2A2A] p-5 rounded-sm flex items-center justify-between group hover:border-[#D4AF37] transition-colors shadow-md"
                         >
                           <div>
                             <div className="flex items-center gap-3 mb-1">
@@ -2855,7 +2847,7 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
               </div>
 
               {/* Serving Column */}
-              <div className="bg-[#141414]/90 border border-[#D4AF37]/50 p-6 rounded-sm shadow-2xl flex flex-col h-[calc(100vh-180px)] xl:h-auto backdrop-blur-md">
+              <div className="bg-black/60 border border-[#D4AF37]/40 p-6 rounded-sm shadow-2xl flex flex-col h-[calc(100vh-180px)] xl:h-auto backdrop-blur-md">
                 <div className="flex items-center justify-between mb-6 border-b border-[#2A2A2A] pb-4">
                   <h3 className="font-serif text-lg tracking-widest text-[#D4AF37] flex items-center gap-2 uppercase">
                     Now Serving
