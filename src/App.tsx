@@ -73,7 +73,8 @@ const SERVICES_CONFIG = {
   Male: {
     Hair: [
       "Haircut",
-      "Hair Colour",
+      "Global Colour",
+      "Highlights Colour",
       "Hair Spa",
       "Head Massage",
       "Beard Style",
@@ -100,8 +101,8 @@ const SERVICES_CONFIG = {
     Hair: [
       "Haircut",
       "Hair Spa",
-      "Hair Colour",
-      "Global Colour & Highlights",
+      "Global Colour",
+      "Highlights Colour",
       "Root Touch Up",
       "Oil Massage",
       "Hair Fall Treatment"
