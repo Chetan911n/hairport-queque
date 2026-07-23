@@ -3539,45 +3539,6 @@ interface OwnerDashboardProps {
 const OwnerDashboard: React.FC<OwnerDashboardProps> = ({ tickets }) => {
   const [stylists, setStylists] = useState<StylistDoc[]>([]);
   const [loadingStylists, setLoadingStylists] = useState(true);
-  const [cleanupRunning, setCleanupRunning] = useState(false);
-  const [cleanupResult, setCleanupResult] = useState<string | null>(null);
-
-  const runCleanup = async () => {
-    if (!window.confirm("This will permanently delete all:\n\u2022 Tickets with \u20b90 price\n\u2022 Customer name = Chetan\n\u2022 Stylist name = Chetan\n\u2022 Pending \u20b9200 entries\n\nProceed?")) return;
-    setCleanupRunning(true);
-    setCleanupResult(null);
-    try {
-      const snapshot = await getDocs(collection(db, "tickets"));
-      const toDelete: string[] = [];
-      const reasons: string[] = [];
-      snapshot.docs.forEach(docSnap => {
-        const d = docSnap.data();
-        const price = Number(d.price ?? 0);
-        const customer = (d.customerName || "").toLowerCase().trim();
-        const stylist = (d.stylistName || "").toLowerCase().trim();
-        const primary = (d.primaryStylistName || "").toLowerCase().trim();
-        const payment = (d.paymentMethod || "").toLowerCase().trim();
-        if (price === 0 || d.price === null || d.price === undefined || d.price === "") {
-          toDelete.push(docSnap.id); reasons.push(`\u20b90 \u2014 ${d.customerName}`);
-        } else if (customer === "chetan") {
-          toDelete.push(docSnap.id); reasons.push(`Customer=Chetan \u2014 \u20b9${d.price}`);
-        } else if (stylist === "chetan" || primary === "chetan") {
-          toDelete.push(docSnap.id); reasons.push(`Stylist=Chetan \u2014 ${d.customerName} \u20b9${d.price}`);
-        } else if (payment === "pending" && price === 200) {
-          toDelete.push(docSnap.id); reasons.push(`Pending \u20b9200 \u2014 ${d.customerName}`);
-        }
-      });
-      if (toDelete.length === 0) {
-        setCleanupResult("\u2705 Nothing to delete \u2014 all records are clean.");
-        setCleanupRunning(false); return;
-      }
-      for (const id of toDelete) await deleteDoc(doc(db, "tickets", id));
-      setCleanupResult(`\u2705 Deleted ${toDelete.length} record(s):\n${reasons.join("\n")}`);
-    } catch (err: any) {
-      setCleanupResult(`\u274c Error: ${err.message}`);
-    }
-    setCleanupRunning(false);
-  };
 
   useEffect(() => {
     const q = query(collection(db, "stylists"), orderBy("name", "asc"));
@@ -3641,19 +3602,6 @@ const OwnerDashboard: React.FC<OwnerDashboardProps> = ({ tickets }) => {
             Owner Dashboard
           </h2>
           <p className="text-gray-500 font-sans tracking-[0.2em] uppercase text-sm">Real-time Performance & Work Hour Analytics</p>
-        </div>
-        <div className="flex flex-col items-end gap-2">
-          <button
-            onClick={runCleanup}
-            disabled={cleanupRunning}
-            className="flex items-center gap-2 px-4 py-2 bg-red-900/20 border border-red-800/40 text-red-400 hover:bg-red-900/40 hover:text-red-300 rounded-sm text-[10px] font-bold uppercase tracking-widest transition-all cursor-pointer disabled:opacity-50"
-          >
-            {cleanupRunning ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
-            {cleanupRunning ? "Cleaning..." : "Run Data Cleanup"}
-          </button>
-          {cleanupResult && (
-            <pre className="text-[10px] text-green-400 bg-[#0D1A0D] border border-green-900/40 rounded-sm px-3 py-2 max-w-xs whitespace-pre-wrap text-right">{cleanupResult}</pre>
-          )}
         </div>
       </div>
 
