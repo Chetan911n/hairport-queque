@@ -204,10 +204,7 @@ const Login: React.FC<{ onLogin: (user: User) => void }> = ({ onLogin }) => {
   };
 
   return (
-    <div 
-      style={{ backgroundImage: 'url("/option3_bg.jpg")', backgroundSize: 'cover', backgroundPosition: 'center' }}
-      className="min-h-screen flex flex-col md:flex-row items-center justify-center p-6 relative gap-10 overflow-hidden"
-    >
+    <div className="flex-1 flex flex-col md:flex-row items-center justify-center p-6 relative gap-10 overflow-hidden">
       <div className="absolute inset-0 opacity-[0.01] mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] invert"></div>
       
       {/* 3D Floating Scissors Background Elements */}
@@ -878,22 +875,8 @@ const App: React.FC = () => {
   // If no user is logged in, show Login, unless we are forcing TV view.
   // Wait, TV view doesn't require login. But how do we get to TV view if we are logged out?
   // We can add a "TV Mode" button to the login page. Let's add that.
-  if (!user && view !== 'tv') {
-    return (
-      <div className="relative">
-        <Login onLogin={setUser} />
-        <div className="absolute top-4 right-4">
-          <button 
-            onClick={() => setView('tv')}
-            className="flex items-center gap-2 px-4 py-2 rounded-sm text-xs font-sans tracking-widest uppercase text-gray-500 hover:text-gray-800 transition-colors"
-          >
-            <Monitor className="w-4 h-4" />
-            Launch TV Display
-          </button>
-        </div>
-      </div>
-    );
-  }
+  // If no user is logged in, show Login, unless we are forcing TV view.
+  // Handled inline in the main render tree below.
 
   const isDarkView = true;
 
@@ -915,7 +898,7 @@ const App: React.FC = () => {
       </div>
 
       {/* Header */}
-      {view !== 'tv' && (
+      {view !== 'tv' && user && (
         <header className="relative z-20 flex flex-col lg:flex-row justify-between items-center px-4 sm:px-8 py-4 sm:py-6 gap-4 sm:gap-6 border-b transition-colors duration-500 bg-black/60 border-[#D4AF37]/30 backdrop-blur-md">
           <div className="flex items-center justify-between w-full lg:w-auto gap-4">
             <div className="flex items-center gap-3 sm:gap-4">
@@ -1051,7 +1034,20 @@ const App: React.FC = () => {
 
       {/* Main Content Area */}
       <main className={`relative z-10 flex-1 flex flex-col ${view === 'tv' ? '' : 'p-6 md:p-10'}`}>
-        {loading ? (
+        {!user && view !== 'tv' ? (
+          <div className="flex-1 flex flex-col relative">
+            <Login onLogin={setUser} />
+            <div className="absolute top-0 right-4 z-30">
+              <button 
+                onClick={() => setView('tv')}
+                className="flex items-center gap-2 px-4 py-2 rounded-sm text-xs font-sans tracking-widest uppercase text-gray-400 hover:text-[#D4AF37] transition-colors cursor-pointer"
+              >
+                <Monitor className="w-4 h-4" />
+                Launch TV Display
+              </button>
+            </div>
+          </div>
+        ) : loading ? (
           <div className="flex flex-col items-center justify-center flex-1 gap-4">
             <Loader2 className="w-8 h-8 text-[#D4AF37] animate-spin" />
             <p className="text-sm tracking-widest font-serif text-gray-400">LOADING CONCIERGE...</p>
