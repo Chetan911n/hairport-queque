@@ -313,480 +313,324 @@ interface CompletionModalProps {
 }
 
 const CompletionModal: React.FC<CompletionModalProps> = ({ ticket, onClose, onConfirm }) => {
-  const [price, setPrice] = useState<string>("");
-  const [stylist, setStylist] = useState<string>("");
-  const [stylists, setStylists] = useState<{ id: string, name: string }[]>([]);
+  const ticketServicesList = ticket.serviceType
+    ? ticket.serviceType.split(",").map(s => s.trim()).filter(Boolean)
+    : [];
+  const serviceCount = Math.min(ticketServicesList.length, 4);
+
+  // Dynamic per-service state: array of { stylist, price, service }
+  const [rows, setRows] = useState<{ stylist: string; price: string; service: string }[]>([]);
+  const [stylists, setStylists] = useState<{ id: string; name: string }[]>([]);
   const [paymentMethod, setPaymentMethod] = useState<"Cash" | "UPI" | "Pending">("UPI");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
-
-  // Split billing states
-  const [splitMode, setSplitMode] = useState<"single" | "2-split" | "3-split">("single");
-  const [secondaryStylist, setSecondaryStylist] = useState("");
-  const [tertiaryStylist, setTertiaryStylist] = useState("");
-  const [primaryPrice, setPrimaryPrice] = useState("");
-  const [secondaryPrice, setSecondaryPrice] = useState("");
-  const [tertiaryPrice, setTertiaryPrice] = useState("");
-  const [primaryService, setPrimaryService] = useState("");
-  const [secondaryService, setSecondaryService] = useState("");
-  const [tertiaryService, setTertiaryService] = useState("");
+  // billingMode: "auto" means one stylist per service, "single" means one stylist for all
+  const [billingMode, setBillingMode] = useState<"single" | "split">("single");
 
   useEffect(() => {
-    setPrice("");
-    setPrimaryPrice("");
-    setSecondaryPrice("");
-    setTertiaryPrice("");
-    setSplitMode("single");
-    setSecondaryStylist("");
-    setTertiaryStylist("");
+    // Init rows from services
+    const initRows = ticketServicesList.slice(0, 4).map((svc, i) => ({
+      stylist: ticket.stylistName || "",
+      price: "",
+      service: svc,
+    }));
+    setRows(initRows.length > 0 ? initRows : [{ stylist: ticket.stylistName || "", price: "", service: "" }]);
 
-    const ticketServices = ticket.serviceType ? ticket.serviceType.split(",").map(s => s.trim()) : [];
-    setPrimaryService(ticketServices[0] || "");
-    setSecondaryService(ticketServices[1] || ticketServices[0] || "");
-    setTertiaryService(ticketServices[2] || ticketServices[0] || "");
-
-    if (ticket.stylistName) {
-      setStylist(ticket.stylistName);
+    // Auto-suggest split mode if > 1 service
+    if (ticketServicesList.length > 1) {
+      setBillingMode("split");
+    } else {
+      setBillingMode("single");
     }
 
     const q = query(collection(db, "stylists"), orderBy("name", "asc"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const data = snapshot.docs
-        .map(doc => doc.data() as { name: string, role?: string })
-        .filter(s => s.role !== 'receptionist')
+        .map(doc => doc.data() as { name: string; role?: string })
+        .filter(s => s.role !== "receptionist")
         .map(s => ({ id: s.name, name: s.name }));
       setStylists(data);
-      
       if (!ticket.stylistName && data.length > 0) {
-        setStylist(data[0].name);
+        setRows(prev => prev.map(r => r.stylist ? r : { ...r, stylist: data[0].name }));
       }
     });
-
     return () => unsubscribe();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ticket]);
 
-  const computedTotal = splitMode === "2-split"
-    ? (parseFloat(primaryPrice) || 0) + (parseFloat(secondaryPrice) || 0)
-    : splitMode === "3-split"
-      ? (parseFloat(primaryPrice) || 0) + (parseFloat(secondaryPrice) || 0) + (parseFloat(tertiaryPrice) || 0)
-      : parseFloat(price) || 0;
+  const updateRow = (i: number, field: "stylist" | "price" | "service", value: string) => {
+    setRows(prev => prev.map((r, idx) => idx === i ? { ...r, [field]: value } : r));
+  };
+
+  const computedTotal = billingMode === "split"
+    ? rows.reduce((sum, r) => sum + (parseFloat(r.price) || 0), 0)
+    : parseFloat(rows[0]?.price || "") || 0;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
-    if (splitMode === "2-split") {
-      const pPrice = parseFloat(primaryPrice);
-      const sPrice = parseFloat(secondaryPrice);
-      if (isNaN(pPrice) || pPrice < 0 || isNaN(sPrice) || sPrice < 0) {
-        setError("Please enter valid prices for both stylists.");
-        return;
-      }
-      if (!stylist || !secondaryStylist) {
-        setError("Please select both stylists.");
-        return;
-      }
-      if (stylist === secondaryStylist) {
-        setError("Please select two different stylists for split billing.");
-        return;
-      }
-
-      setSubmitting(true);
-      try {
-        await onConfirm(pPrice + sPrice, stylist, paymentMethod, {
-          isSplit: true,
-          primaryStylistName: stylist,
-          secondaryStylistName: secondaryStylist,
-          primaryStylistPrice: pPrice,
-          secondaryStylistPrice: sPrice,
-          primaryStylistService: primaryService,
-          secondaryStylistService: secondaryService
-        });
-      } catch (err) {
-        setError("Failed to complete split ticket. Please try again.");
-        setSubmitting(false);
-      }
-    } else if (splitMode === "3-split") {
-      const pPrice = parseFloat(primaryPrice);
-      const sPrice = parseFloat(secondaryPrice);
-      const tPrice = parseFloat(tertiaryPrice);
-      if (isNaN(pPrice) || pPrice < 0 || isNaN(sPrice) || sPrice < 0 || isNaN(tPrice) || tPrice < 0) {
-        setError("Please enter valid prices for all three stylists.");
-        return;
-      }
-      if (!stylist || !secondaryStylist || !tertiaryStylist) {
-        setError("Please select all three stylists.");
-        return;
-      }
-      if (stylist === secondaryStylist || stylist === tertiaryStylist || secondaryStylist === tertiaryStylist) {
-        setError("Please select three different stylists for split billing.");
-        return;
-      }
-
-      setSubmitting(true);
-      try {
-        await onConfirm(pPrice + sPrice + tPrice, stylist, paymentMethod, {
-          isSplit: true,
-          primaryStylistName: stylist,
-          secondaryStylistName: secondaryStylist,
-          tertiaryStylistName: tertiaryStylist,
-          primaryStylistPrice: pPrice,
-          secondaryStylistPrice: sPrice,
-          tertiaryStylistPrice: tPrice,
-          primaryStylistService: primaryService,
-          secondaryStylistService: secondaryService,
-          tertiaryStylistService: tertiaryService
-        });
-      } catch (err) {
-        setError("Failed to complete split ticket. Please try again.");
-        setSubmitting(false);
-      }
-    } else {
-      const parsedPrice = parseFloat(price);
+    if (billingMode === "single") {
+      const parsedPrice = parseFloat(rows[0]?.price || "");
       if (isNaN(parsedPrice) || parsedPrice < 0) {
         setError("Please enter a valid price.");
         return;
       }
-      if (!stylist) {
+      if (!rows[0]?.stylist) {
         setError("Please select a stylist.");
         return;
       }
-
       setSubmitting(true);
       try {
-        await onConfirm(parsedPrice, stylist, paymentMethod);
-      } catch (err) {
+        await onConfirm(parsedPrice, rows[0].stylist, paymentMethod);
+      } catch {
         setError("Failed to complete ticket. Please try again.");
+        setSubmitting(false);
+      }
+    } else {
+      // Split mode — validate all rows
+      for (let i = 0; i < rows.length; i++) {
+        const price = parseFloat(rows[i].price);
+        if (isNaN(price) || price < 0) {
+          setError(`Please enter a valid price for Stylist ${i + 1}.`);
+          return;
+        }
+        if (!rows[i].stylist) {
+          setError(`Please select a stylist for row ${i + 1}.`);
+          return;
+        }
+      }
+      // Check for duplicate stylists
+      const names = rows.map(r => r.stylist);
+      if (new Set(names).size !== names.length) {
+        setError("Each stylist must be different. Please assign unique stylists.");
+        return;
+      }
+
+      const total = rows.reduce((sum, r) => sum + (parseFloat(r.price) || 0), 0);
+      setSubmitting(true);
+      try {
+        await onConfirm(total, rows[0].stylist, paymentMethod, {
+          isSplit: true,
+          primaryStylistName: rows[0].stylist,
+          secondaryStylistName: rows[1]?.stylist || "",
+          tertiaryStylistName: rows[2]?.stylist,
+          primaryStylistPrice: parseFloat(rows[0].price) || 0,
+          secondaryStylistPrice: parseFloat(rows[1]?.price || "0") || 0,
+          tertiaryStylistPrice: rows[2] ? (parseFloat(rows[2].price) || 0) : undefined,
+          primaryStylistService: rows[0].service,
+          secondaryStylistService: rows[1]?.service || "",
+          tertiaryStylistService: rows[2]?.service,
+        });
+      } catch {
+        setError("Failed to complete split ticket. Please try again.");
         setSubmitting(false);
       }
     }
   };
 
-  const ticketServicesList = ticket.serviceType ? ticket.serviceType.split(",").map(s => s.trim()) : [];
+  const STYLIST_COLORS = ["from-[#D4AF37] to-[#8B7523]", "from-blue-500 to-blue-800", "from-purple-500 to-purple-800", "from-green-500 to-green-800"];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4">
-      <motion.div 
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+      <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
-        className="bg-[#111111] border border-[#D4AF37]/30 p-8 rounded-sm shadow-2xl w-full max-w-md relative text-gray-200 font-sans"
+        className="bg-[#111111] border border-[#D4AF37]/30 p-6 rounded-sm shadow-2xl w-full max-w-lg relative text-gray-200 font-sans max-h-[90vh] overflow-y-auto"
       >
-        <h3 className="text-2xl font-serif text-[#D4AF37] mb-6 border-b border-[#2A2A2A] pb-4 uppercase tracking-wider">
+        <h3 className="text-xl font-serif text-[#D4AF37] mb-5 border-b border-[#2A2A2A] pb-4 uppercase tracking-wider flex items-center gap-2">
+          <CheckCircle className="w-5 h-5" />
           Complete Appointment
         </h3>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <span className="text-xs text-gray-500 uppercase tracking-widest block mb-1">Client Name</span>
-            <span className="text-lg text-white font-medium">{ticket.customerName}</span>
+        <form onSubmit={handleSubmit} className="space-y-5">
+          {/* Client & Services */}
+          <div className="grid grid-cols-2 gap-4 bg-[#0D0D0D] border border-[#2A2A2A] rounded-sm p-3">
+            <div>
+              <span className="text-[10px] text-gray-500 uppercase tracking-widest block mb-0.5">Client</span>
+              <span className="text-sm text-white font-medium">{ticket.customerName}</span>
+            </div>
+            <div>
+              <span className="text-[10px] text-gray-500 uppercase tracking-widest block mb-0.5">Services ({ticketServicesList.length})</span>
+              <div className="flex flex-wrap gap-1">
+                {ticketServicesList.map((s, i) => (
+                  <span key={i} className="text-[10px] bg-[#D4AF37]/10 text-[#D4AF37] border border-[#D4AF37]/20 px-1.5 py-0.5 rounded-sm font-medium">{s}</span>
+                ))}
+              </div>
+            </div>
           </div>
 
-          <div>
-            <span className="text-xs text-gray-500 uppercase tracking-widest block mb-1">Service Type</span>
-            <span className="text-lg text-[#D4AF37] font-medium">{ticket.serviceType}</span>
+          {/* Billing Mode */}
+          <div className="space-y-2">
+            <label className="text-[10px] text-gray-500 uppercase tracking-widest block">Billing Mode</label>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setBillingMode("single")}
+                className={`flex-1 py-2 rounded-sm border text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                  billingMode === "single"
+                    ? "bg-[#D4AF37]/20 border-[#D4AF37] text-[#D4AF37]"
+                    : "bg-[#1A1A1A] border-[#2A2A2A] text-gray-500 hover:text-white"
+                }`}
+              >
+                Single Stylist
+              </button>
+              <button
+                type="button"
+                onClick={() => setBillingMode("split")}
+                className={`flex-1 py-2 rounded-sm border text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                  billingMode === "split"
+                    ? "bg-[#D4AF37]/20 border-[#D4AF37] text-[#D4AF37]"
+                    : "bg-[#1A1A1A] border-[#2A2A2A] text-gray-500 hover:text-white"
+                }`}
+              >
+                Split ({rows.length} Stylist{rows.length > 1 ? "s" : ""})
+              </button>
+            </div>
           </div>
 
-          {/* Split Option Selection */}
-          <div className="space-y-2 border-b border-[#2A2A2A] pb-4">
-            <label className="text-xs text-gray-500 uppercase tracking-widest block">Stylist Billing Mode</label>
-            <select
-              value={splitMode}
-              onChange={(e) => {
-                setSplitMode(e.target.value as any);
-                setError("");
-              }}
-              className="w-full bg-[#1A1A1A] text-white border border-[#2A2A2A] rounded-sm px-4 py-3 focus:outline-none focus:border-[#D4AF37] cursor-pointer"
-            >
-              <option value="single">Single Stylist</option>
-              <option value="2-split">Split between 2 Stylists</option>
-              <option value="3-split">Split between 3 Stylists</option>
-            </select>
-          </div>
-
-          {splitMode === "single" && (
-            <>
-              <div className="space-y-2">
-                <label className="text-xs text-gray-500 uppercase tracking-widest block">Stylist Assigned</label>
+          {/* Single mode */}
+          {billingMode === "single" && (
+            <div className="space-y-3 bg-[#1A1A1A]/40 border border-[#2A2A2A] rounded-sm p-4">
+              <div className="space-y-1">
+                <label className="text-[10px] text-gray-500 uppercase tracking-widest">Stylist</label>
                 <select
-                  value={stylist}
-                  onChange={(e) => setStylist(e.target.value)}
+                  value={rows[0]?.stylist || ""}
+                  onChange={e => updateRow(0, "stylist", e.target.value)}
                   disabled={!!ticket.stylistName}
-                  className="w-full bg-[#1A1A1A] text-white border border-[#2A2A2A] rounded-sm px-4 py-3 focus:outline-none focus:border-[#D4AF37] disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
+                  className="w-full bg-[#111111] text-white border border-[#2A2A2A] rounded-sm px-3 py-2.5 text-sm focus:outline-none focus:border-[#D4AF37] disabled:opacity-60 cursor-pointer"
                 >
                   {ticket.stylistName ? (
                     <option value={ticket.stylistName}>{ticket.stylistName}</option>
                   ) : (
-                    stylists.map(s => (
-                      <option key={s.id} value={s.name}>{s.name}</option>
-                    ))
+                    stylists.map(s => <option key={s.id} value={s.name}>{s.name}</option>)
                   )}
                 </select>
               </div>
-
-              <div className="space-y-2">
-                <label className="text-xs text-gray-500 uppercase tracking-widest block">Amount Charged (₹)</label>
+              <div className="space-y-1">
+                <label className="text-[10px] text-gray-500 uppercase tracking-widest">Total Amount (₹)</label>
                 <input
                   type="number"
                   step="0.01"
                   min="0"
-                  value={price}
-                  onChange={(e) => setPrice(e.target.value)}
+                  value={rows[0]?.price || ""}
+                  onChange={e => updateRow(0, "price", e.target.value)}
                   required
-                  className="w-full bg-[#1A1A1A] text-white border border-[#2A2A2A] rounded-sm px-4 py-3 focus:outline-none focus:border-[#D4AF37]"
-                  placeholder="Enter total amount (₹)"
+                  className="w-full bg-[#111111] text-white border border-[#2A2A2A] rounded-sm px-3 py-2.5 text-sm focus:outline-none focus:border-[#D4AF37]"
+                  placeholder="Enter total (₹)"
                 />
               </div>
-            </>
+            </div>
           )}
 
-          {splitMode === "2-split" && (
-            <div className="space-y-4 bg-[#1A1A1A]/40 border border-[#2A2A2A] p-4 rounded-sm">
-              <span className="text-xs text-gold uppercase tracking-wider font-semibold block mb-2">Split Billing Configuration (2 Stylists)</span>
-              
-              {/* Primary Stylist & Price & Service */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pb-3 border-b border-[#2A2A2A]/40">
-                <div className="space-y-1">
-                  <label className="text-[10px] text-gray-500 uppercase tracking-wider">Stylist 1 (Primary)</label>
-                  <select
-                    value={stylist}
-                    onChange={(e) => setStylist(e.target.value)}
-                    className="w-full bg-[#111111] text-white border border-[#2A2A2A] rounded-sm px-3 py-2 text-sm focus:outline-none focus:border-[#D4AF37] cursor-pointer"
+          {/* Split mode — dynamic rows, one per stylist */}
+          {billingMode === "split" && (
+            <div className="space-y-3">
+              {rows.map((row, i) => (
+                <div
+                  key={i}
+                  className="bg-[#1A1A1A]/40 border border-[#2A2A2A] rounded-sm p-4 space-y-3"
+                >
+                  {/* Stylist header */}
+                  <div className="flex items-center gap-2 border-b border-[#2A2A2A] pb-2 mb-2">
+                    <div className={`w-6 h-6 rounded-full bg-gradient-to-br ${STYLIST_COLORS[i]} flex items-center justify-center text-[10px] font-bold text-black`}>
+                      {i + 1}
+                    </div>
+                    <span className="text-xs font-semibold text-white uppercase tracking-wider">
+                      Stylist {i + 1}
+                      {row.stylist && <span className="text-[#D4AF37] ml-1">— {row.stylist}</span>}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="space-y-1">
+                      <label className="text-[10px] text-gray-500 uppercase tracking-wider">Name</label>
+                      <select
+                        value={row.stylist}
+                        onChange={e => updateRow(i, "stylist", e.target.value)}
+                        className="w-full bg-[#111111] text-white border border-[#2A2A2A] rounded-sm px-2 py-2 text-xs focus:outline-none focus:border-[#D4AF37] cursor-pointer"
+                      >
+                        <option value="">Select Stylist</option>
+                        {stylists.map(s => (
+                          <option key={s.id} value={s.name}>{s.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] text-gray-500 uppercase tracking-wider">Amount (₹)</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={row.price}
+                        onChange={e => updateRow(i, "price", e.target.value)}
+                        placeholder="₹"
+                        className="w-full bg-[#111111] text-white border border-[#2A2A2A] rounded-sm px-2 py-2 text-xs focus:outline-none focus:border-[#D4AF37]"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[10px] text-gray-500 uppercase tracking-wider">Service Performed</label>
+                    <select
+                      value={row.service}
+                      onChange={e => updateRow(i, "service", e.target.value)}
+                      className="w-full bg-[#111111] text-white border border-[#2A2A2A] rounded-sm px-2 py-2 text-xs focus:outline-none focus:border-[#D4AF37] cursor-pointer"
+                    >
+                      <option value="">Select service</option>
+                      {ticketServicesList.map(s => (
+                        <option key={s} value={s}>{s}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              ))}
+
+              {/* Add/Remove row buttons */}
+              <div className="flex gap-2">
+                {rows.length < Math.max(4, ticketServicesList.length) && (
+                  <button
+                    type="button"
+                    onClick={() => setRows(prev => [...prev, { stylist: "", price: "", service: ticketServicesList[prev.length] || "" }])}
+                    className="flex-1 py-2 border border-[#D4AF37]/30 text-[#D4AF37] text-[10px] uppercase tracking-wider rounded-sm hover:bg-[#D4AF37]/10 transition-all cursor-pointer"
                   >
-                    <option value="">Select Stylist 1</option>
-                    {stylists.map(s => (
-                      <option key={s.id} value={s.name}>{s.name}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] text-gray-500 uppercase tracking-wider">Cost 1 (₹)</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    value={primaryPrice}
-                    onChange={(e) => setPrimaryPrice(e.target.value)}
-                    required
-                    placeholder="Stylist 1 price"
-                    className="w-full bg-[#111111] text-white border border-[#2A2A2A] rounded-sm px-3 py-2 text-sm focus:outline-none focus:border-[#D4AF37]"
-                  />
-                </div>
-                <div className="sm:col-span-2 space-y-1">
-                  <label className="text-[10px] text-gray-500 uppercase tracking-wider">Service Done by Stylist 1</label>
-                  <select
-                    value={primaryService}
-                    onChange={(e) => setPrimaryService(e.target.value)}
-                    className="w-full bg-[#111111] text-white border border-[#2A2A2A] rounded-sm px-3 py-2 text-sm focus:outline-none focus:border-[#D4AF37] cursor-pointer"
+                    + Add Stylist
+                  </button>
+                )}
+                {rows.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => setRows(prev => prev.slice(0, -1))}
+                    className="px-4 py-2 border border-[#2A2A2A] text-gray-500 text-[10px] uppercase tracking-wider rounded-sm hover:bg-red-900/20 hover:text-red-400 hover:border-red-800/40 transition-all cursor-pointer"
                   >
-                    {ticketServicesList.map(s => (
-                      <option key={s} value={s}>{s}</option>
-                    ))}
-                  </select>
-                </div>
+                    − Remove
+                  </button>
+                )}
               </div>
 
-              {/* Secondary Stylist & Price & Service */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pb-3">
-                <div className="space-y-1">
-                  <label className="text-[10px] text-gray-500 uppercase tracking-wider">Stylist 2 (Secondary)</label>
-                  <select
-                    value={secondaryStylist}
-                    onChange={(e) => setSecondaryStylist(e.target.value)}
-                    className="w-full bg-[#111111] text-white border border-[#2A2A2A] rounded-sm px-3 py-2 text-sm focus:outline-none focus:border-[#D4AF37] cursor-pointer"
-                  >
-                    <option value="">Select Stylist 2</option>
-                    {stylists.map(s => (
-                      <option key={s.id} value={s.name}>{s.name}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] text-gray-500 uppercase tracking-wider">Cost 2 (₹)</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    value={secondaryPrice}
-                    onChange={(e) => setSecondaryPrice(e.target.value)}
-                    required
-                    placeholder="Stylist 2 price"
-                    className="w-full bg-[#111111] text-white border border-[#2A2A2A] rounded-sm px-3 py-2 text-sm focus:outline-none focus:border-[#D4AF37]"
-                  />
-                </div>
-                <div className="sm:col-span-2 space-y-1">
-                  <label className="text-[10px] text-gray-500 uppercase tracking-wider">Service Done by Stylist 2</label>
-                  <select
-                    value={secondaryService}
-                    onChange={(e) => setSecondaryService(e.target.value)}
-                    className="w-full bg-[#111111] text-white border border-[#2A2A2A] rounded-sm px-3 py-2 text-sm focus:outline-none focus:border-[#D4AF37] cursor-pointer"
-                  >
-                    {ticketServicesList.map(s => (
-                      <option key={s} value={s}>{s}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              {/* Computed Sum Display */}
-              <div className="pt-2 border-t border-[#2A2A2A] flex justify-between items-center text-sm font-semibold">
-                <span className="text-gray-400">Total Price:</span>
-                <span className="text-[#D4AF37] text-lg">₹{computedTotal.toFixed(2)}</span>
+              {/* Total Summary */}
+              <div className="bg-[#0D0D0D] border border-[#D4AF37]/20 rounded-sm p-3 flex justify-between items-center">
+                <span className="text-xs text-gray-500 uppercase tracking-widest">Total Billed</span>
+                <span className="text-lg font-serif font-bold text-[#D4AF37]">₹{computedTotal.toFixed(0)}</span>
               </div>
             </div>
           )}
 
-          {splitMode === "3-split" && (
-            <div className="space-y-4 bg-[#1A1A1A]/40 border border-[#2A2A2A] p-4 rounded-sm">
-              <span className="text-xs text-gold uppercase tracking-wider font-semibold block mb-2">Split Billing Configuration (3 Stylists)</span>
-              
-              {/* Primary Stylist & Price & Service */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pb-3 border-b border-[#2A2A2A]/40">
-                <div className="space-y-1">
-                  <label className="text-[10px] text-gray-500 uppercase tracking-wider">Stylist 1 (Primary)</label>
-                  <select
-                    value={stylist}
-                    onChange={(e) => setStylist(e.target.value)}
-                    className="w-full bg-[#111111] text-white border border-[#2A2A2A] rounded-sm px-3 py-2 text-sm focus:outline-none focus:border-[#D4AF37] cursor-pointer"
-                  >
-                    <option value="">Select Stylist 1</option>
-                    {stylists.map(s => (
-                      <option key={s.id} value={s.name}>{s.name}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] text-gray-500 uppercase tracking-wider">Cost 1 (₹)</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    value={primaryPrice}
-                    onChange={(e) => setPrimaryPrice(e.target.value)}
-                    required
-                    placeholder="Stylist 1 price"
-                    className="w-full bg-[#111111] text-white border border-[#2A2A2A] rounded-sm px-3 py-2 text-sm focus:outline-none focus:border-[#D4AF37]"
-                  />
-                </div>
-                <div className="sm:col-span-2 space-y-1">
-                  <label className="text-[10px] text-gray-500 uppercase tracking-wider">Service Done by Stylist 1</label>
-                  <select
-                    value={primaryService}
-                    onChange={(e) => setPrimaryService(e.target.value)}
-                    className="w-full bg-[#111111] text-white border border-[#2A2A2A] rounded-sm px-3 py-2 text-sm focus:outline-none focus:border-[#D4AF37] cursor-pointer"
-                  >
-                    {ticketServicesList.map(s => (
-                      <option key={s} value={s}>{s}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              {/* Secondary Stylist & Price & Service */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pb-3 border-b border-[#2A2A2A]/40">
-                <div className="space-y-1">
-                  <label className="text-[10px] text-gray-500 uppercase tracking-wider">Stylist 2 (Secondary)</label>
-                  <select
-                    value={secondaryStylist}
-                    onChange={(e) => setSecondaryStylist(e.target.value)}
-                    className="w-full bg-[#111111] text-white border border-[#2A2A2A] rounded-sm px-3 py-2 text-sm focus:outline-none focus:border-[#D4AF37] cursor-pointer"
-                  >
-                    <option value="">Select Stylist 2</option>
-                    {stylists.map(s => (
-                      <option key={s.id} value={s.name}>{s.name}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] text-gray-500 uppercase tracking-wider">Cost 2 (₹)</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    value={secondaryPrice}
-                    onChange={(e) => setSecondaryPrice(e.target.value)}
-                    required
-                    placeholder="Stylist 2 price"
-                    className="w-full bg-[#111111] text-white border border-[#2A2A2A] rounded-sm px-3 py-2 text-sm focus:outline-none focus:border-[#D4AF37]"
-                  />
-                </div>
-                <div className="sm:col-span-2 space-y-1">
-                  <label className="text-[10px] text-gray-500 uppercase tracking-wider">Service Done by Stylist 2</label>
-                  <select
-                    value={secondaryService}
-                    onChange={(e) => setSecondaryService(e.target.value)}
-                    className="w-full bg-[#111111] text-white border border-[#2A2A2A] rounded-sm px-3 py-2 text-sm focus:outline-none focus:border-[#D4AF37] cursor-pointer"
-                  >
-                    {ticketServicesList.map(s => (
-                      <option key={s} value={s}>{s}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              {/* Tertiary Stylist & Price & Service */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pb-3">
-                <div className="space-y-1">
-                  <label className="text-[10px] text-gray-500 uppercase tracking-wider">Stylist 3 (Tertiary)</label>
-                  <select
-                    value={tertiaryStylist}
-                    onChange={(e) => setTertiaryStylist(e.target.value)}
-                    className="w-full bg-[#111111] text-white border border-[#2A2A2A] rounded-sm px-3 py-2 text-sm focus:outline-none focus:border-[#D4AF37] cursor-pointer"
-                  >
-                    <option value="">Select Stylist 3</option>
-                    {stylists.map(s => (
-                      <option key={s.id} value={s.name}>{s.name}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] text-gray-500 uppercase tracking-wider">Cost 3 (₹)</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    value={tertiaryPrice}
-                    onChange={(e) => setTertiaryPrice(e.target.value)}
-                    required
-                    placeholder="Stylist 3 price"
-                    className="w-full bg-[#111111] text-white border border-[#2A2A2A] rounded-sm px-3 py-2 text-sm focus:outline-none focus:border-[#D4AF37]"
-                  />
-                </div>
-                <div className="sm:col-span-2 space-y-1">
-                  <label className="text-[10px] text-gray-500 uppercase tracking-wider">Service Done by Stylist 3</label>
-                  <select
-                    value={tertiaryService}
-                    onChange={(e) => setTertiaryService(e.target.value)}
-                    className="w-full bg-[#111111] text-white border border-[#2A2A2A] rounded-sm px-3 py-2 text-sm focus:outline-none focus:border-[#D4AF37] cursor-pointer"
-                  >
-                    {ticketServicesList.map(s => (
-                      <option key={s} value={s}>{s}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              {/* Computed Sum Display */}
-              <div className="pt-2 border-t border-[#2A2A2A] flex justify-between items-center text-sm font-semibold">
-                <span className="text-gray-400">Total Price:</span>
-                <span className="text-[#D4AF37] text-lg">₹{computedTotal.toFixed(2)}</span>
-              </div>
-            </div>
-          )}
-
+          {/* Payment Method */}
           <div className="space-y-2">
-            <label className="text-xs text-gray-500 uppercase tracking-widest block">Payment Status / Method</label>
+            <label className="text-[10px] text-gray-500 uppercase tracking-widest block">Payment Method</label>
             <div className="flex gap-2">
-              {(["UPI", "Cash", "Pending"] as const).map((method) => (
+              {(["UPI", "Cash", "Pending"] as const).map(method => (
                 <button
                   key={method}
                   type="button"
                   onClick={() => setPaymentMethod(method)}
-                  className={`flex-1 py-3 rounded-sm border text-[10px] font-sans tracking-wider uppercase transition-all duration-300 cursor-pointer font-bold ${
+                  className={`flex-1 py-3 rounded-sm border text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
                     paymentMethod === method
                       ? method === "Pending"
-                        ? "bg-red-600/20 border-red-500 text-red-400 shadow-[0_0_15px_rgba(239,68,68,0.15)]"
-                        : "bg-[#D4AF37]/20 border-[#D4AF37] text-[#D4AF37] shadow-[0_0_15px_rgba(212,175,55,0.15)]"
+                        ? "bg-red-600/20 border-red-500 text-red-400"
+                        : "bg-[#D4AF37]/20 border-[#D4AF37] text-[#D4AF37]"
                       : "bg-[#1A1A1A] border-[#2A2A2A] text-gray-500 hover:text-white"
                   }`}
                 >
@@ -796,23 +640,23 @@ const CompletionModal: React.FC<CompletionModalProps> = ({ ticket, onClose, onCo
             </div>
           </div>
 
-          {error && <p className="text-red-500 text-xs">{error}</p>}
+          {error && <p className="text-red-400 text-xs bg-red-950/30 border border-red-800/30 rounded-sm px-3 py-2">{error}</p>}
 
-          <div className="flex gap-4 pt-4">
+          <div className="flex gap-3 pt-2">
             <button
               type="button"
               onClick={onClose}
               disabled={submitting}
-              className="flex-1 bg-transparent hover:bg-white/5 border border-gray-600 text-gray-400 hover:text-white py-3 rounded-sm font-sans text-xs uppercase tracking-widest transition-colors font-semibold"
+              className="flex-1 bg-transparent hover:bg-white/5 border border-gray-600 text-gray-400 hover:text-white py-3 rounded-sm text-xs uppercase tracking-widest transition-colors font-semibold"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="flex-1 bg-[#D4AF37] hover:bg-[#C5A059] text-[#111111] py-3 rounded-sm font-sans text-xs uppercase tracking-widest transition-colors font-bold flex items-center justify-center gap-2 cursor-pointer"
+              className="flex-1 bg-[#D4AF37] hover:bg-[#C5A059] text-[#111111] py-3 rounded-sm text-xs uppercase tracking-widest transition-colors font-bold flex items-center justify-center gap-2 cursor-pointer"
             >
-              {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Confirm"}
+              {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : `Confirm ₹${computedTotal.toFixed(0)}`}
             </button>
           </div>
         </form>
@@ -1124,6 +968,19 @@ const App: React.FC = () => {
                 >
                   <UserPlus className="w-3.5 h-3.5" />
                   <span>RECEPTION</span>
+                </button>
+              )}
+              {(user?.role === "stylist" || user?.role === "owner_stylist") && (
+                <button
+                  onClick={() => setView("reception")}
+                  className={`flex items-center justify-center gap-1.5 px-3 sm:px-6 py-2.5 rounded-sm text-xs sm:text-sm font-medium transition-all duration-300 cursor-pointer flex-1 lg:flex-none ${
+                    view === "reception" 
+                      ? "bg-[#2A2A2A] text-[#D4AF37] shadow-[0_2px_10px_rgba(0,0,0,0.5)] border-b border-[#D4AF37]/50" 
+                      : isDarkView ? "text-gray-500 hover:text-gray-300" : "text-gray-500 hover:text-gray-800"
+                  }`}
+                >
+                  <UserPlus className="w-3.5 h-3.5" />
+                  <span className="hidden xs:inline">RECEPTION</span>
                 </button>
               )}
               {(user?.role === "stylist" || user?.role === "owner_stylist") && (
@@ -1535,17 +1392,49 @@ interface ClientHistoryViewProps {
 
 const ClientHistoryView: React.FC<ClientHistoryViewProps> = ({ tickets }) => {
   const [searchQuery, setSearchQuery] = useState("");
+  const [editingTicket, setEditingTicket] = useState<Ticket | null>(null);
+  const [stylists, setStylists] = useState<{ id: string; name: string }[]>([]);
+
+  // Edit form states
+  const [editName, setEditName] = useState("");
+  const [editPhone, setEditPhone] = useState("");
+  const [editServices, setEditServices] = useState("");
+  const [editPrice, setEditPrice] = useState(0);
+  const [editPaymentMethod, setEditPaymentMethod] = useState<"Cash" | "UPI" | "Pending">("UPI");
+  const [editIsSplit, setEditIsSplit] = useState(false);
+  const [editPrimaryName, setEditPrimaryName] = useState("");
+  const [editPrimaryPrice, setEditPrimaryPrice] = useState(0);
+  const [editPrimaryService, setEditPrimaryService] = useState("");
+  const [editSecondaryName, setEditSecondaryName] = useState("");
+  const [editSecondaryPrice, setEditSecondaryPrice] = useState(0);
+  const [editSecondaryService, setEditSecondaryService] = useState("");
+  const [editTertiaryName, setEditTertiaryName] = useState("");
+  const [editTertiaryPrice, setEditTertiaryPrice] = useState(0);
+  const [editTertiaryService, setEditTertiaryService] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    const q = query(collection(db, "stylists"), orderBy("name", "asc"));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const data = snapshot.docs
+        .map(doc => doc.data() as { name: string; role?: string })
+        .filter(s => s.role !== "receptionist")
+        .map(s => ({ id: s.name, name: s.name }));
+      setStylists(data);
+    });
+    return () => unsubscribe();
+  }, []);
 
   const completedTickets = tickets.filter(t => t.status === "Completed");
 
   const filteredTickets = completedTickets.filter(t => {
-    const query = searchQuery.toLowerCase();
+    const queryStr = searchQuery.toLowerCase();
     return (
-      t.customerName.toLowerCase().includes(query) ||
-      t.phone.toLowerCase().includes(query) ||
-      (t.stylistName && t.stylistName.toLowerCase().includes(query)) ||
-      t.serviceType.toLowerCase().includes(query) ||
-      (t.paymentMethod && t.paymentMethod.toLowerCase().includes(query))
+      t.customerName.toLowerCase().includes(queryStr) ||
+      t.phone.toLowerCase().includes(queryStr) ||
+      (t.stylistName && t.stylistName.toLowerCase().includes(queryStr)) ||
+      t.serviceType.toLowerCase().includes(queryStr) ||
+      (t.paymentMethod && t.paymentMethod.toLowerCase().includes(queryStr))
     );
   }).sort((a, b) => {
     const aTime = a.completedAt?.toDate ? a.completedAt.toDate().getTime() : (a.completedAt?.seconds * 1000 || 0);
@@ -1560,6 +1449,94 @@ const ClientHistoryView: React.FC<ClientHistoryViewProps> = ({ tickets }) => {
       });
     } catch (err) {
       console.error("Error settling payment:", err);
+    }
+  };
+
+  const handleDeleteEntry = async (ticket: Ticket) => {
+    if (window.confirm(`Are you sure you want to permanently delete the entry for ${ticket.customerName}?`)) {
+      try {
+        await deleteDoc(doc(db, "tickets", ticket.docId));
+      } catch (err) {
+        console.error("Error deleting entry:", err);
+      }
+    }
+  };
+
+  const handleOpenEdit = (ticket: Ticket) => {
+    setEditingTicket(ticket);
+    setEditName(ticket.customerName || "");
+    setEditPhone(ticket.phone || "");
+    setEditServices(ticket.serviceType || "");
+    setEditPrice(ticket.price || 0);
+    setEditPaymentMethod(ticket.paymentMethod || "UPI");
+    setEditIsSplit(ticket.isSplit || false);
+    setEditPrimaryName(ticket.primaryStylistName || ticket.stylistName || "");
+    setEditPrimaryPrice(ticket.primaryStylistPrice || ticket.price || 0);
+    setEditPrimaryService(ticket.primaryStylistService || "");
+    setEditSecondaryName(ticket.secondaryStylistName || "");
+    setEditSecondaryPrice(ticket.secondaryStylistPrice || 0);
+    setEditSecondaryService(ticket.secondaryStylistService || "");
+    setEditTertiaryName(ticket.tertiaryStylistName || "");
+    setEditTertiaryPrice(ticket.tertiaryStylistPrice || 0);
+    setEditTertiaryService(ticket.tertiaryStylistService || "");
+  };
+
+  const handleSaveEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingTicket) return;
+    setIsSaving(true);
+
+    try {
+      const finalPrice = editIsSplit
+        ? Number(editPrimaryPrice) + Number(editSecondaryPrice) + Number(editTertiaryPrice)
+        : Number(editPrice);
+
+      const updateData: any = {
+        customerName: editName,
+        phone: editPhone,
+        serviceType: editServices,
+        price: finalPrice,
+        paymentMethod: editPaymentMethod,
+        isSplit: editIsSplit,
+        stylistName: editIsSplit ? editPrimaryName : editPrimaryName,
+      };
+
+      if (editIsSplit) {
+        updateData.primaryStylistName = editPrimaryName;
+        updateData.primaryStylistPrice = Number(editPrimaryPrice);
+        updateData.primaryStylistService = editPrimaryService;
+        updateData.secondaryStylistName = editSecondaryName;
+        updateData.secondaryStylistPrice = Number(editSecondaryPrice);
+        updateData.secondaryStylistService = editSecondaryService;
+        if (editTertiaryName) {
+          updateData.tertiaryStylistName = editTertiaryName;
+          updateData.tertiaryStylistPrice = Number(editTertiaryPrice);
+          updateData.tertiaryStylistService = editTertiaryService;
+        } else {
+          // Clear tertiary if not used
+          updateData.tertiaryStylistName = "";
+          updateData.tertiaryStylistPrice = 0;
+          updateData.tertiaryStylistService = "";
+        }
+      } else {
+        // Clear split data if turned off
+        updateData.primaryStylistName = "";
+        updateData.primaryStylistPrice = 0;
+        updateData.primaryStylistService = "";
+        updateData.secondaryStylistName = "";
+        updateData.secondaryStylistPrice = 0;
+        updateData.secondaryStylistService = "";
+        updateData.tertiaryStylistName = "";
+        updateData.tertiaryStylistPrice = 0;
+        updateData.tertiaryStylistService = "";
+      }
+
+      await updateDoc(doc(db, "tickets", editingTicket.docId), updateData);
+      setEditingTicket(null);
+    } catch (err) {
+      console.error("Error saving client entry:", err);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -1614,6 +1591,7 @@ const ClientHistoryView: React.FC<ClientHistoryViewProps> = ({ tickets }) => {
                 <th className="py-4 font-semibold">Date Completed</th>
                 <th className="py-4 font-semibold">Status</th>
                 <th className="py-4 font-semibold text-right">Amount Paid</th>
+                <th className="py-4 font-semibold text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#E5E5E0]">
@@ -1691,12 +1669,30 @@ const ClientHistoryView: React.FC<ClientHistoryViewProps> = ({ tickets }) => {
                         <span>₹{(ticket.price || 0).toFixed(2)}</span>
                       )}
                     </td>
+                    <td className="py-4 text-right">
+                      <div className="flex gap-2 justify-end">
+                        <button
+                          onClick={() => handleOpenEdit(ticket)}
+                          className="bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white p-2 rounded-sm transition-all border border-blue-200 cursor-pointer flex items-center justify-center"
+                          title="Edit Entry"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                        </button>
+                        <button
+                          onClick={() => handleDeleteEntry(ticket)}
+                          className="bg-red-50 text-red-600 hover:bg-red-600 hover:text-white p-2 rounded-sm transition-all border border-red-200 cursor-pointer flex items-center justify-center"
+                          title="Delete Entry"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </td>
                   </tr>
                 );
               })}
               {filteredTickets.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="py-10 text-center text-gray-400 italic">
+                  <td colSpan={8} className="py-10 text-center text-gray-400 italic">
                     No matching records found.
                   </td>
                 </tr>
@@ -1705,6 +1701,280 @@ const ClientHistoryView: React.FC<ClientHistoryViewProps> = ({ tickets }) => {
           </table>
         </div>
       </div>
+
+      {/* EDIT HISTORY ENTRY MODAL */}
+      <AnimatePresence>
+        {editingTicket && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white border border-[#E5E5E0] rounded-sm shadow-2xl w-full max-w-lg p-8 text-[#111111] max-h-[90vh] overflow-y-auto"
+            >
+              <div className="flex items-center justify-between mb-6 border-b border-[#E5E5E0] pb-4">
+                <h3 className="text-xl font-serif text-[#111111] uppercase tracking-wider">
+                  Edit Client Entry
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setEditingTicket(null)}
+                  className="text-gray-400 hover:text-red-500 transition-colors cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <form onSubmit={handleSaveEdit} className="space-y-5">
+                {/* Name */}
+                <div className="space-y-1">
+                  <label className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Client Name</label>
+                  <input
+                    type="text"
+                    required
+                    value={editName}
+                    onChange={e => setEditName(e.target.value)}
+                    className="w-full bg-[#F5F5F0] border border-[#E5E5E0] rounded-sm px-4 py-2.5 focus:outline-none focus:border-[#D4AF37] text-[#111111] font-sans text-sm"
+                  />
+                </div>
+
+                {/* Phone */}
+                <div className="space-y-1">
+                  <label className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Phone</label>
+                  <input
+                    type="tel"
+                    value={editPhone}
+                    onChange={e => setEditPhone(e.target.value)}
+                    className="w-full bg-[#F5F5F0] border border-[#E5E5E0] rounded-sm px-4 py-2.5 focus:outline-none focus:border-[#D4AF37] text-[#111111] font-sans text-sm"
+                  />
+                </div>
+
+                {/* Services */}
+                <div className="space-y-1">
+                  <label className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Services Performed (comma-separated)</label>
+                  <input
+                    type="text"
+                    required
+                    value={editServices}
+                    onChange={e => setEditServices(e.target.value)}
+                    className="w-full bg-[#F5F5F0] border border-[#E5E5E0] rounded-sm px-4 py-2.5 focus:outline-none focus:border-[#D4AF37] text-[#111111] font-sans text-sm"
+                  />
+                </div>
+
+                {/* Payment Method */}
+                <div className="space-y-1">
+                  <label className="text-[10px] text-gray-500 uppercase tracking-widest font-bold block">Payment Method</label>
+                  <div className="flex gap-2">
+                    {(["UPI", "Cash", "Pending"] as const).map(method => (
+                      <button
+                        key={method}
+                        type="button"
+                        onClick={() => setEditPaymentMethod(method)}
+                        className={`flex-1 py-2.5 rounded-sm border text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                          editPaymentMethod === method
+                            ? "bg-[#D4AF37]/20 border-[#D4AF37] text-[#D4AF37]"
+                            : "bg-[#F5F5F0] border-[#E5E5E0] text-gray-500 hover:text-[#111111]"
+                        }`}
+                      >
+                        {method}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Billing type toggle */}
+                <div className="space-y-1">
+                  <label className="text-[10px] text-gray-500 uppercase tracking-widest font-bold block">Billing Mode</label>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setEditIsSplit(false)}
+                      className={`flex-1 py-2.5 rounded-sm border text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                        !editIsSplit
+                          ? "bg-[#D4AF37]/20 border-[#D4AF37] text-[#D4AF37]"
+                          : "bg-[#F5F5F0] border-[#E5E5E0] text-gray-500 hover:text-[#111111]"
+                      }`}
+                    >
+                      Single Stylist
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setEditIsSplit(true)}
+                      className={`flex-1 py-2.5 rounded-sm border text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                        editIsSplit
+                          ? "bg-[#D4AF37]/20 border-[#D4AF37] text-[#D4AF37]"
+                          : "bg-[#F5F5F0] border-[#E5E5E0] text-gray-500 hover:text-[#111111]"
+                      }`}
+                    >
+                      Split Billing
+                    </button>
+                  </div>
+                </div>
+
+                {/* Single Stylist Fields */}
+                {!editIsSplit && (
+                  <div className="grid grid-cols-2 gap-3 bg-[#F5F5F0] p-4 border border-[#E5E5E0] rounded-sm">
+                    <div className="space-y-1">
+                      <label className="text-[10px] text-gray-500 uppercase tracking-wider">Assigned Stylist</label>
+                      <select
+                        value={editPrimaryName}
+                        onChange={e => setEditPrimaryName(e.target.value)}
+                        className="w-full bg-white text-[#111111] border border-[#E5E5E0] rounded-sm px-2.5 py-2 text-sm focus:outline-none focus:border-[#D4AF37] cursor-pointer"
+                      >
+                        <option value="">Select Stylist</option>
+                        {stylists.map(s => (
+                          <option key={s.id} value={s.name}>{s.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] text-gray-500 uppercase tracking-wider">Amount Billed (₹)</label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={editPrice || ""}
+                        onChange={e => setEditPrice(Number(e.target.value))}
+                        className="w-full bg-white border border-[#E5E5E0] rounded-sm px-2.5 py-2 text-sm focus:outline-none"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Split Stylist Fields */}
+                {editIsSplit && (
+                  <div className="space-y-4 bg-[#F5F5F0] p-4 border border-[#E5E5E0] rounded-sm">
+                    {/* Stylist 1 */}
+                    <div className="grid grid-cols-3 gap-2 pb-3 border-b border-gray-200">
+                      <div className="col-span-1 space-y-1">
+                        <label className="text-[9px] text-gray-500 uppercase font-bold">Stylist 1</label>
+                        <select
+                          value={editPrimaryName}
+                          onChange={e => setEditPrimaryName(e.target.value)}
+                          className="w-full bg-white text-[#111111] border border-[#E5E5E0] rounded-sm px-2 py-1.5 text-xs focus:outline-none"
+                        >
+                          <option value="">Select</option>
+                          {stylists.map(s => (
+                            <option key={s.id} value={s.name}>{s.name}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="col-span-1 space-y-1">
+                        <label className="text-[9px] text-gray-500 uppercase font-bold">Price (₹)</label>
+                        <input
+                          type="number"
+                          value={editPrimaryPrice || ""}
+                          onChange={e => setEditPrimaryPrice(Number(e.target.value))}
+                          className="w-full bg-white border border-[#E5E5E0] rounded-sm px-2 py-1.5 text-xs focus:outline-none"
+                        />
+                      </div>
+                      <div className="col-span-1 space-y-1">
+                        <label className="text-[9px] text-gray-500 uppercase font-bold">Service</label>
+                        <input
+                          type="text"
+                          value={editPrimaryService}
+                          onChange={e => setEditPrimaryService(e.target.value)}
+                          placeholder="e.g. Haircut"
+                          className="w-full bg-white border border-[#E5E5E0] rounded-sm px-2 py-1.5 text-xs focus:outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Stylist 2 */}
+                    <div className="grid grid-cols-3 gap-2 pb-3 border-b border-gray-200">
+                      <div className="col-span-1 space-y-1">
+                        <label className="text-[9px] text-gray-500 uppercase font-bold">Stylist 2</label>
+                        <select
+                          value={editSecondaryName}
+                          onChange={e => setEditSecondaryName(e.target.value)}
+                          className="w-full bg-white text-[#111111] border border-[#E5E5E0] rounded-sm px-2 py-1.5 text-xs focus:outline-none"
+                        >
+                          <option value="">Select</option>
+                          {stylists.map(s => (
+                            <option key={s.id} value={s.name}>{s.name}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="col-span-1 space-y-1">
+                        <label className="text-[9px] text-gray-500 uppercase font-bold">Price (₹)</label>
+                        <input
+                          type="number"
+                          value={editSecondaryPrice || ""}
+                          onChange={e => setEditSecondaryPrice(Number(e.target.value))}
+                          className="w-full bg-white border border-[#E5E5E0] rounded-sm px-2 py-1.5 text-xs focus:outline-none"
+                        />
+                      </div>
+                      <div className="col-span-1 space-y-1">
+                        <label className="text-[9px] text-gray-500 uppercase font-bold">Service</label>
+                        <input
+                          type="text"
+                          value={editSecondaryService}
+                          onChange={e => setEditSecondaryService(e.target.value)}
+                          placeholder="e.g. Colour"
+                          className="w-full bg-white border border-[#E5E5E0] rounded-sm px-2 py-1.5 text-xs focus:outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Stylist 3 */}
+                    <div className="grid grid-cols-3 gap-2">
+                      <div className="col-span-1 space-y-1">
+                        <label className="text-[9px] text-gray-500 uppercase font-bold">Stylist 3 (Optional)</label>
+                        <select
+                          value={editTertiaryName}
+                          onChange={e => setEditTertiaryName(e.target.value)}
+                          className="w-full bg-white text-[#111111] border border-[#E5E5E0] rounded-sm px-2 py-1.5 text-xs focus:outline-none"
+                        >
+                          <option value="">Select</option>
+                          {stylists.map(s => (
+                            <option key={s.id} value={s.name}>{s.name}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="col-span-1 space-y-1">
+                        <label className="text-[9px] text-gray-500 uppercase font-bold">Price (₹)</label>
+                        <input
+                          type="number"
+                          value={editTertiaryPrice || ""}
+                          onChange={e => setEditTertiaryPrice(Number(e.target.value))}
+                          className="w-full bg-white border border-[#E5E5E0] rounded-sm px-2 py-1.5 text-xs focus:outline-none"
+                        />
+                      </div>
+                      <div className="col-span-1 space-y-1">
+                        <label className="text-[9px] text-gray-500 uppercase font-bold">Service</label>
+                        <input
+                          type="text"
+                          value={editTertiaryService}
+                          onChange={e => setEditTertiaryService(e.target.value)}
+                          placeholder="e.g. Spa"
+                          className="w-full bg-white border border-[#E5E5E0] rounded-sm px-2 py-1.5 text-xs focus:outline-none"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Submit / Cancel Buttons */}
+                <div className="flex gap-3 pt-4 border-t border-[#E5E5E0]">
+                  <button
+                    type="button"
+                    onClick={() => setEditingTicket(null)}
+                    className="flex-1 py-3 border border-gray-300 text-gray-500 rounded-sm text-xs font-bold uppercase tracking-wider hover:bg-gray-50 transition-colors cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSaving}
+                    className="flex-1 py-3 bg-[#D4AF37] hover:bg-[#C5A059] text-[#111111] rounded-sm text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save Changes"}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
@@ -1721,6 +1991,47 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [colourNumber, setColourNumber] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Edit ticket state
+  const [editingTicket, setEditingTicket] = useState<Ticket | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editPhone, setEditPhone] = useState("");
+  const [editGender, setEditGender] = useState<"Male" | "Female">("Male");
+  const [editCategory, setEditCategory] = useState<"Hair" | "Skin">("Hair");
+  const [editServices, setEditServices] = useState<string[]>([]);
+  const [editColour, setEditColour] = useState("");
+  const [editSaving, setEditSaving] = useState(false);
+
+  const openEdit = (ticket: Ticket) => {
+    setEditingTicket(ticket);
+    setEditName(ticket.customerName);
+    setEditPhone(ticket.phone);
+    setEditGender((ticket.gender as "Male" | "Female") || "Male");
+    setEditCategory((ticket.serviceCategory as "Hair" | "Skin") || "Hair");
+    setEditServices(ticket.serviceType ? ticket.serviceType.split(", ").map(s => s.trim()).filter(Boolean) : []);
+    setEditColour(ticket.colourNumber || "");
+  };
+
+  const saveEdit = async () => {
+    if (!editingTicket || !editName || editServices.length === 0) return;
+    setEditSaving(true);
+    const hasColour = editServices.some(s =>
+      s.toLowerCase().includes("colour") ||
+      s.toLowerCase().includes("highlights") ||
+      s.toLowerCase().includes("touch up")
+    );
+    await updateDoc(doc(db, "tickets", editingTicket.docId), {
+      customerName: editName,
+      phone: editPhone,
+      gender: editGender,
+      serviceCategory: editCategory,
+      serviceType: editServices.join(", "),
+      colourNumber: hasColour ? editColour : "",
+    });
+    setEditSaving(false);
+    setEditingTicket(null);
+  };
+
   const [stylists, setStylists] = useState<{ id: string, name: string, active: boolean }[]>([]);
   const [newStylistName, setNewStylistName] = useState("");
 
@@ -2163,15 +2474,22 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
                             >
                               <Play className="w-4 h-4 ml-0.5" />
                             </button>
+                            <button
+                              onClick={() => openEdit(ticket)}
+                              className="bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white p-2 rounded-sm transition-colors border border-blue-200 cursor-pointer flex items-center justify-center"
+                              title="Edit Entry"
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                            </button>
                             <a 
                               href={`sms:${ticket.phone}?body=${encodeURIComponent(`Hi ${ticket.customerName}, welcome to Hairport! You are next in line. Your stylist will be ready for you shortly. Thank you for waiting!`)}`}
-                              className="bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white p-2 rounded-sm transition-colors border border-blue-200 cursor-pointer flex items-center justify-center animate-pulse-once"
+                              className="bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white p-2 rounded-sm transition-colors border border-blue-200 cursor-pointer flex items-center justify-center"
                               title="Send Waitlist SMS"
                             >
                               <Phone className="w-4 h-4" />
                             </a>
                             <button 
-                              onClick={() => deleteTicket(ticket.docId)}
+                              onClick={() => { if (window.confirm(`Delete ticket for ${ticket.customerName}?`)) deleteTicket(ticket.docId); }}
                               className="bg-red-50 text-red-600 hover:bg-red-600 hover:text-white p-2 rounded-sm transition-colors border border-red-200 cursor-pointer flex items-center justify-center"
                               title="Cancel Appointment"
                             >
@@ -2266,6 +2584,167 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
             className="w-full flex flex-col gap-6 flex-1"
           >
             <RevenueAnalyticsView tickets={tickets} />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* EDIT TICKET MODAL */}
+      <AnimatePresence>
+        {editingTicket && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white border border-[#E5E5E0] rounded-sm shadow-2xl w-full max-w-md p-8 text-[#111111] max-h-[90vh] overflow-y-auto"
+            >
+              <div className="flex items-center justify-between mb-6 border-b border-[#E5E5E0] pb-4">
+                <h3 className="text-xl font-serif text-[#111111] uppercase tracking-wider">
+                  Edit Client — {editingTicket.id}
+                </h3>
+                <button
+                  onClick={() => setEditingTicket(null)}
+                  className="text-gray-400 hover:text-red-500 transition-colors cursor-pointer"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+              </div>
+
+              <div className="space-y-5">
+                {/* Name */}
+                <div className="space-y-1">
+                  <label className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Client Name</label>
+                  <input
+                    type="text"
+                    value={editName}
+                    onChange={e => setEditName(e.target.value)}
+                    className="w-full bg-[#F5F5F0] border border-[#E5E5E0] rounded-sm px-4 py-2.5 focus:outline-none focus:border-[#D4AF37] text-[#111111] font-sans text-sm"
+                  />
+                </div>
+
+                {/* Phone */}
+                <div className="space-y-1">
+                  <label className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Phone</label>
+                  <input
+                    type="tel"
+                    value={editPhone}
+                    onChange={e => setEditPhone(e.target.value)}
+                    className="w-full bg-[#F5F5F0] border border-[#E5E5E0] rounded-sm px-4 py-2.5 focus:outline-none focus:border-[#D4AF37] text-[#111111] font-sans text-sm"
+                  />
+                </div>
+
+                {/* Gender */}
+                <div className="space-y-1">
+                  <label className="text-[10px] text-gray-500 uppercase tracking-widest font-bold block">Gender</label>
+                  <div className="flex gap-2">
+                    {(["Male", "Female"] as const).map(g => (
+                      <button
+                        key={g}
+                        type="button"
+                        onClick={() => { setEditGender(g); setEditServices([]); }}
+                        className={`flex-1 py-2 rounded-sm border text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                          editGender === g
+                            ? "bg-[#D4AF37]/20 border-[#D4AF37] text-[#D4AF37]"
+                            : "bg-[#F5F5F0] border-[#E5E5E0] text-gray-500 hover:text-[#111111]"
+                        }`}
+                      >{g}</button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Category */}
+                <div className="space-y-1">
+                  <label className="text-[10px] text-gray-500 uppercase tracking-widest font-bold block">Category</label>
+                  <div className="flex gap-2">
+                    {(["Hair", "Skin"] as const).map(cat => (
+                      <button
+                        key={cat}
+                        type="button"
+                        onClick={() => setEditCategory(cat)}
+                        className={`flex-1 py-2 rounded-sm border text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                          editCategory === cat
+                            ? "bg-[#D4AF37]/20 border-[#D4AF37] text-[#D4AF37]"
+                            : "bg-[#F5F5F0] border-[#E5E5E0] text-gray-500 hover:text-[#111111]"
+                        }`}
+                      >{cat}</button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Services */}
+                <div className="space-y-1">
+                  <label className="text-[10px] text-gray-500 uppercase tracking-widest font-bold block">Services</label>
+                  <div className="grid grid-cols-2 gap-1.5 max-h-40 overflow-y-auto border border-[#E5E5E0] rounded-sm p-2 bg-[#F5F5F0]">
+                    {SERVICES_CONFIG[editGender][editCategory].map(svc => {
+                      const sel = editServices.includes(svc);
+                      return (
+                        <button
+                          key={svc}
+                          type="button"
+                          onClick={() => setEditServices(prev => sel ? prev.filter(s => s !== svc) : [...prev, svc])}
+                          className={`flex items-center gap-1.5 px-2 py-1.5 rounded-sm border text-[11px] font-sans text-left transition-colors cursor-pointer ${
+                            sel ? "bg-[#D4AF37]/10 border-[#D4AF37] text-[#D4AF37] font-semibold" : "bg-white border-[#E5E5E0] text-gray-700 hover:border-gray-400"
+                          }`}
+                        >
+                          <div className={`w-3 h-3 border rounded-sm flex items-center justify-center shrink-0 ${sel ? "border-[#D4AF37] bg-[#D4AF37] text-[#111111]" : "border-gray-400 bg-white"}`}>
+                            {sel && <span className="text-[8px] font-bold">✓</span>}
+                          </div>
+                          <span className="truncate">{svc}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {editServices.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {editServices.map(s => (
+                        <span key={s} className="text-[10px] bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-[#D4AF37] px-2 py-0.5 rounded-sm flex items-center gap-1">
+                          {s}
+                          <button type="button" onClick={() => setEditServices(prev => prev.filter(x => x !== s))} className="text-red-400 hover:text-red-600 cursor-pointer">×</button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Colour Number */}
+                {editServices.some(s => s.toLowerCase().includes("colour") || s.toLowerCase().includes("highlights") || s.toLowerCase().includes("touch up")) && (
+                  <div className="space-y-1">
+                    <label className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Hair Colour Number / Shade</label>
+                    <input
+                      type="text"
+                      value={editColour}
+                      onChange={e => setEditColour(e.target.value)}
+                      placeholder="e.g. Igora 5-0, Yutika 4.0"
+                      className="w-full bg-[#F5F5F0] border border-[#E5E5E0] rounded-sm px-4 py-2.5 focus:outline-none focus:border-[#D4AF37] text-[#111111] font-sans text-sm"
+                    />
+                  </div>
+                )}
+
+                {/* Action Buttons */}
+                <div className="flex gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setEditingTicket(null)}
+                    className="flex-1 py-3 border border-gray-300 text-gray-500 rounded-sm text-xs font-bold uppercase tracking-wider hover:bg-gray-50 transition-colors cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={saveEdit}
+                    disabled={editSaving || !editName || editServices.length === 0}
+                    className="flex-1 py-3 bg-[#D4AF37] hover:bg-[#C5A059] text-[#111111] rounded-sm text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    {editSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save Changes"}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -3060,6 +3539,45 @@ interface OwnerDashboardProps {
 const OwnerDashboard: React.FC<OwnerDashboardProps> = ({ tickets }) => {
   const [stylists, setStylists] = useState<StylistDoc[]>([]);
   const [loadingStylists, setLoadingStylists] = useState(true);
+  const [cleanupRunning, setCleanupRunning] = useState(false);
+  const [cleanupResult, setCleanupResult] = useState<string | null>(null);
+
+  const runCleanup = async () => {
+    if (!window.confirm("This will permanently delete all:\n\u2022 Tickets with \u20b90 price\n\u2022 Customer name = Chetan\n\u2022 Stylist name = Chetan\n\u2022 Pending \u20b9200 entries\n\nProceed?")) return;
+    setCleanupRunning(true);
+    setCleanupResult(null);
+    try {
+      const snapshot = await getDocs(collection(db, "tickets"));
+      const toDelete: string[] = [];
+      const reasons: string[] = [];
+      snapshot.docs.forEach(docSnap => {
+        const d = docSnap.data();
+        const price = Number(d.price ?? 0);
+        const customer = (d.customerName || "").toLowerCase().trim();
+        const stylist = (d.stylistName || "").toLowerCase().trim();
+        const primary = (d.primaryStylistName || "").toLowerCase().trim();
+        const payment = (d.paymentMethod || "").toLowerCase().trim();
+        if (price === 0 || d.price === null || d.price === undefined || d.price === "") {
+          toDelete.push(docSnap.id); reasons.push(`\u20b90 \u2014 ${d.customerName}`);
+        } else if (customer === "chetan") {
+          toDelete.push(docSnap.id); reasons.push(`Customer=Chetan \u2014 \u20b9${d.price}`);
+        } else if (stylist === "chetan" || primary === "chetan") {
+          toDelete.push(docSnap.id); reasons.push(`Stylist=Chetan \u2014 ${d.customerName} \u20b9${d.price}`);
+        } else if (payment === "pending" && price === 200) {
+          toDelete.push(docSnap.id); reasons.push(`Pending \u20b9200 \u2014 ${d.customerName}`);
+        }
+      });
+      if (toDelete.length === 0) {
+        setCleanupResult("\u2705 Nothing to delete \u2014 all records are clean.");
+        setCleanupRunning(false); return;
+      }
+      for (const id of toDelete) await deleteDoc(doc(db, "tickets", id));
+      setCleanupResult(`\u2705 Deleted ${toDelete.length} record(s):\n${reasons.join("\n")}`);
+    } catch (err: any) {
+      setCleanupResult(`\u274c Error: ${err.message}`);
+    }
+    setCleanupRunning(false);
+  };
 
   useEffect(() => {
     const q = query(collection(db, "stylists"), orderBy("name", "asc"));
@@ -3123,6 +3641,19 @@ const OwnerDashboard: React.FC<OwnerDashboardProps> = ({ tickets }) => {
             Owner Dashboard
           </h2>
           <p className="text-gray-500 font-sans tracking-[0.2em] uppercase text-sm">Real-time Performance & Work Hour Analytics</p>
+        </div>
+        <div className="flex flex-col items-end gap-2">
+          <button
+            onClick={runCleanup}
+            disabled={cleanupRunning}
+            className="flex items-center gap-2 px-4 py-2 bg-red-900/20 border border-red-800/40 text-red-400 hover:bg-red-900/40 hover:text-red-300 rounded-sm text-[10px] font-bold uppercase tracking-widest transition-all cursor-pointer disabled:opacity-50"
+          >
+            {cleanupRunning ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+            {cleanupRunning ? "Cleaning..." : "Run Data Cleanup"}
+          </button>
+          {cleanupResult && (
+            <pre className="text-[10px] text-green-400 bg-[#0D1A0D] border border-green-900/40 rounded-sm px-3 py-2 max-w-xs whitespace-pre-wrap text-right">{cleanupResult}</pre>
+          )}
         </div>
       </div>
 
