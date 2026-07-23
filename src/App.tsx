@@ -205,7 +205,7 @@ const Login: React.FC<{ onLogin: (user: User) => void }> = ({ onLogin }) => {
 
   return (
     <div 
-      style={{ backgroundImage: 'url("/abstract_beauty.jpg")', backgroundSize: 'cover', backgroundPosition: 'center' }}
+      style={{ backgroundImage: 'url("/option3_bg.jpg")', backgroundSize: 'cover', backgroundPosition: 'center' }}
       className="min-h-screen flex flex-col md:flex-row items-center justify-center p-6 relative gap-10 overflow-hidden"
     >
       <div className="absolute inset-0 opacity-[0.01] mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] invert"></div>
@@ -904,7 +904,7 @@ const App: React.FC = () => {
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
         <div 
           style={{
-            backgroundImage: 'linear-gradient(to bottom, rgba(10, 10, 10, 0.92), rgba(15, 15, 15, 0.97)), url("/abstract_beauty.jpg")',
+            backgroundImage: 'linear-gradient(to bottom, rgba(10, 10, 10, 0.92), rgba(15, 15, 15, 0.97)), url("/option3_bg.jpg")',
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             backgroundAttachment: 'fixed'
@@ -2456,7 +2456,7 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
   return (
     <div 
       style={{
-        backgroundImage: 'linear-gradient(to bottom, rgba(12, 12, 12, 0.90), rgba(16, 16, 16, 0.95)), url("/abstract_beauty.jpg")',
+        backgroundImage: 'linear-gradient(to bottom, rgba(12, 12, 12, 0.90), rgba(16, 16, 16, 0.95)), url("/option3_bg.jpg")',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundAttachment: 'fixed'
