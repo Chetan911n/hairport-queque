@@ -887,7 +887,7 @@ const App: React.FC = () => {
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
         <div 
           style={{
-            backgroundImage: 'linear-gradient(to bottom, rgba(5, 5, 5, 0.40), rgba(10, 10, 10, 0.60)), url("/option3_bg.jpg")',
+            backgroundImage: 'url("/option3_bg.jpg")',
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             backgroundAttachment: 'fixed'
@@ -2450,7 +2450,7 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
   };
 
   return (
-    <div className="max-w-7xl mx-auto w-full flex flex-col gap-6 flex-1 text-white p-4 sm:p-6 rounded-sm bg-black/40 backdrop-blur-md border border-[#D4AF37]/30 shadow-2xl">
+    <div className="max-w-7xl mx-auto w-full flex flex-col gap-6 flex-1 text-white">
       {/* Tab Selector */}
       <div className="flex border-b border-[#2A2A2A] pb-2 gap-3 overflow-x-auto whitespace-nowrap hide-scrollbar">
         <button
