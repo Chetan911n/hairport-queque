@@ -1982,10 +1982,313 @@ const ClientHistoryView: React.FC<ClientHistoryViewProps> = ({ tickets }) => {
 };
 
 // ---------------------------------------------------------
+// EXPENSE TRACKER COMPONENT
+// ---------------------------------------------------------
+interface ExpenseItem {
+  docId: string;
+  title: string;
+  amount: number;
+  category: string;
+  paymentMethod: "Cash" | "UPI";
+  addedBy: string;
+  timestamp: any;
+}
+
+const ExpenseTrackerView: React.FC = () => {
+  const [expenses, setExpenses] = useState<ExpenseItem[]>([]);
+  const [title, setTitle] = useState("");
+  const [amount, setAmount] = useState("");
+  const [category, setCategory] = useState("Salon Supplies");
+  const [paymentMethod, setPaymentMethod] = useState<"Cash" | "UPI">("Cash");
+  const [addedBy, setAddedBy] = useState("Reception");
+  const [submitting, setSubmitting] = useState(false);
+  const [dateFilter, setDateFilter] = useState<"today" | "week" | "month" | "all">("today");
+
+  useEffect(() => {
+    const q = query(collection(db, "expenses"), orderBy("timestamp", "desc"));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const data = snapshot.docs.map(docSnap => ({
+        docId: docSnap.id,
+        ...docSnap.data()
+      })) as ExpenseItem[];
+      setExpenses(data);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const handleAddExpense = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const numAmount = parseFloat(amount);
+    if (!title.trim() || isNaN(numAmount) || numAmount <= 0) {
+      alert("Please enter a valid expense description and amount.");
+      return;
+    }
+    setSubmitting(true);
+    try {
+      await addDoc(collection(db, "expenses"), {
+        title: title.trim(),
+        amount: numAmount,
+        category,
+        paymentMethod,
+        addedBy: addedBy.trim() || "Reception",
+        timestamp: serverTimestamp()
+      });
+      setTitle("");
+      setAmount("");
+    } catch (err) {
+      console.error("Error adding expense:", err);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDeleteExpense = async (docId: string, itemTitle: string) => {
+    if (window.confirm(`Are you sure you want to delete expense "${itemTitle}"?`)) {
+      try {
+        await deleteDoc(doc(db, "expenses", docId));
+      } catch (err) {
+        console.error("Error deleting expense:", err);
+      }
+    }
+  };
+
+  const isToday = (date: Date) => {
+    const today = new Date();
+    return date.getDate() === today.getDate() && date.getMonth() === today.getMonth() && date.getFullYear() === today.getFullYear();
+  };
+
+  const filteredExpenses = expenses.filter(e => {
+    if (!e.timestamp) return true;
+    const d = e.timestamp.toDate ? e.timestamp.toDate() : new Date(e.timestamp.seconds * 1000);
+    const now = new Date();
+    if (dateFilter === "today") return isToday(d);
+    if (dateFilter === "week") {
+      const weekAgo = new Date(now); weekAgo.setDate(now.getDate() - 7);
+      return d >= weekAgo;
+    }
+    if (dateFilter === "month") return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    return true;
+  });
+
+  const todayTotal = expenses.filter(e => {
+    if (!e.timestamp) return false;
+    const d = e.timestamp.toDate ? e.timestamp.toDate() : new Date(e.timestamp.seconds * 1000);
+    return isToday(d);
+  }).reduce((sum, e) => sum + (e.amount || 0), 0);
+
+  const totalFiltered = filteredExpenses.reduce((sum, e) => sum + (e.amount || 0), 0);
+  const cashFiltered = filteredExpenses.filter(e => e.paymentMethod === "Cash").reduce((sum, e) => sum + (e.amount || 0), 0);
+  const upiFiltered = filteredExpenses.filter(e => e.paymentMethod === "UPI").reduce((sum, e) => sum + (e.amount || 0), 0);
+
+  const CATEGORIES = ["Salon Supplies", "Refreshments & Tea", "Utilities & Bills", "Staff / Salary", "Maintenance", "Misc"];
+
+  return (
+    <div className="flex flex-col gap-8 w-full text-[#111111] font-sans">
+      {/* Stat Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-6">
+        <div className="bg-white border border-[#E5E5E0] p-6 rounded-sm shadow-sm flex flex-col gap-1">
+          <span className="text-gray-500 text-xs uppercase tracking-widest font-semibold">Today's Expenses</span>
+          <span className="text-3xl font-serif font-bold text-red-600">₹{todayTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+        </div>
+        <div className="bg-white border border-[#E5E5E0] p-6 rounded-sm shadow-sm flex flex-col gap-1">
+          <span className="text-gray-500 text-xs uppercase tracking-widest font-semibold">Period Expenses ({dateFilter})</span>
+          <span className="text-3xl font-serif font-bold text-[#111111]">₹{totalFiltered.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+        </div>
+        <div className="bg-white border border-[#E5E5E0] p-6 rounded-sm shadow-sm flex flex-col gap-1">
+          <span className="text-gray-500 text-xs uppercase tracking-widest font-semibold">Cash Spent</span>
+          <span className="text-3xl font-serif font-bold text-green-700">₹{cashFiltered.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+        </div>
+        <div className="bg-white border border-[#E5E5E0] p-6 rounded-sm shadow-sm flex flex-col gap-1">
+          <span className="text-gray-500 text-xs uppercase tracking-widest font-semibold">UPI Spent</span>
+          <span className="text-3xl font-serif font-bold text-blue-600">₹{upiFiltered.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
+        {/* Add Expense Form */}
+        <div className="xl:col-span-4 bg-white border border-[#111111] p-8 rounded-sm shadow-xl flex flex-col gap-6">
+          <h3 className="text-xl font-serif uppercase tracking-wider text-[#111111] border-b border-[#E5E5E0] pb-4">
+            Record New Expense
+          </h3>
+
+          <form onSubmit={handleAddExpense} className="space-y-5">
+            <div className="space-y-1">
+              <label className="text-xs font-sans text-gray-500 uppercase tracking-widest">Expense Description</label>
+              <input
+                type="text"
+                required
+                value={title}
+                onChange={e => setTitle(e.target.value)}
+                placeholder="e.g. Towels & Shampoo restock"
+                className="w-full bg-[#F5F5F0] border border-[#E5E5E0] rounded-sm px-4 py-3 focus:outline-none focus:border-[#D4AF37] transition-all text-[#111111] placeholder-gray-400 text-sm font-sans"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-sans text-gray-500 uppercase tracking-widest">Amount Spent (₹)</label>
+              <input
+                type="number"
+                step="0.01"
+                min="1"
+                required
+                value={amount}
+                onChange={e => setAmount(e.target.value)}
+                placeholder="Enter amount (₹)"
+                className="w-full bg-[#F5F5F0] border border-[#E5E5E0] rounded-sm px-4 py-3 focus:outline-none focus:border-[#D4AF37] transition-all text-[#111111] placeholder-gray-400 text-sm font-sans"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-sans text-gray-500 uppercase tracking-widest">Category</label>
+              <select
+                value={category}
+                onChange={e => setCategory(e.target.value)}
+                className="w-full bg-[#F5F5F0] border border-[#E5E5E0] rounded-sm px-4 py-3 focus:outline-none focus:border-[#D4AF37] text-[#111111] text-sm font-sans cursor-pointer"
+              >
+                {CATEGORIES.map(cat => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-sans text-gray-500 uppercase tracking-widest block mb-1">Payment Method</label>
+              <div className="flex gap-2">
+                {(["Cash", "UPI"] as const).map(method => (
+                  <button
+                    key={method}
+                    type="button"
+                    onClick={() => setPaymentMethod(method)}
+                    className={`flex-1 py-3 rounded-sm border text-xs font-sans tracking-widest uppercase transition-all duration-300 cursor-pointer font-bold ${
+                      paymentMethod === method
+                        ? "bg-[#D4AF37]/20 border-[#D4AF37] text-[#D4AF37] shadow-sm"
+                        : "bg-[#F5F5F0] border-[#E5E5E0] text-gray-500 hover:text-[#111111]"
+                    }`}
+                  >
+                    {method}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-sans text-gray-500 uppercase tracking-widest">Recorded By</label>
+              <input
+                type="text"
+                value={addedBy}
+                onChange={e => setAddedBy(e.target.value)}
+                placeholder="e.g. Reception"
+                className="w-full bg-[#F5F5F0] border border-[#E5E5E0] rounded-sm px-4 py-3 focus:outline-none focus:border-[#D4AF37] text-[#111111] text-sm font-sans"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={submitting}
+              className="w-full mt-4 bg-[#D4AF37] hover:bg-[#C5A059] text-[#111111] font-serif font-bold tracking-widest uppercase py-4 px-6 rounded-sm transition-colors duration-300 cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : "Save Expense"}
+            </button>
+          </form>
+        </div>
+
+        {/* Expenses List & Logs */}
+        <div className="xl:col-span-8 bg-white border border-[#111111] p-8 rounded-sm shadow-xl flex flex-col gap-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#E5E5E0] pb-4">
+            <h3 className="text-xl font-serif uppercase tracking-wider text-[#111111]">
+              Expense Log ({filteredExpenses.length})
+            </h3>
+            <div className="flex gap-2">
+              {(["today", "week", "month", "all"] as const).map(f => (
+                <button
+                  key={f}
+                  type="button"
+                  onClick={() => setDateFilter(f)}
+                  className={`px-3 py-1.5 rounded-sm text-xs font-sans uppercase tracking-wider font-semibold border transition-all cursor-pointer ${
+                    dateFilter === f
+                      ? "bg-[#111111] text-[#D4AF37] border-[#111111]"
+                      : "bg-[#F5F5F0] text-gray-600 border-[#E5E5E0] hover:text-[#111111]"
+                  }`}
+                >
+                  {f === "today" ? "Today" : f === "week" ? "This Week" : f === "month" ? "This Month" : "All"}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-[#E5E5E0] text-gray-500 text-xs uppercase tracking-widest">
+                  <th className="py-4 font-semibold">Date & Time</th>
+                  <th className="py-4 font-semibold">Description</th>
+                  <th className="py-4 font-semibold">Category</th>
+                  <th className="py-4 font-semibold">By</th>
+                  <th className="py-4 font-semibold">Payment</th>
+                  <th className="py-4 font-semibold text-right">Amount (₹)</th>
+                  <th className="py-4 font-semibold text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#E5E5E0]">
+                {filteredExpenses.map(item => {
+                  const date = item.timestamp?.toDate ? item.timestamp.toDate() : (item.timestamp?.seconds ? new Date(item.timestamp.seconds * 1000) : new Date());
+                  const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                  return (
+                    <tr key={item.docId} className="text-gray-700 hover:bg-[#F5F5F0]/50 transition-colors">
+                      <td className="py-4 text-xs text-gray-500 font-mono">{formattedDate}</td>
+                      <td className="py-4 font-medium text-[#111111]">{item.title}</td>
+                      <td className="py-4">
+                        <span className="text-[10px] font-sans uppercase tracking-wider bg-[#E5E5E0] text-gray-800 px-2 py-0.5 rounded-sm font-semibold">
+                          {item.category}
+                        </span>
+                      </td>
+                      <td className="py-4 text-xs text-gray-600 font-medium">{item.addedBy}</td>
+                      <td className="py-4">
+                        <span className={`text-[10px] font-sans tracking-wider uppercase px-2 py-0.5 rounded-sm font-bold border ${
+                          item.paymentMethod === "Cash"
+                            ? "bg-green-50 text-green-700 border-green-200"
+                            : "bg-blue-50 text-blue-600 border-blue-200"
+                        }`}>
+                          {item.paymentMethod}
+                        </span>
+                      </td>
+                      <td className="py-4 text-right font-mono font-bold text-red-600">
+                        ₹{(item.amount || 0).toFixed(2)}
+                      </td>
+                      <td className="py-4 text-right">
+                        <button
+                          onClick={() => handleDeleteExpense(item.docId, item.title)}
+                          className="bg-red-50 text-red-600 hover:bg-red-600 hover:text-white p-1.5 rounded-sm transition-all border border-red-200 cursor-pointer inline-flex items-center justify-center"
+                          title="Delete Expense"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+                {filteredExpenses.length === 0 && (
+                  <tr>
+                    <td colSpan={7} className="py-12 text-center text-gray-400 italic">
+                      No expense records for this period.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ---------------------------------------------------------
 // RECEPTION DASHBOARD COMPONENT
 // ---------------------------------------------------------
 const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticket: Ticket) => void }> = ({ tickets, onCompleteTicket }) => {
-  const [activeTab, setActiveTab] = useState<"queue" | "history" | "revenue">("queue");
+  const [activeTab, setActiveTab] = useState<"queue" | "history" | "revenue" | "expenses">("queue");
   const [customerName, setCustomerName] = useState("");
   const [phone, setPhone] = useState("");
   const [gender, setGender] = useState<"Male" | "Female">("Male");
@@ -2157,6 +2460,16 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
           }`}
         >
           Revenue Analytics
+        </button>
+        <button
+          onClick={() => setActiveTab("expenses")}
+          className={`pb-2 text-sm font-sans uppercase tracking-widest font-semibold border-b-2 transition-all cursor-pointer ${
+            activeTab === "expenses"
+              ? "border-[#D4AF37] text-[#111111]"
+              : "border-transparent text-gray-400 hover:text-gray-600"
+          }`}
+        >
+          Daily Expenses
         </button>
       </div>
 
@@ -2595,7 +2908,7 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
           >
             <ClientHistoryView tickets={tickets} />
           </motion.div>
-        ) : (
+        ) : activeTab === "revenue" ? (
           <motion.div
             key="revenue"
             initial={{ opacity: 0, y: 10 }}
@@ -2604,6 +2917,16 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
             className="w-full flex flex-col gap-6 flex-1"
           >
             <RevenueAnalyticsView tickets={tickets} />
+          </motion.div>
+        ) : (
+          <motion.div
+            key="expenses"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="w-full flex flex-col gap-6 flex-1"
+          >
+            <ExpenseTrackerView />
           </motion.div>
         )}
       </AnimatePresence>
