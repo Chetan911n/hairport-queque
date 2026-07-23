@@ -262,20 +262,71 @@ const Login: React.FC<{ onLogin: (user: User) => void }> = ({ onLogin }) => {
         }
       `}} />
 
-      {/* Main Authentication Panel */}
+      {/* Left Column: Brand Showcase */}
+      <div className="max-w-md flex flex-col text-left gap-6 z-10 text-white animate-fadeIn pr-0 md:pr-10 border-b md:border-b-0 md:border-r border-[#D4AF37]/20 pb-6 md:pb-0">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 rounded-sm border border-[#D4AF37]/50 bg-[#1A1A1A] flex items-center justify-center">
+            <Scissors className="w-6 h-6 text-[#D4AF37]" />
+          </div>
+          <div>
+            <h1 className="text-3xl sm:text-4xl font-bold tracking-widest font-serif uppercase text-[#D4AF37]">
+              Hairport
+            </h1>
+            <p className="text-[10px] uppercase tracking-[0.3em] text-[#D4AF37]/60 font-sans mt-0.5">Premium Grooming</p>
+          </div>
+        </div>
+
+        <div className="space-y-4 mt-2">
+          <h2 className="text-xl sm:text-2xl font-serif text-white leading-relaxed font-light">
+            Where Precision Meets <span className="text-[#D4AF37] font-semibold">Premium Luxury</span>.
+          </h2>
+          <p className="text-sm text-gray-400 font-sans leading-relaxed">
+            Welcome to Hairport, a state-of-the-art grooming sanctuary engineered for those who demand excellence. Every cut, shade, and detail is sculpted with absolute precision.
+          </p>
+        </div>
+
+        <div className="space-y-4 mt-4">
+          <div className="flex items-start gap-3.5">
+            <div className="p-2 rounded-sm bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-[#D4AF37] mt-0.5">
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            </div>
+            <div>
+              <h3 className="text-xs uppercase tracking-wider text-white font-serif font-bold">Elite Stylists</h3>
+              <p className="text-xs text-gray-400 mt-1 font-sans">Crafted by certified master barbers using advanced styling techniques tailored to your lifestyle.</p>
+            </div>
+          </div>
+
+          <div className="flex items-start gap-3.5">
+            <div className="p-2 rounded-sm bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-[#D4AF37] mt-0.5">
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <div>
+              <h3 className="text-xs uppercase tracking-wider text-white font-serif font-bold">Premium Care</h3>
+              <p className="text-xs text-gray-400 mt-1 font-sans">Premium Igora shades, premium skin therapies, and organic formulations for hair and scalp wellness.</p>
+            </div>
+          </div>
+
+          <div className="flex items-start gap-3.5">
+            <div className="p-2 rounded-sm bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-[#D4AF37] mt-0.5">
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            </div>
+            <div>
+              <h3 className="text-xs uppercase tracking-wider text-white font-serif font-bold">Real-time Queue Concierge</h3>
+              <p className="text-xs text-gray-400 mt-1 font-sans">Zero phone call queues. Track wait times live and check in instantly via digital concierge display.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Right Column: Main Authentication Panel */}
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-[#141414]/90 backdrop-blur-xl border border-[#D4AF37]/40 p-10 rounded-sm shadow-2xl w-full max-w-md relative z-10 text-white"
+        className="bg-black/60 backdrop-blur-xl border border-[#D4AF37]/30 p-10 rounded-sm shadow-2xl w-full max-w-md relative z-10 text-white"
       >
         <div className="flex flex-col items-center mb-8">
-          <div className="w-16 h-16 rounded-sm border border-[#D4AF37]/50 bg-[#1A1A1A] flex items-center justify-center mb-6">
-            <Scissors className="w-8 h-8 text-[#D4AF37]" />
-          </div>
-          <h1 className="text-3xl font-bold tracking-widest font-serif uppercase text-[#D4AF37]">
-            Hairport
-          </h1>
-          <p className="text-xs uppercase tracking-[0.3em] text-gray-400 font-sans mt-2">Staff Portal</p>
+          <p className="text-xs uppercase tracking-[0.3em] text-[#D4AF37] font-sans font-bold">Welcome Back</p>
+          <h2 className="text-2xl font-serif text-white mt-1 uppercase tracking-wider">Access Portal</h2>
         </div>
 
         <form onSubmit={handleLogin} className="space-y-6">
@@ -285,7 +336,7 @@ const Login: React.FC<{ onLogin: (user: User) => void }> = ({ onLogin }) => {
               type="text" 
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-sm px-4 py-3 focus:outline-none focus:border-[#D4AF37] transition-all text-white placeholder-gray-500 font-sans"
+              className="w-full bg-[#1A1A1A]/80 border border-[#2A2A2A] rounded-sm px-4 py-3 focus:outline-none focus:border-[#D4AF37] transition-all text-white placeholder-gray-500 font-sans"
               placeholder="Enter username"
               required
             />
@@ -295,7 +346,7 @@ const Login: React.FC<{ onLogin: (user: User) => void }> = ({ onLogin }) => {
 
           <button 
             type="submit"
-            className="w-full mt-4 bg-[#D4AF37] hover:bg-[#C5A059] text-[#111111] font-serif font-bold tracking-widest uppercase py-4 px-6 rounded-sm transition-colors duration-300"
+            className="w-full mt-4 bg-[#D4AF37] hover:bg-[#C5A059] text-[#111111] font-serif font-bold tracking-widest uppercase py-4 px-6 rounded-sm transition-colors duration-300 cursor-pointer shadow-lg"
           >
             Authenticate
           </button>
