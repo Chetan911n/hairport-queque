@@ -1670,20 +1670,22 @@ const ClientHistoryView: React.FC<ClientHistoryViewProps> = ({ tickets }) => {
                       )}
                     </td>
                     <td className="py-4 text-right">
-                      <div className="flex gap-2 justify-end">
+                      <div className="flex gap-2 justify-end items-center">
                         <button
                           onClick={() => handleOpenEdit(ticket)}
-                          className="bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white p-2 rounded-sm transition-all border border-blue-200 cursor-pointer flex items-center justify-center"
+                          className="bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white px-2.5 py-1 rounded-sm text-xs font-bold transition-all border border-blue-200 cursor-pointer flex items-center gap-1"
                           title="Edit Entry"
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                          <span>Edit</span>
                         </button>
                         <button
                           onClick={() => handleDeleteEntry(ticket)}
-                          className="bg-red-50 text-red-600 hover:bg-red-600 hover:text-white p-2 rounded-sm transition-all border border-red-200 cursor-pointer flex items-center justify-center"
+                          className="bg-red-50 text-red-600 hover:bg-red-600 hover:text-white px-2.5 py-1 rounded-sm text-xs font-bold transition-all border border-red-200 cursor-pointer flex items-center gap-1"
                           title="Delete Entry"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
+                          <span>Delete</span>
                         </button>
                       </div>
                     </td>
@@ -2466,7 +2468,7 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
                             )}
                           </div>
                           
-                          <div className="flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <div className="flex flex-col gap-2">
                             <button 
                               onClick={() => updateStatus(ticket.docId, "Serving")}
                               className="bg-[#D4AF37]/10 text-[#D4AF37] hover:bg-[#D4AF37] hover:text-[#111111] p-2 rounded-sm transition-colors border border-[#D4AF37]/20 cursor-pointer flex items-center justify-center"
@@ -2546,15 +2548,33 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
                             )}
                           </div>
                           
-                          <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                          <div className="flex flex-col gap-2">
                             <button 
                               onClick={() => onCompleteTicket(ticket)}
-                              className="flex items-center gap-2 bg-white border border-[#E5E5E0] text-gray-500 hover:text-[#111111] hover:border-[#D4AF37] px-4 py-2 rounded-sm transition-colors font-sans text-xs uppercase tracking-widest cursor-pointer"
+                              className="flex items-center gap-2 bg-white border border-[#E5E5E0] text-gray-500 hover:text-[#111111] hover:border-[#D4AF37] px-3 py-1.5 rounded-sm transition-colors font-sans text-xs uppercase tracking-widest cursor-pointer"
                               title="Complete Service"
                             >
                               <CheckCircle className="w-4 h-4" />
                               Complete
                             </button>
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => openEdit(ticket)}
+                                className="flex-1 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white py-1 px-2 rounded-sm transition-colors border border-blue-200 cursor-pointer flex items-center justify-center text-xs font-bold gap-1"
+                                title="Edit Entry"
+                              >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                Edit
+                              </button>
+                              <button 
+                                onClick={() => { if (window.confirm(`Delete ticket for ${ticket.customerName}?`)) deleteTicket(ticket.docId); }}
+                                className="bg-red-50 text-red-600 hover:bg-red-600 hover:text-white py-1 px-2.5 rounded-sm transition-colors border border-red-200 cursor-pointer flex items-center justify-center text-xs font-bold gap-1"
+                                title="Cancel Appointment"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                                Delete
+                              </button>
+                            </div>
                           </div>
                         </motion.div>
                       ))
