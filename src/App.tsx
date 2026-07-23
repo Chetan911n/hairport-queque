@@ -269,26 +269,26 @@ const Login: React.FC<{ onLogin: (user: User) => void }> = ({ onLogin }) => {
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white/80 backdrop-blur-lg border border-[#E5E5E0]/50 p-10 rounded-sm shadow-2xl w-full max-w-md relative z-10"
+        className="bg-[#141414]/90 backdrop-blur-xl border border-[#D4AF37]/40 p-10 rounded-sm shadow-2xl w-full max-w-md relative z-10 text-white"
       >
         <div className="flex flex-col items-center mb-8">
-          <div className="w-16 h-16 rounded-sm border border-[#111111] bg-[#111111] flex items-center justify-center mb-6">
+          <div className="w-16 h-16 rounded-sm border border-[#D4AF37]/50 bg-[#1A1A1A] flex items-center justify-center mb-6">
             <Scissors className="w-8 h-8 text-[#D4AF37]" />
           </div>
-          <h1 className="text-3xl font-bold tracking-widest font-serif uppercase text-[#111111]">
+          <h1 className="text-3xl font-bold tracking-widest font-serif uppercase text-[#D4AF37]">
             Hairport
           </h1>
-          <p className="text-xs uppercase tracking-[0.3em] text-gray-500 font-sans mt-2">Staff Portal</p>
+          <p className="text-xs uppercase tracking-[0.3em] text-gray-400 font-sans mt-2">Staff Portal</p>
         </div>
 
         <form onSubmit={handleLogin} className="space-y-6">
           <div className="space-y-2">
-            <label className="text-xs font-sans text-gray-500 uppercase tracking-widest">Username</label>
+            <label className="text-xs font-sans text-gray-400 uppercase tracking-widest">Username</label>
             <input 
               type="text" 
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-full bg-[#F5F5F0] border border-[#E5E5E0] rounded-sm px-4 py-3 focus:outline-none focus:border-[#D4AF37] transition-all text-[#111111] font-sans"
+              className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-sm px-4 py-3 focus:outline-none focus:border-[#D4AF37] transition-all text-white placeholder-gray-500 font-sans"
               placeholder="Enter username"
               required
             />
@@ -895,15 +895,23 @@ const App: React.FC = () => {
     );
   }
 
-  const isDarkView = view === 'tv' || view === 'staff' || view === 'owner' || view === 'analytics';
+  const isDarkView = true;
 
   return (
-    <div className={`min-h-screen font-sans selection:bg-[#D4AF37]/30 overflow-x-hidden flex flex-col transition-colors duration-500 ${isDarkView ? 'bg-[#0A0A0A] text-gray-100' : 'bg-[#F5F5F0] text-[#111111]'}`}>
+    <div className="min-h-screen font-sans selection:bg-[#D4AF37]/30 overflow-x-hidden flex flex-col bg-[#0A0A0A] text-gray-100">
       
-      {/* Elegant Background Texture */}
+      {/* Elegant Background Texture & Universal Dark Luxury Wallpaper */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-        <div className={`absolute inset-0 transition-colors duration-500 ${isDarkView ? 'bg-gradient-to-b from-[#1A1A1A] to-[#0A0A0A]' : 'bg-[#F5F5F0]'}`}></div>
-        <div className={`absolute inset-0 opacity-[0.03] mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] ${isDarkView ? '' : 'invert opacity-[0.02]'}`}></div>
+        <div 
+          style={{
+            backgroundImage: 'linear-gradient(to bottom, rgba(10, 10, 10, 0.92), rgba(15, 15, 15, 0.97)), url("/abstract_beauty.jpg")',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundAttachment: 'fixed'
+          }}
+          className="absolute inset-0"
+        />
+        <div className="absolute inset-0 opacity-[0.03] mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
       </div>
 
       {/* Header (Hide in TV View to make it fully full-screen as requested) */}
