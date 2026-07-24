@@ -75,6 +75,7 @@ const SERVICES_CONFIG = {
       "Haircut",
       "Global Colour",
       "Highlights Colour",
+      "Beard Colour",
       "Hair Spa",
       "Head Massage",
       "Beard Style",
@@ -1735,10 +1736,10 @@ const ClientHistoryView: React.FC<ClientHistoryViewProps> = ({ tickets }) => {
                         {ticket.paymentMethod || 'UPI'}
                       </span>
                     </td>
-                    <td className="py-4 text-right font-mono font-bold text-[#111111]">
+                    <td className="py-4 text-right font-mono font-extrabold text-base text-white">
                       {ticket.paymentMethod === 'Pending' ? (
                         <div className="flex flex-col items-end gap-1">
-                          <span className="text-red-600 font-bold">₹{(ticket.price || 0).toFixed(2)}</span>
+                          <span className="text-red-400 font-extrabold">₹{(ticket.price || 0).toFixed(2)}</span>
                           <div className="flex gap-1">
                             <button
                               onClick={() => handleSettlePayment(ticket.docId, "UPI")}
@@ -1755,7 +1756,7 @@ const ClientHistoryView: React.FC<ClientHistoryViewProps> = ({ tickets }) => {
                           </div>
                         </div>
                       ) : (
-                        <span>₹{(ticket.price || 0).toFixed(2)}</span>
+                        <span className="text-white font-extrabold">₹{(ticket.price || 0).toFixed(2)}</span>
                       )}
                     </td>
                     <td className="py-4 text-right">
