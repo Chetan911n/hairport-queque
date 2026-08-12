@@ -56,7 +56,7 @@ interface Ticket {
   price?: number;
   paymentMethod?: "Cash" | "UPI" | "Pending";
   gender?: "Male" | "Female";
-  serviceCategory?: "Hair" | "Skin" | "Waxing";
+  serviceCategory?: "Hair" | "Skin" | "Treatments" | "Waxing";
   isSplit?: boolean;
   primaryStylistName?: string;
   primaryStylistPrice?: number;
@@ -73,7 +73,8 @@ const SERVICES_CONFIG = {
   Male: {
     Hair: [
       "Haircut",
-      "Global Colour",
+      "Hair Wash",
+      "Hair Colour",
       "Highlights Colour",
       "Beard Colour",
       "Hair Spa",
@@ -83,11 +84,22 @@ const SERVICES_CONFIG = {
       "Hair Styling"
     ],
     Skin: [
+      "Cleansing",
+      "Scrub",
+      "De-Tan",
+      "Face Steam",
       "Manicure",
       "Pedicure",
       "Facial",
       "Cleanup",
       "Face Massage"
+    ],
+    Treatments: [
+      "Blue Tox Treatment",
+      "Nano Plastia Treatment",
+      "Smoothing Treatment",
+      "Keratin Treatment",
+      "Perming Treatment"
     ],
     Waxing: [
       "Chest Wax",
@@ -101,6 +113,8 @@ const SERVICES_CONFIG = {
   Female: {
     Hair: [
       "Haircut",
+      "Hair Styling",
+      "Hair Wash",
       "Hair Spa",
       "Global Colour",
       "Highlights Colour",
@@ -109,11 +123,22 @@ const SERVICES_CONFIG = {
       "Hair Fall Treatment"
     ],
     Skin: [
+      "Cleansing",
+      "Scrub",
+      "De-Tan",
+      "Face Steam",
       "Threading",
       "Facial",
       "Clean Up",
       "Regular Pedicure & Spa",
       "Bleach & D-Tan"
+    ],
+    Treatments: [
+      "Blue Tox Treatment",
+      "Nano Plastia Treatment",
+      "Smoothing Treatment",
+      "Keratin Treatment",
+      "Perming Treatment"
     ],
     Waxing: [
       "Regular Wax",
@@ -2382,7 +2407,7 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
   const [customerName, setCustomerName] = useState("");
   const [phone, setPhone] = useState("");
   const [gender, setGender] = useState<"Male" | "Female">("Male");
-  const [serviceCategory, setServiceCategory] = useState<"Hair" | "Skin" | "Waxing">("Hair");
+  const [serviceCategory, setServiceCategory] = useState<"Hair" | "Skin" | "Treatments" | "Waxing">("Hair");
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [colourNumber, setColourNumber] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -2392,7 +2417,7 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
   const [editName, setEditName] = useState("");
   const [editPhone, setEditPhone] = useState("");
   const [editGender, setEditGender] = useState<"Male" | "Female">("Male");
-  const [editCategory, setEditCategory] = useState<"Hair" | "Skin" | "Waxing">("Hair");
+  const [editCategory, setEditCategory] = useState<"Hair" | "Skin" | "Treatments" | "Waxing">("Hair");
   const [editServices, setEditServices] = useState<string[]>([]);
   const [editColour, setEditColour] = useState("");
   const [editSaving, setEditSaving] = useState(false);
@@ -2402,7 +2427,7 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
     setEditName(ticket.customerName);
     setEditPhone(ticket.phone);
     setEditGender((ticket.gender as "Male" | "Female") || "Male");
-    setEditCategory((ticket.serviceCategory as "Hair" | "Skin" | "Waxing") || "Hair");
+    setEditCategory((ticket.serviceCategory as "Hair" | "Skin" | "Treatments" | "Waxing") || "Hair");
     setEditServices(ticket.serviceType ? ticket.serviceType.split(", ").map(s => s.trim()).filter(Boolean) : []);
     setEditColour(ticket.colourNumber || "");
   };
@@ -2640,7 +2665,7 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
                   <div className="space-y-2">
                     <label className="text-xs font-sans text-gray-400 uppercase tracking-widest block">Service Category</label>
                     <div className="flex gap-2">
-                      {(["Hair", "Skin", "Waxing"] as const).map((cat) => (
+                      {(["Hair", "Skin", "Treatments", "Waxing"] as const).map((cat) => (
                         <button
                           key={cat}
                           type="button"
@@ -3096,7 +3121,7 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
                 <div className="space-y-1">
                   <label className="text-[10px] text-gray-400 uppercase tracking-widest font-bold block">Category</label>
                   <div className="flex gap-2">
-                    {(["Hair", "Skin", "Waxing"] as const).map(cat => (
+                    {(["Hair", "Skin", "Treatments", "Waxing"] as const).map(cat => (
                       <button
                         key={cat}
                         type="button"
