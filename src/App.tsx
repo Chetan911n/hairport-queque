@@ -1274,8 +1274,8 @@ const App: React.FC = () => {
             ? `${splitDetails.primaryStylistName} and ${splitDetails.secondaryStylistName}`
             : stylistName;
           const smsBody = paymentMethod === "Pending"
-            ? `Hi ${completingTicket.customerName}, thank you for visiting Hairport! Your service with ${displayStylist} is complete. Your total bill is ₹${price} (marked as pending). We hope you loved our service! Please visit again.`
-            : `Hi ${completingTicket.customerName}, thank you for visiting Hairport! Your service with ${displayStylist} is complete. Your payment of ₹${price} via ${paymentMethod} has been received. We hope you love your new look. Please visit again!`;
+            ? `Hi ${completingTicket.customerName}, thank you for visiting Hairport Salon! Your service with ${displayStylist} is complete. Your total bill is ₹${price} (marked as pending). We hope you loved our service! Please visit again.`
+            : `Hi ${completingTicket.customerName}, thank you for visiting Hairport Salon! Your service with ${displayStylist} is complete. Your payment of ₹${price} via ${paymentMethod} has been received. We hope you love your new look. Please visit again!`;
           const smsUrl = `sms:${completingTicket.phone}?body=${encodeURIComponent(smsBody)}`;
           setTimeout(() => {
             window.open(smsUrl, '_blank');
