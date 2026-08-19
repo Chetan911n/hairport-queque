@@ -1241,14 +1241,12 @@ const App: React.FC = () => {
       const numericId = Number(completingTicket.docId);
       if (isSupabaseConfigured && supabase) {
         try {
-          const supPayload = {
-            status: "completed",
-            price: price,
-            stylist_name: stylistName,
-            payment_method: paymentMethod,
-            completed_at: new Date().toISOString()
+          const supPayload: any = {
+            status: "completed"
           };
-          if (!isNaN(numericId)) {
+          if (stylistName) supPayload.stylist_name = stylistName;
+
+          if (!isNaN(numericId) && numericId > 0) {
             await supabase.from('queue').update(supPayload).eq('id', numericId);
           }
           await supabase.from('queue').update(supPayload).eq('customer_name', completingTicket.customerName);
