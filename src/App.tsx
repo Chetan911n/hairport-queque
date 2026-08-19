@@ -605,10 +605,26 @@ const CompletionModal: React.FC<CompletionModalProps> = ({ ticket, onClose, onCo
         .map(doc => doc.data() as { name: string; role?: string })
         .filter(s => s.role !== "receptionist")
         .map(s => ({ id: s.name, name: s.name }));
-      setStylists(data);
-      if (!ticket.stylistName && data.length > 0) {
-        setRows(prev => prev.map(r => r.stylist ? r : { ...r, stylist: data[0].name }));
+
+      const defaults = [
+        { id: "Prashant", name: "Prashant" },
+        { id: "Tejas", name: "Tejas" },
+        { id: "Kunal", name: "Kunal" }
+      ];
+      const list = data.length > 0 ? data : defaults;
+      setStylists(list);
+
+      if (!ticket.stylistName && list.length > 0) {
+        setRows(prev => prev.map(r => r.stylist ? r : { ...r, stylist: list[0].name }));
       }
+    }, (err) => {
+      console.warn("Stylists snapshot error, using defaults:", err);
+      const defaults = [
+        { id: "Prashant", name: "Prashant" },
+        { id: "Tejas", name: "Tejas" },
+        { id: "Kunal", name: "Kunal" }
+      ];
+      setStylists(defaults);
     });
     return () => unsubscribe();
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -752,16 +768,17 @@ const CompletionModal: React.FC<CompletionModalProps> = ({ ticket, onClose, onCo
               <div className="space-y-1">
                 <label className="text-[10px] text-gray-500 uppercase tracking-widest">Stylist</label>
                 <select
-                  value={rows[0]?.stylist || ""}
+                  value={rows[0]?.stylist || ticket.stylistName || (stylists[0]?.name || "Prashant")}
                   onChange={e => updateRow(0, "stylist", e.target.value)}
-                  disabled={!!ticket.stylistName}
-                  className="w-full bg-[#111111] text-white border border-[#2A2A2A] rounded-sm px-3 py-2.5 text-sm focus:outline-none focus:border-[#D4AF37] disabled:opacity-60 cursor-pointer"
+                  className="w-full bg-[#111111] text-white border border-[#2A2A2A] rounded-sm px-3 py-2.5 text-sm focus:outline-none focus:border-[#D4AF37] cursor-pointer font-bold"
                 >
-                  {ticket.stylistName ? (
-                    <option value={ticket.stylistName}>{ticket.stylistName}</option>
-                  ) : (
-                    stylists.map(s => <option key={s.id} value={s.name}>{s.name}</option>)
-                  )}
+                  {(stylists.length > 0 ? stylists : [
+                    { id: "Prashant", name: "Prashant" },
+                    { id: "Tejas", name: "Tejas" },
+                    { id: "Kunal", name: "Kunal" }
+                  ]).map(s => (
+                    <option key={s.id} value={s.name}>{s.name}</option>
+                  ))}
                 </select>
               </div>
               <div className="space-y-1">
@@ -807,8 +824,11 @@ const CompletionModal: React.FC<CompletionModalProps> = ({ ticket, onClose, onCo
                         onChange={e => updateRow(i, "stylist", e.target.value)}
                         className="w-full bg-[#111111] text-white border border-[#2A2A2A] rounded-sm px-2 py-2 text-xs focus:outline-none focus:border-[#D4AF37] cursor-pointer"
                       >
-                        <option value="">Select Stylist</option>
-                        {stylists.map(s => (
+                        {(stylists.length > 0 ? stylists : [
+                          { id: "Prashant", name: "Prashant" },
+                          { id: "Tejas", name: "Tejas" },
+                          { id: "Kunal", name: "Kunal" }
+                        ]).map(s => (
                           <option key={s.id} value={s.name}>{s.name}</option>
                         ))}
                       </select>
