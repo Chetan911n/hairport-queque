@@ -1072,7 +1072,9 @@ const App: React.FC = () => {
               customerName: d.customer_name || d.customerName || "Guest",
               phone: d.phone || "",
               serviceType: d.service_type || d.serviceType || "",
-              status: d.status || "Waiting",
+              status: (d.status && d.status.toString().toLowerCase() === "completed") 
+                ? "Completed" 
+                : ((d.status && d.status.toString().toLowerCase() === "serving") ? "Serving" : "Waiting"),
               timestamp: d.timestamp || d.created_at || new Date().toISOString(),
               stylistName: d.stylist_name || d.stylistName || "",
               price: Number(d.price || 0),
@@ -1480,7 +1482,7 @@ interface RevenueAnalyticsViewProps {
 }
 
 const RevenueAnalyticsView: React.FC<RevenueAnalyticsViewProps> = ({ tickets }) => {
-  const completedTickets = (tickets || []).filter(t => t && t.status === "Completed");
+  const completedTickets = (tickets || []).filter(t => t && t.status && t.status.toString().toLowerCase() === "completed");
 
   const getTicketDate = (ticket: Ticket): Date | null => {
     if (!ticket) return null;
@@ -1833,7 +1835,7 @@ const ClientHistoryView: React.FC<ClientHistoryViewProps> = ({ tickets, onDelete
     return () => unsubscribe();
   }, []);
 
-  const completedTickets = (tickets || []).filter(t => t && t.status === "Completed");
+  const completedTickets = (tickets || []).filter(t => t && t.status && t.status.toString().toLowerCase() === "completed");
 
   const filteredTickets = completedTickets.filter(t => {
     if (!t) return false;
