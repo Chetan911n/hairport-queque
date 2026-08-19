@@ -939,7 +939,16 @@ const App: React.FC = () => {
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const existingIds = new Set(parsed.map((t: Ticket) => t.docId || t.id));
+          const missingSamples = INITIAL_SAMPLE_TICKETS.filter(s => !existingIds.has(s.docId));
+          if (missingSamples.length > 0) {
+            const merged = [...parsed, ...missingSamples];
+            localStorage.setItem('hairport_tickets', JSON.stringify(merged));
+            return merged;
+          }
+          return parsed;
+        }
       } catch (e) {
         console.error("Failed to parse saved tickets", e);
       }
