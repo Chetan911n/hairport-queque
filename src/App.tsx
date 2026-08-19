@@ -1244,7 +1244,7 @@ const App: React.FC = () => {
   }, [view]);
 
   // Record attendance on login for tracked staff
-  const TRACKED_STAFF = ["Prashant", "Tejas", "Kunal"];
+  const TRACKED_STAFF = ["Chetan", "Prashant", "Tejas", "Kunal"];
   useEffect(() => {
     if (!user || user.role === "tv") return;
     const staffName = user.name;
@@ -3855,13 +3855,14 @@ const LiveWorkTimer: React.FC<{ loginTimestamp: number }> = ({ loginTimestamp })
 };
 
 const DEFAULT_ATTENDANCE_RECORDS: AttendanceRecord[] = [
+  { id: "att-0", name: "Chetan", date: new Date().toISOString().split("T")[0], loginAt: new Date().toISOString(), loginTimestamp: Date.now() - 18000000 },
   { id: "att-1", name: "Prashant", date: new Date().toISOString().split("T")[0], loginAt: new Date().toISOString(), loginTimestamp: Date.now() - 14400000 },
   { id: "att-2", name: "Tejas", date: new Date().toISOString().split("T")[0], loginAt: new Date().toISOString(), loginTimestamp: Date.now() - 10800000 },
   { id: "att-3", name: "Kunal", date: new Date().toISOString().split("T")[0], loginAt: new Date().toISOString(), loginTimestamp: Date.now() - 7200000 }
 ];
 
 const AttendanceSheet: React.FC = () => {
-  const TRACKED = ["Prashant", "Tejas", "Kunal"];
+  const TRACKED = ["Chetan", "Prashant", "Tejas", "Kunal"];
   const [records, setRecords] = useState<AttendanceRecord[]>(() => {
     const saved = localStorage.getItem('hairport_attendance');
     if (saved) {
@@ -4071,6 +4072,7 @@ interface StaffAnalyticsProps {
 }
 
 const DEFAULT_STYLIST_DOCS: StylistDoc[] = [
+  { id: "s-0", name: "Chetan", active: true, role: "owner_stylist" },
   { id: "s-1", name: "Prashant", active: true, role: "owner_stylist" },
   { id: "s-2", name: "Tejas", active: true, role: "stylist" },
   { id: "s-3", name: "Kunal", active: true, role: "stylist" }
