@@ -169,8 +169,8 @@ const INITIAL_SAMPLE_TICKETS: Ticket[] = [
     price: 350,
     paymentMethod: "UPI",
     stylistName: "Prashant",
-    timestamp: { seconds: Math.floor(Date.now() / 1000) - 86400 * 5 },
-    completedAt: { seconds: Math.floor(Date.now() / 1000) - 86400 * 5 + 1800 }
+    timestamp: { seconds: Math.floor(Date.now() / 1000) - 86400 * 15 },
+    completedAt: { seconds: Math.floor(Date.now() / 1000) - 86400 * 15 + 1800 }
   },
   {
     docId: "hist-002",
@@ -184,8 +184,8 @@ const INITIAL_SAMPLE_TICKETS: Ticket[] = [
     price: 3200,
     paymentMethod: "UPI",
     stylistName: "Prashant",
-    timestamp: { seconds: Math.floor(Date.now() / 1000) - 86400 * 4 },
-    completedAt: { seconds: Math.floor(Date.now() / 1000) - 86400 * 4 + 3600 }
+    timestamp: { seconds: Math.floor(Date.now() / 1000) - 86400 * 14 },
+    completedAt: { seconds: Math.floor(Date.now() / 1000) - 86400 * 14 + 3600 }
   },
   {
     docId: "hist-003",
@@ -199,8 +199,8 @@ const INITIAL_SAMPLE_TICKETS: Ticket[] = [
     price: 1800,
     paymentMethod: "Cash",
     stylistName: "Tejas",
-    timestamp: { seconds: Math.floor(Date.now() / 1000) - 86400 * 3 },
-    completedAt: { seconds: Math.floor(Date.now() / 1000) - 86400 * 3 + 3600 }
+    timestamp: { seconds: Math.floor(Date.now() / 1000) - 86400 * 13 },
+    completedAt: { seconds: Math.floor(Date.now() / 1000) - 86400 * 13 + 3600 }
   },
   {
     docId: "hist-004",
@@ -214,8 +214,8 @@ const INITIAL_SAMPLE_TICKETS: Ticket[] = [
     price: 1500,
     paymentMethod: "UPI",
     stylistName: "Kunal",
-    timestamp: { seconds: Math.floor(Date.now() / 1000) - 86400 * 2 },
-    completedAt: { seconds: Math.floor(Date.now() / 1000) - 86400 * 2 + 2700 }
+    timestamp: { seconds: Math.floor(Date.now() / 1000) - 86400 * 12 },
+    completedAt: { seconds: Math.floor(Date.now() / 1000) - 86400 * 12 + 2700 }
   },
   {
     docId: "hist-005",
@@ -229,8 +229,8 @@ const INITIAL_SAMPLE_TICKETS: Ticket[] = [
     price: 500,
     paymentMethod: "Cash",
     stylistName: "Tejas",
-    timestamp: { seconds: Math.floor(Date.now() / 1000) - 86400 * 2 },
-    completedAt: { seconds: Math.floor(Date.now() / 1000) - 86400 * 2 + 1800 }
+    timestamp: { seconds: Math.floor(Date.now() / 1000) - 86400 * 11 },
+    completedAt: { seconds: Math.floor(Date.now() / 1000) - 86400 * 11 + 1800 }
   },
   {
     docId: "hist-006",
@@ -244,8 +244,8 @@ const INITIAL_SAMPLE_TICKETS: Ticket[] = [
     price: 2200,
     paymentMethod: "UPI",
     stylistName: "Prashant",
-    timestamp: { seconds: Math.floor(Date.now() / 1000) - 86400 },
-    completedAt: { seconds: Math.floor(Date.now() / 1000) - 86400 + 3600 }
+    timestamp: { seconds: Math.floor(Date.now() / 1000) - 86400 * 10 },
+    completedAt: { seconds: Math.floor(Date.now() / 1000) - 86400 * 10 + 3600 }
   },
   {
     docId: "hist-007",
@@ -259,8 +259,8 @@ const INITIAL_SAMPLE_TICKETS: Ticket[] = [
     price: 950,
     paymentMethod: "Cash",
     stylistName: "Kunal",
-    timestamp: { seconds: Math.floor(Date.now() / 1000) - 86400 },
-    completedAt: { seconds: Math.floor(Date.now() / 1000) - 86400 + 1800 }
+    timestamp: { seconds: Math.floor(Date.now() / 1000) - 86400 * 9 },
+    completedAt: { seconds: Math.floor(Date.now() / 1000) - 86400 * 9 + 1800 }
   },
   {
     docId: "hist-008",
@@ -274,8 +274,8 @@ const INITIAL_SAMPLE_TICKETS: Ticket[] = [
     price: 2800,
     paymentMethod: "UPI",
     stylistName: "Prashant",
-    timestamp: { seconds: Math.floor(Date.now() / 1000) - 43200 },
-    completedAt: { seconds: Math.floor(Date.now() / 1000) - 39600 }
+    timestamp: { seconds: Math.floor(Date.now() / 1000) - 86400 * 8 },
+    completedAt: { seconds: Math.floor(Date.now() / 1000) - 86400 * 8 + 3600 }
   },
   {
     docId: "hist-009",
@@ -289,8 +289,8 @@ const INITIAL_SAMPLE_TICKETS: Ticket[] = [
     price: 3500,
     paymentMethod: "UPI",
     stylistName: "Tejas",
-    timestamp: { seconds: Math.floor(Date.now() / 1000) - 36000 },
-    completedAt: { seconds: Math.floor(Date.now() / 1000) - 32400 }
+    timestamp: { seconds: Math.floor(Date.now() / 1000) - 86400 * 7 },
+    completedAt: { seconds: Math.floor(Date.now() / 1000) - 86400 * 7 + 3600 }
   },
   {
     docId: "hist-010",
@@ -304,8 +304,8 @@ const INITIAL_SAMPLE_TICKETS: Ticket[] = [
     price: 2400,
     paymentMethod: "Cash",
     stylistName: "Kunal",
-    timestamp: { seconds: Math.floor(Date.now() / 1000) - 28800 },
-    completedAt: { seconds: Math.floor(Date.now() / 1000) - 25200 }
+    timestamp: { seconds: Math.floor(Date.now() / 1000) - 86400 * 6 },
+    completedAt: { seconds: Math.floor(Date.now() / 1000) - 86400 * 6 + 3600 }
   },
   {
     docId: "hist-011",
@@ -319,8 +319,8 @@ const INITIAL_SAMPLE_TICKETS: Ticket[] = [
     price: 2100,
     paymentMethod: "UPI",
     stylistName: "Prashant",
-    timestamp: { seconds: Math.floor(Date.now() / 1000) - 21600 },
-    completedAt: { seconds: Math.floor(Date.now() / 1000) - 18000 }
+    timestamp: { seconds: Math.floor(Date.now() / 1000) - 86400 * 5 },
+    completedAt: { seconds: Math.floor(Date.now() / 1000) - 86400 * 5 + 2700 }
   },
   {
     docId: "hist-012",
@@ -334,8 +334,8 @@ const INITIAL_SAMPLE_TICKETS: Ticket[] = [
     price: 1200,
     paymentMethod: "Cash",
     stylistName: "Tejas",
-    timestamp: { seconds: Math.floor(Date.now() / 1000) - 14400 },
-    completedAt: { seconds: Math.floor(Date.now() / 1000) - 10800 }
+    timestamp: { seconds: Math.floor(Date.now() / 1000) - 86400 * 4 },
+    completedAt: { seconds: Math.floor(Date.now() / 1000) - 86400 * 4 + 1800 }
   },
   {
     docId: "hist-013",
@@ -349,8 +349,8 @@ const INITIAL_SAMPLE_TICKETS: Ticket[] = [
     price: 2900,
     paymentMethod: "UPI",
     stylistName: "Kunal",
-    timestamp: { seconds: Math.floor(Date.now() / 1000) - 10800 },
-    completedAt: { seconds: Math.floor(Date.now() / 1000) - 7200 }
+    timestamp: { seconds: Math.floor(Date.now() / 1000) - 86400 * 3 },
+    completedAt: { seconds: Math.floor(Date.now() / 1000) - 86400 * 3 + 3600 }
   },
   {
     docId: "hist-014",
@@ -364,8 +364,8 @@ const INITIAL_SAMPLE_TICKETS: Ticket[] = [
     price: 1600,
     paymentMethod: "Cash",
     stylistName: "Tejas",
-    timestamp: { seconds: Math.floor(Date.now() / 1000) - 7200 },
-    completedAt: { seconds: Math.floor(Date.now() / 1000) - 5400 }
+    timestamp: { seconds: Math.floor(Date.now() / 1000) - 86400 * 2 },
+    completedAt: { seconds: Math.floor(Date.now() / 1000) - 86400 * 2 + 1800 }
   },
   {
     docId: "hist-015",
@@ -379,8 +379,8 @@ const INITIAL_SAMPLE_TICKETS: Ticket[] = [
     price: 650,
     paymentMethod: "UPI",
     stylistName: "Prashant",
-    timestamp: { seconds: Math.floor(Date.now() / 1000) - 5400 },
-    completedAt: { seconds: Math.floor(Date.now() / 1000) - 3600 }
+    timestamp: { seconds: Math.floor(Date.now() / 1000) - 86400 * 2 },
+    completedAt: { seconds: Math.floor(Date.now() / 1000) - 86400 * 2 + 1800 }
   },
   {
     docId: "hist-016",
@@ -393,9 +393,9 @@ const INITIAL_SAMPLE_TICKETS: Ticket[] = [
     status: "Completed",
     price: 1750,
     paymentMethod: "UPI",
-    stylistName: "Prashant",
-    timestamp: { seconds: Math.floor(Date.now() / 1000) - 3600 },
-    completedAt: { seconds: Math.floor(Date.now() / 1000) - 1800 }
+    stylistName: "Chetan",
+    timestamp: { seconds: Math.floor(Date.now() / 1000) - 86400 },
+    completedAt: { seconds: Math.floor(Date.now() / 1000) - 86400 + 1800 }
   },
   {
     docId: "hist-017",
@@ -409,8 +409,8 @@ const INITIAL_SAMPLE_TICKETS: Ticket[] = [
     price: 1400,
     paymentMethod: "Cash",
     stylistName: "Tejas",
-    timestamp: { seconds: Math.floor(Date.now() / 1000) - 2700 },
-    completedAt: { seconds: Math.floor(Date.now() / 1000) - 1200 }
+    timestamp: { seconds: Math.floor(Date.now() / 1000) - 86400 },
+    completedAt: { seconds: Math.floor(Date.now() / 1000) - 86400 + 1800 }
   },
   {
     docId: "hist-018",
@@ -424,8 +424,8 @@ const INITIAL_SAMPLE_TICKETS: Ticket[] = [
     price: 1100,
     paymentMethod: "UPI",
     stylistName: "Kunal",
-    timestamp: { seconds: Math.floor(Date.now() / 1000) - 1800 },
-    completedAt: { seconds: Math.floor(Date.now() / 1000) - 600 }
+    timestamp: { seconds: Math.floor(Date.now() / 1000) - 43200 },
+    completedAt: { seconds: Math.floor(Date.now() / 1000) - 39600 }
   },
   {
     docId: "hist-019",
@@ -438,13 +438,223 @@ const INITIAL_SAMPLE_TICKETS: Ticket[] = [
     status: "Completed",
     price: 3800,
     paymentMethod: "UPI",
-    stylistName: "Prashant",
-    timestamp: { seconds: Math.floor(Date.now() / 1000) - 900 },
-    completedAt: { seconds: Math.floor(Date.now() / 1000) - 300 }
+    stylistName: "Chetan",
+    timestamp: { seconds: Math.floor(Date.now() / 1000) - 36000 },
+    completedAt: { seconds: Math.floor(Date.now() / 1000) - 32400 }
   },
   {
     docId: "hist-020",
     id: "#020",
+    customerName: "Yashwardhan Rana",
+    phone: "9822445566",
+    serviceType: "Haircut, Hair Wash, Beard Style",
+    serviceCategory: "Hair",
+    gender: "Male",
+    status: "Completed",
+    price: 550,
+    paymentMethod: "Cash",
+    stylistName: "Tejas",
+    timestamp: { seconds: Math.floor(Date.now() / 1000) - 28800 },
+    completedAt: { seconds: Math.floor(Date.now() / 1000) - 27000 }
+  },
+  {
+    docId: "hist-021",
+    id: "#021",
+    customerName: "Tarun Bajaj",
+    phone: "9819332211",
+    serviceType: "Head Massage, Beard Colour",
+    serviceCategory: "Hair",
+    gender: "Male",
+    status: "Completed",
+    price: 700,
+    paymentMethod: "UPI",
+    stylistName: "Kunal",
+    timestamp: { seconds: Math.floor(Date.now() / 1000) - 25200 },
+    completedAt: { seconds: Math.floor(Date.now() / 1000) - 23400 }
+  },
+  {
+    docId: "hist-022",
+    id: "#022",
+    customerName: "Shalini Tiwari",
+    phone: "9769887766",
+    serviceType: "Threading, Face Waxing, Clean Up",
+    serviceCategory: "Skin",
+    gender: "Female",
+    status: "Completed",
+    price: 850,
+    paymentMethod: "Cash",
+    stylistName: "Tejas",
+    timestamp: { seconds: Math.floor(Date.now() / 1000) - 21600 },
+    completedAt: { seconds: Math.floor(Date.now() / 1000) - 19800 }
+  },
+  {
+    docId: "hist-023",
+    id: "#023",
+    customerName: "Gaurav Kapoor",
+    phone: "9823112233",
+    serviceType: "Hair Colour, Head Massage",
+    serviceCategory: "Hair",
+    gender: "Male",
+    status: "Completed",
+    price: 900,
+    paymentMethod: "UPI",
+    stylistName: "Prashant",
+    timestamp: { seconds: Math.floor(Date.now() / 1000) - 18000 },
+    completedAt: { seconds: Math.floor(Date.now() / 1000) - 16200 }
+  },
+  {
+    docId: "hist-024",
+    id: "#024",
+    customerName: "Sunita Menon",
+    phone: "9833009988",
+    serviceType: "Rica Waxing, Facial & Cleanup",
+    serviceCategory: "Waxing",
+    gender: "Female",
+    status: "Completed",
+    price: 2300,
+    paymentMethod: "UPI",
+    stylistName: "Kunal",
+    timestamp: { seconds: Math.floor(Date.now() / 1000) - 14400 },
+    completedAt: { seconds: Math.floor(Date.now() / 1000) - 10800 }
+  },
+  {
+    docId: "hist-025",
+    id: "#025",
+    customerName: "Karan Johar",
+    phone: "9821887766",
+    serviceType: "Perming Treatment, Hair Styling",
+    serviceCategory: "Treatments",
+    gender: "Male",
+    status: "Completed",
+    price: 2600,
+    paymentMethod: "UPI",
+    stylistName: "Chetan",
+    timestamp: { seconds: Math.floor(Date.now() / 1000) - 10800 },
+    completedAt: { seconds: Math.floor(Date.now() / 1000) - 7200 }
+  },
+  {
+    docId: "hist-026",
+    id: "#026",
+    customerName: "Rajesh Khanna",
+    phone: "9820556677",
+    serviceType: "Executive Haircut, Beard Trim",
+    serviceCategory: "Hair",
+    gender: "Male",
+    status: "Completed",
+    price: 450,
+    paymentMethod: "Cash",
+    stylistName: "Prashant",
+    timestamp: { seconds: Math.floor(Date.now() / 1000) - 9000 },
+    completedAt: { seconds: Math.floor(Date.now() / 1000) - 7800 }
+  },
+  {
+    docId: "hist-027",
+    id: "#027",
+    customerName: "Sunil Shetty",
+    phone: "9819776655",
+    serviceType: "Scalp Detox, Deep Tissue Massage",
+    serviceCategory: "Hair",
+    gender: "Male",
+    status: "Completed",
+    price: 1850,
+    paymentMethod: "UPI",
+    stylistName: "Chetan",
+    timestamp: { seconds: Math.floor(Date.now() / 1000) - 7200 },
+    completedAt: { seconds: Math.floor(Date.now() / 1000) - 5400 }
+  },
+  {
+    docId: "hist-028",
+    id: "#028",
+    customerName: "Anita Hassanandani",
+    phone: "9833112244",
+    serviceType: "Keratin Spa, Hair Cut",
+    serviceCategory: "Treatments",
+    gender: "Female",
+    status: "Completed",
+    price: 3100,
+    paymentMethod: "UPI",
+    stylistName: "Tejas",
+    timestamp: { seconds: Math.floor(Date.now() / 1000) - 5400 },
+    completedAt: { seconds: Math.floor(Date.now() / 1000) - 3600 }
+  },
+  {
+    docId: "hist-029",
+    id: "#029",
+    customerName: "Nitin Gadkari",
+    phone: "9769334455",
+    serviceType: "Classic Haircut, Face Steam",
+    serviceCategory: "Hair",
+    gender: "Male",
+    status: "Completed",
+    price: 500,
+    paymentMethod: "Cash",
+    stylistName: "Kunal",
+    timestamp: { seconds: Math.floor(Date.now() / 1000) - 4500 },
+    completedAt: { seconds: Math.floor(Date.now() / 1000) - 3600 }
+  },
+  {
+    docId: "hist-030",
+    id: "#030",
+    customerName: "Varun Dhawan",
+    phone: "9820445566",
+    serviceType: "Textured Fade, Beard Sculpting",
+    serviceCategory: "Hair",
+    gender: "Male",
+    status: "Completed",
+    price: 750,
+    paymentMethod: "UPI",
+    stylistName: "Prashant",
+    timestamp: { seconds: Math.floor(Date.now() / 1000) - 3600 },
+    completedAt: { seconds: Math.floor(Date.now() / 1000) - 2400 }
+  },
+  {
+    docId: "hist-031",
+    id: "#031",
+    customerName: "Alia Bhatt",
+    phone: "9821990011",
+    serviceType: "Highlights & Balayage, Hair Spa",
+    serviceCategory: "Hair",
+    gender: "Female",
+    status: "Completed",
+    price: 4200,
+    paymentMethod: "UPI",
+    stylistName: "Chetan",
+    timestamp: { seconds: Math.floor(Date.now() / 1000) - 2700 },
+    completedAt: { seconds: Math.floor(Date.now() / 1000) - 1200 }
+  },
+  {
+    docId: "hist-032",
+    id: "#032",
+    customerName: "Shraddha Kapoor",
+    phone: "9833556677",
+    serviceType: "Root Touchup, Blowdry",
+    serviceCategory: "Hair",
+    gender: "Female",
+    status: "Completed",
+    price: 1650,
+    paymentMethod: "Cash",
+    stylistName: "Tejas",
+    timestamp: { seconds: Math.floor(Date.now() / 1000) - 2100 },
+    completedAt: { seconds: Math.floor(Date.now() / 1000) - 900 }
+  },
+  {
+    docId: "hist-033",
+    id: "#033",
+    customerName: "Ranbir Kapoor",
+    phone: "9820778899",
+    serviceType: "Hair Spa, Beard Grooming",
+    serviceCategory: "Hair",
+    gender: "Male",
+    status: "Completed",
+    price: 1250,
+    paymentMethod: "UPI",
+    stylistName: "Prashant",
+    timestamp: { seconds: Math.floor(Date.now() / 1000) - 1800 },
+    completedAt: { seconds: Math.floor(Date.now() / 1000) - 600 }
+  },
+  {
+    docId: "hist-034",
+    id: "#034",
     customerName: "Priya Patel",
     phone: "9890123456",
     serviceType: "Blue Tox Treatment, Deep Cleansing",
@@ -457,8 +667,8 @@ const INITIAL_SAMPLE_TICKETS: Ticket[] = [
     timestamp: { seconds: Math.floor(Date.now() / 1000) - 1800 }
   },
   {
-    docId: "hist-021",
-    id: "#021",
+    docId: "hist-035",
+    id: "#035",
     customerName: "Amit Deshmukh",
     phone: "9765432109",
     serviceType: "Skin De-Tan, Face Steam",
@@ -471,8 +681,8 @@ const INITIAL_SAMPLE_TICKETS: Ticket[] = [
     timestamp: { seconds: Math.floor(Date.now() / 1000) - 600 }
   },
   {
-    docId: "hist-022",
-    id: "#022",
+    docId: "hist-036",
+    id: "#036",
     customerName: "Sneha Kulkarni",
     phone: "9822338669",
     serviceType: "Hair Styling, Hair Wash",
