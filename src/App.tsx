@@ -545,8 +545,9 @@ const Login: React.FC<{ onLogin: (user: User) => void }> = ({ onLogin }) => {
       return;
     }
 
-    if (lowerInput === "prashant" || lowerInput === "owner" || lowerInput === "admin") {
-      onLogin({ username: "prashant", role: "owner_stylist", name: "Prashant" });
+    if (lowerInput === "chetan" || lowerInput === "prashant" || lowerInput === "owner" || lowerInput === "admin") {
+      const displayName = lowerInput === "chetan" ? "Chetan" : "Prashant";
+      onLogin({ username: lowerInput, role: "owner_stylist", name: displayName });
       return;
     }
 
