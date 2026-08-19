@@ -1055,6 +1055,14 @@ const App: React.FC = () => {
     };
   }, [view]);
 
+  const handleDeleteTicket = useCallback((ticketId: string) => {
+    setTickets(prev => {
+      const updated = prev.filter(t => t.docId !== ticketId && t.id !== ticketId);
+      localStorage.setItem('hairport_tickets', JSON.stringify(updated));
+      return updated;
+    });
+  }, []);
+
   // Record attendance on login for tracked staff
   const TRACKED_STAFF = ["Chetan", "Prashant", "Tejas", "Kunal"];
   useEffect(() => {
@@ -1365,7 +1373,7 @@ const App: React.FC = () => {
               <StaffAnalyticsDashboard key="analytics" tickets={tickets} />
             )}
             {view === "reception" && (
-              <ReceptionDashboard key="reception" tickets={tickets} onCompleteTicket={setCompletingTicket} />
+              <ReceptionDashboard key="reception" tickets={tickets} onCompleteTicket={setCompletingTicket} onDeleteTicket={handleDeleteTicket} />
             )}
             {view === "staff" && user && (
               <StaffLineView key="staff" tickets={tickets} user={user} onCompleteTicket={setCompletingTicket} />
@@ -1714,9 +1722,10 @@ const RevenueAnalyticsView: React.FC<RevenueAnalyticsViewProps> = ({ tickets }) 
 // ---------------------------------------------------------
 interface ClientHistoryViewProps {
   tickets: Ticket[];
+  onDeleteTicket?: (id: string) => void;
 }
 
-const ClientHistoryView: React.FC<ClientHistoryViewProps> = ({ tickets }) => {
+const ClientHistoryView: React.FC<ClientHistoryViewProps> = ({ tickets, onDeleteTicket }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [editingTicket, setEditingTicket] = useState<Ticket | null>(null);
   const [stylists, setStylists] = useState<{ id: string; name: string }[]>([]);
@@ -1730,13 +1739,13 @@ const ClientHistoryView: React.FC<ClientHistoryViewProps> = ({ tickets }) => {
   const [editIsSplit, setEditIsSplit] = useState(false);
   const [editPrimaryName, setEditPrimaryName] = useState("");
   const [editPrimaryPrice, setEditPrimaryPrice] = useState(0);
-  const [editPrimaryService, setEditPrimaryService] = useState("");
+  const [editPrimaryServices, setEditPrimaryServices] = useState("");
   const [editSecondaryName, setEditSecondaryName] = useState("");
   const [editSecondaryPrice, setEditSecondaryPrice] = useState(0);
-  const [editSecondaryService, setEditSecondaryService] = useState("");
+  const [editSecondaryServices, setEditSecondaryServices] = useState("");
   const [editTertiaryName, setEditTertiaryName] = useState("");
   const [editTertiaryPrice, setEditTertiaryPrice] = useState(0);
-  const [editTertiaryService, setEditTertiaryService] = useState("");
+  const [editTertiaryServices, setEditTertiaryServices] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
@@ -1784,6 +1793,9 @@ const ClientHistoryView: React.FC<ClientHistoryViewProps> = ({ tickets }) => {
         await deleteDoc(doc(db, "tickets", ticket.docId));
       } catch (err) {
         console.error("Error deleting entry:", err);
+      }
+      if (onDeleteTicket) {
+        onDeleteTicket(ticket.docId || ticket.id);
       }
     }
   };
@@ -2628,7 +2640,7 @@ const ExpenseTrackerView: React.FC = () => {
 // ---------------------------------------------------------
 // RECEPTION DASHBOARD COMPONENT
 // ---------------------------------------------------------
-const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticket: Ticket) => void }> = ({ tickets, onCompleteTicket }) => {
+const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticket: Ticket) => void, onDeleteTicket?: (id: string) => void }> = ({ tickets, onCompleteTicket, onDeleteTicket }) => {
   const [activeTab, setActiveTab] = useState<"queue" | "history" | "revenue" | "expenses">("queue");
   const [customerName, setCustomerName] = useState("");
   const [phone, setPhone] = useState("");
@@ -3268,7 +3280,7 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
             exit={{ opacity: 0, y: -10 }}
             className="w-full flex flex-col gap-6 flex-1"
           >
-            <ClientHistoryView tickets={tickets} />
+            <ClientHistoryView tickets={tickets} onDeleteTicket={onDeleteTicket} />
           </motion.div>
         ) : activeTab === "revenue" ? (
           <motion.div
