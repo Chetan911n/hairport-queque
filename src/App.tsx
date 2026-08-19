@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { initializeApp } from "firebase/app";
 import { 
   getFirestore, 
@@ -161,7 +161,7 @@ const SERVICES_CONFIG = {
 
 
 // Live Counter Component
-const LiveCounter: React.FC<{ timestamp: any }> = ({ timestamp }) => {
+const LiveCounter: React.FC<{ timestamp: any }> = React.memo(({ timestamp }) => {
   const [elapsed, setElapsed] = useState('');
 
   useEffect(() => {
@@ -193,7 +193,7 @@ const LiveCounter: React.FC<{ timestamp: any }> = ({ timestamp }) => {
   }, [timestamp]);
 
   return <span>{elapsed || '0m 0s'}</span>;
-};
+});
 
 // Login Component
 const Login: React.FC<{ onLogin: (user: User) => void }> = ({ onLogin }) => {
@@ -258,34 +258,28 @@ const Login: React.FC<{ onLogin: (user: User) => void }> = ({ onLogin }) => {
 
       <style dangerouslySetInnerHTML={{__html: `
         @keyframes float-scissor-1 {
-          0% { transform: translateY(0px) rotateX(0deg) rotateY(0deg) rotateZ(0deg) scale(1); }
-          50% { transform: translateY(-40px) rotateX(180deg) rotateY(90deg) rotateZ(45deg) scale(1.1); }
-          100% { transform: translateY(0px) rotateX(360deg) rotateY(180deg) rotateZ(0deg) scale(1); }
+          0%, 100% { transform: translateY(0px) rotate(0deg); }
+          50% { transform: translateY(-20px) rotate(15deg); }
         }
         @keyframes float-scissor-2 {
-          0% { transform: translateY(0px) rotateX(45deg) rotateY(0deg) rotateZ(90deg) scale(0.9); }
-          50% { transform: translateY(30px) rotateX(-90deg) rotateY(180deg) rotateZ(-45deg) scale(0.85); }
-          100% { transform: translateY(0px) rotateX(45deg) rotateY(360deg) rotateZ(90deg) scale(0.9); }
+          0%, 100% { transform: translateY(0px) rotate(0deg); }
+          50% { transform: translateY(20px) rotate(-15deg); }
         }
         @keyframes float-scissor-3 {
-          0% { transform: translateY(0px) rotateX(0deg) rotateY(-45deg) rotateZ(180deg) scale(1.1); }
-          50% { transform: translateY(-50px) rotateX(90deg) rotateY(180deg) rotateZ(270deg) scale(1); }
-          100% { transform: translateY(0px) rotateX(0deg) rotateY(315deg) rotateZ(180deg) scale(1.1); }
+          0%, 100% { transform: translateY(0px) rotate(0deg); }
+          50% { transform: translateY(-25px) rotate(20deg); }
         }
         .animate-float-3d-1 {
-          animation: float-scissor-1 15s infinite ease-in-out;
-          perspective: 1000px;
-          transform-style: preserve-3d;
+          animation: float-scissor-1 12s infinite ease-in-out;
+          will-change: transform;
         }
         .animate-float-3d-2 {
-          animation: float-scissor-2 20s infinite ease-in-out;
-          perspective: 1000px;
-          transform-style: preserve-3d;
+          animation: float-scissor-2 16s infinite ease-in-out;
+          will-change: transform;
         }
         .animate-float-3d-3 {
-          animation: float-scissor-3 25s infinite ease-in-out;
-          perspective: 1000px;
-          transform-style: preserve-3d;
+          animation: float-scissor-3 20s infinite ease-in-out;
+          will-change: transform;
         }
       `}} />
 
@@ -761,6 +755,42 @@ const CompletionModal: React.FC<CompletionModalProps> = ({ ticket, onClose, onCo
   );
 };
 
+// Header Clock Component — Isolated to prevent root App re-renders
+const HeaderClock: React.FC<{ isDarkView?: boolean }> = React.memo(({ isDarkView = true }) => {
+  const [now, setNow] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setNow(new Date());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const formattedHeaderDate = now.toLocaleDateString(undefined, {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+  const formattedHeaderTime = now.toLocaleTimeString([], {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  });
+
+  return (
+    <div className="hidden md:flex flex-col border-l border-gray-300 dark:border-[#2A2A2A] pl-4 ml-2">
+      <span className="text-[9px] uppercase tracking-widest text-gray-400 font-sans font-bold">Current Date</span>
+      <span className={`text-xs font-mono font-bold ${isDarkView ? 'text-[#D4AF37]' : 'text-[#111111]'}`}>
+        {formattedHeaderDate}
+      </span>
+      <span className="text-[10px] text-gray-500 font-mono mt-0.5">
+        {formattedHeaderTime}
+      </span>
+    </div>
+  );
+});
+
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(() => {
     const saved = localStorage.getItem('hairport_user');
@@ -782,18 +812,6 @@ const App: React.FC = () => {
   const prevServingCount = useRef(0);
   const isInitialLoad = useRef(true);
 
-
-  const [currentDateTime, setCurrentDateTime] = useState(new Date());
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentDateTime(new Date());
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
-
-
-
   // Persist user state to localStorage
   useEffect(() => {
     if (user) {
@@ -802,18 +820,6 @@ const App: React.FC = () => {
       localStorage.removeItem("hairport_user");
     }
   }, [user]);
-
-  const formattedHeaderDate = currentDateTime.toLocaleDateString(undefined, {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
-  const formattedHeaderTime = currentDateTime.toLocaleTimeString([], {
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit'
-  });
 
   useEffect(() => {
     const q = query(collection(db, "tickets"), orderBy("timestamp", "asc"));
@@ -1006,15 +1012,7 @@ const App: React.FC = () => {
               </div>
 
               {/* Live Date display */}
-              <div className="hidden md:flex flex-col border-l border-gray-300 dark:border-[#2A2A2A] pl-4 ml-2">
-                <span className="text-[9px] uppercase tracking-widest text-gray-400 font-sans font-bold">Current Date</span>
-                <span className={`text-xs font-mono font-bold ${isDarkView ? 'text-[#D4AF37]' : 'text-[#111111]'}`}>
-                  {formattedHeaderDate}
-                </span>
-                <span className="text-[10px] text-gray-500 font-mono mt-0.5">
-                  {formattedHeaderTime}
-                </span>
-              </div>
+              <HeaderClock isDarkView={isDarkView} />
             </div>
             
             {/* Mobile Sign Out */}
@@ -2485,8 +2483,8 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
     await updateDoc(doc(db, "stylists", id), { active: !currentStatus });
   };
 
-  const waitingTickets = tickets.filter(t => t.status === "Waiting");
-  const servingTickets = tickets.filter(t => t.status === "Serving");
+  const waitingTickets = useMemo(() => tickets.filter(t => t.status === "Waiting"), [tickets]);
+  const servingTickets = useMemo(() => tickets.filter(t => t.status === "Serving"), [tickets]);
 
   const generateNextId = () => {
     const maxIdNum = tickets.reduce((max, t) => {
