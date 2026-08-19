@@ -584,13 +584,14 @@ const CompletionModal: React.FC<CompletionModalProps> = ({ ticket, onClose, onCo
   const [billingMode, setBillingMode] = useState<"single" | "split">("single");
 
   useEffect(() => {
+    const initialStylist = ticket.stylistName || "Prashant";
     // Init rows from services
-    const initRows = ticketServicesList.slice(0, 4).map((svc, i) => ({
-      stylist: ticket.stylistName || "",
+    const initRows = ticketServicesList.slice(0, 4).map((svc) => ({
+      stylist: initialStylist,
       price: ticket.price ? String(ticket.price) : "",
       service: svc,
     }));
-    setRows(initRows.length > 0 ? initRows : [{ stylist: ticket.stylistName || "", price: ticket.price ? String(ticket.price) : "", service: "" }]);
+    setRows(initRows.length > 0 ? initRows : [{ stylist: initialStylist, price: ticket.price ? String(ticket.price) : "", service: "" }]);
 
     // Default to single mode for fast 1-click completion
     setBillingMode("single");
@@ -610,9 +611,8 @@ const CompletionModal: React.FC<CompletionModalProps> = ({ ticket, onClose, onCo
       const list = data.length > 0 ? data : defaults;
       setStylists(list);
 
-      if (!ticket.stylistName && list.length > 0) {
-        setRows(prev => prev.map(r => r.stylist ? r : { ...r, stylist: list[0].name }));
-      }
+      const activeName = ticket.stylistName || list[0]?.name || "Prashant";
+      setRows(prev => prev.map(r => ({ ...r, stylist: r.stylist || activeName })));
     }, (err) => {
       console.warn("Stylists snapshot error, using defaults:", err);
       const defaults = [
@@ -627,7 +627,11 @@ const CompletionModal: React.FC<CompletionModalProps> = ({ ticket, onClose, onCo
   }, [ticket]);
 
   const updateRow = (i: number, field: "stylist" | "price" | "service", value: string) => {
-    setRows(prev => prev.map((r, idx) => idx === i ? { ...r, [field]: value } : r));
+    setRows(prev => prev.map((r, idx) => {
+      if (idx === i) return { ...r, [field]: value };
+      if (field === "stylist" && i === 0 && !r.stylist) return { ...r, stylist: value };
+      return r;
+    }));
   };
 
   const computedTotal = billingMode === "split"
@@ -653,37 +657,32 @@ const CompletionModal: React.FC<CompletionModalProps> = ({ ticket, onClose, onCo
         onClose();
       }
     } else {
-      // Split mode — validate all rows
-      for (let i = 0; i < rows.length; i++) {
-        const price = parseFloat(rows[i].price);
-        if (isNaN(price) || price < 0) {
-          setError(`Please enter a valid price for Stylist ${i + 1}.`);
-          return;
-        }
-        if (!rows[i].stylist) {
-          setError(`Please select a stylist for row ${i + 1}.`);
-          return;
-        }
-      }
+      // Split mode — auto-fill missing stylists and prices without throwing errors
+      const validRows = rows.map(r => ({
+        stylist: r.stylist || targetStylist,
+        price: isNaN(parseFloat(r.price)) ? 0 : Math.max(0, parseFloat(r.price)),
+        service: r.service
+      }));
 
-      const total = rows.reduce((sum, r) => sum + (parseFloat(r.price) || 0), 0);
+      const total = validRows.reduce((sum, r) => sum + r.price, 0);
       setSubmitting(true);
       try {
-        await onConfirm(total, rows[0].stylist, paymentMethod, {
+        await onConfirm(total, validRows[0].stylist, paymentMethod, {
           isSplit: true,
-          primaryStylistName: rows[0].stylist,
-          secondaryStylistName: rows[1]?.stylist || "",
-          tertiaryStylistName: rows[2]?.stylist,
-          primaryStylistPrice: parseFloat(rows[0].price) || 0,
-          secondaryStylistPrice: parseFloat(rows[1]?.price || "0") || 0,
-          tertiaryStylistPrice: rows[2] ? (parseFloat(rows[2].price) || 0) : undefined,
-          primaryStylistService: rows[0].service,
-          secondaryStylistService: rows[1]?.service || "",
-          tertiaryStylistService: rows[2]?.service,
+          primaryStylistName: validRows[0].stylist,
+          secondaryStylistName: validRows[1]?.stylist || "",
+          tertiaryStylistName: validRows[2]?.stylist,
+          primaryStylistPrice: validRows[0].price,
+          secondaryStylistPrice: validRows[1]?.price || 0,
+          tertiaryStylistPrice: validRows[2]?.price,
+          primaryStylistService: validRows[0].service,
+          secondaryStylistService: validRows[1]?.service || "",
+          tertiaryStylistService: validRows[2]?.service,
         });
-      } catch {
-        setError("Failed to complete split ticket. Please try again.");
+      } catch (err) {
+        console.error("Completion error:", err);
         setSubmitting(false);
+        onClose();
       }
     }
   };
