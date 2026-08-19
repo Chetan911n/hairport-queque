@@ -18,6 +18,7 @@ import {
 } from "firebase/firestore";
 import { motion, AnimatePresence } from 'motion/react';
 import { Play, CheckCircle, Trash2, Monitor, Scissors, UserPlus, Phone, Loader2, User, Clock, ChevronRight, Search, X } from 'lucide-react';
+import { supabase, isSupabaseConfigured } from './supabaseClient';
 
 // Firebase Configuration
 const firebaseConfig = {
@@ -1054,6 +1055,51 @@ const App: React.FC = () => {
       unsubscribe();
     };
   }, [view]);
+
+  // Real-time synchronization with Supabase when configured
+  useEffect(() => {
+    if (isSupabaseConfigured && supabase) {
+      const fetchSupabaseTickets = async () => {
+        try {
+          const { data, error } = await supabase.from('tickets').select('*');
+          if (!error && data && data.length > 0) {
+            const mapped = data.map((d: any) => ({
+              docId: String(d.id || d.docId),
+              id: d.ticket_id || d.id || "#000",
+              customerName: d.customer_name || d.customerName || "Guest",
+              phone: d.phone || "",
+              serviceType: d.service_type || d.serviceType || "",
+              status: d.status || "Waiting",
+              timestamp: d.timestamp || d.created_at || new Date().toISOString(),
+              stylistName: d.stylist_name || d.stylistName || "",
+              price: Number(d.price || 0),
+              paymentMethod: d.payment_method || d.paymentMethod || "UPI",
+              gender: d.gender || "Male",
+              serviceCategory: d.service_category || d.serviceCategory || "Hair",
+              completedAt: d.completed_at ? { seconds: Math.floor(new Date(d.completed_at).getTime() / 1000) } : null
+            }));
+            setTickets(mapped);
+            setLoading(false);
+          }
+        } catch (e) {
+          console.warn("Supabase tickets fetch error:", e);
+        }
+      };
+
+      fetchSupabaseTickets();
+
+      const channel = supabase
+        .channel('tickets_channel')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'tickets' }, () => {
+          fetchSupabaseTickets();
+        })
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    }
+  }, []);
 
   const handleDeleteTicket = useCallback((ticketId: string) => {
     setTickets(prev => {
