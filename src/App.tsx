@@ -2947,6 +2947,8 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
     return `#${(maxIdNum + 1).toString().padStart(3, '0')}`;
   };
 
+  const [selectedStylist, setSelectedStylist] = useState<string>("");
+
   const handleDeployTicket = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!customerName || !phone) return;
@@ -2972,6 +2974,7 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
           colourNumber: hasColourService ? colourNumber : "",
           gender,
           serviceCategory,
+          stylistName: selectedStylist || "",
           status: "Waiting",
           timestamp: serverTimestamp()
         });
@@ -2984,6 +2987,7 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
           await supabase.from('queue').insert([{
             customer_name: customerName,
             service_type: selectedServices.join(", "),
+            stylist_name: selectedStylist || "",
             status: "waiting"
           }]);
         } catch (e) {
@@ -2995,6 +2999,7 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
       setPhone("");
       setSelectedServices([]);
       setColourNumber("");
+      setSelectedStylist("");
     } catch (error) {
       console.error("Failed to add client:", error);
     } finally {
@@ -3253,6 +3258,24 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
                       />
                     </div>
                   )}
+
+                  <div className="space-y-2">
+                    <label className="text-xs font-sans text-gray-400 uppercase tracking-widest block">Choose Stylist (Optional)</label>
+                    <select
+                      value={selectedStylist}
+                      onChange={(e) => setSelectedStylist(e.target.value)}
+                      className="w-full bg-[#1A1A1A]/80 border border-[#2A2A2A] rounded-sm px-4 py-3 focus:outline-none focus:border-[#D4AF37] text-white font-sans text-sm cursor-pointer font-semibold"
+                    >
+                      <option value="">Any Available Stylist</option>
+                      {(stylists.length > 0 ? stylists : [
+                        { id: "s1", name: "Prashant", active: true },
+                        { id: "s2", name: "Tejas", active: true },
+                        { id: "s3", name: "Kunal", active: true }
+                      ]).map((s) => (
+                        <option key={s.id} value={s.name}>{s.name}</option>
+                      ))}
+                    </select>
+                  </div>
 
                   <button 
                     type="submit"
