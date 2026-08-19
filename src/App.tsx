@@ -847,24 +847,39 @@ const App: React.FC = () => {
   }, [user]);
 
   useEffect(() => {
-    const q = query(collection(db, "tickets"), orderBy("timestamp", "asc"));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const newTickets = snapshot.docs.map(doc => ({
-        docId: doc.id,
-        ...doc.data()
-      })) as Ticket[];
-      
-      setTickets(newTickets);
+    const safetyTimeout = setTimeout(() => {
       setLoading(false);
+    }, 1500);
 
-      // Check for new serving tickets — no audio
-      const currentServing = newTickets.filter(t => t.status === "Serving").length;
-      prevServingCount.current = currentServing;
-      isInitialLoad.current = false;
+    const q = query(collection(db, "tickets"), orderBy("timestamp", "asc"));
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        clearTimeout(safetyTimeout);
+        const newTickets = snapshot.docs.map(doc => ({
+          docId: doc.id,
+          ...doc.data()
+        })) as Ticket[];
+        
+        setTickets(newTickets);
+        setLoading(false);
 
-    });
+        // Check for new serving tickets — no audio
+        const currentServing = newTickets.filter(t => t.status === "Serving").length;
+        prevServingCount.current = currentServing;
+        isInitialLoad.current = false;
+      },
+      (error) => {
+        console.warn("Firestore tickets snapshot warning:", error);
+        clearTimeout(safetyTimeout);
+        setLoading(false);
+      }
+    );
 
-    return () => unsubscribe();
+    return () => {
+      clearTimeout(safetyTimeout);
+      unsubscribe();
+    };
   }, [view]);
 
   // Record attendance on login for tracked staff
