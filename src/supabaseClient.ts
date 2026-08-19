@@ -12,8 +12,21 @@ const supabaseKey =
   import.meta.env.SUPABASE_ANON_KEY || 
   '';
 
-export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseKey && !supabaseUrl.includes('placeholder'));
+export const isSupabaseConfigured = Boolean(
+  supabaseUrl && 
+  supabaseKey && 
+  supabaseKey.trim().length > 0 && 
+  !supabaseUrl.includes('placeholder')
+);
 
-export const supabase = isSupabaseConfigured
-  ? createClient(supabaseUrl, supabaseKey)
-  : null;
+let client = null;
+if (isSupabaseConfigured) {
+  try {
+    client = createClient(supabaseUrl, supabaseKey);
+  } catch (err) {
+    console.warn("Supabase client initialization warning:", err);
+    client = null;
+  }
+}
+
+export const supabase = client;
