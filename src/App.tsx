@@ -265,6 +265,81 @@ const INITIAL_SAMPLE_TICKETS: Ticket[] = [
   {
     docId: "hist-008",
     id: "#008",
+    customerName: "Devendra Joshi",
+    phone: "9820011223",
+    serviceType: "Smoothing Treatment, De-Tan",
+    serviceCategory: "Treatments",
+    gender: "Male",
+    status: "Completed",
+    price: 2800,
+    paymentMethod: "UPI",
+    stylistName: "Prashant",
+    timestamp: { seconds: Math.floor(Date.now() / 1000) - 5400 },
+    completedAt: { seconds: Math.floor(Date.now() / 1000) - 3600 }
+  },
+  {
+    docId: "hist-009",
+    id: "#009",
+    customerName: "Siddharth Rao",
+    phone: "9988776655",
+    serviceType: "Keratin Treatment, Haircut",
+    serviceCategory: "Treatments",
+    gender: "Male",
+    status: "Completed",
+    price: 3500,
+    paymentMethod: "UPI",
+    stylistName: "Tejas",
+    timestamp: { seconds: Math.floor(Date.now() / 1000) - 4500 },
+    completedAt: { seconds: Math.floor(Date.now() / 1000) - 2700 }
+  },
+  {
+    docId: "hist-010",
+    id: "#010",
+    customerName: "Meera Kapoor",
+    phone: "9876543210",
+    serviceType: "Highlights Colour, Hair Styling",
+    serviceCategory: "Hair",
+    gender: "Female",
+    status: "Completed",
+    price: 2400,
+    paymentMethod: "Cash",
+    stylistName: "Kunal",
+    timestamp: { seconds: Math.floor(Date.now() / 1000) - 3600 },
+    completedAt: { seconds: Math.floor(Date.now() / 1000) - 1800 }
+  },
+  {
+    docId: "hist-011",
+    id: "#011",
+    customerName: "Arjun Nambiar",
+    phone: "9822114477",
+    serviceType: "Perming Treatment, Hair Styling",
+    serviceCategory: "Treatments",
+    gender: "Male",
+    status: "Completed",
+    price: 2100,
+    paymentMethod: "UPI",
+    stylistName: "Prashant",
+    timestamp: { seconds: Math.floor(Date.now() / 1000) - 2700 },
+    completedAt: { seconds: Math.floor(Date.now() / 1000) - 1200 }
+  },
+  {
+    docId: "hist-012",
+    id: "#012",
+    customerName: "Neha Saxena",
+    phone: "9833221100",
+    serviceType: "Face Steam, Cleansing, Pedicure",
+    serviceCategory: "Skin",
+    gender: "Female",
+    status: "Completed",
+    price: 1200,
+    paymentMethod: "Cash",
+    stylistName: "Tejas",
+    timestamp: { seconds: Math.floor(Date.now() / 1000) - 2100 },
+    completedAt: { seconds: Math.floor(Date.now() / 1000) - 900 }
+  },
+  {
+    docId: "hist-013",
+    id: "#013",
     customerName: "Priya Patel",
     phone: "9890123456",
     serviceType: "Blue Tox Treatment, Deep Cleansing",
@@ -277,8 +352,8 @@ const INITIAL_SAMPLE_TICKETS: Ticket[] = [
     timestamp: { seconds: Math.floor(Date.now() / 1000) - 1800 }
   },
   {
-    docId: "hist-009",
-    id: "#009",
+    docId: "hist-014",
+    id: "#014",
     customerName: "Amit Deshmukh",
     phone: "9765432109",
     serviceType: "Skin De-Tan, Face Steam",
@@ -291,8 +366,8 @@ const INITIAL_SAMPLE_TICKETS: Ticket[] = [
     timestamp: { seconds: Math.floor(Date.now() / 1000) - 600 }
   },
   {
-    docId: "hist-010",
-    id: "#010",
+    docId: "hist-015",
+    id: "#015",
     customerName: "Sneha Kulkarni",
     phone: "9822338669",
     serviceType: "Hair Styling, Hair Wash",
@@ -1877,6 +1952,11 @@ const ClientHistoryView: React.FC<ClientHistoryViewProps> = ({ tickets }) => {
   const totalRevenue = completedTickets.reduce((sum, t) => sum + (t.price || 0), 0);
   const avgSpend = totalVisits > 0 ? totalRevenue / totalVisits : 0;
 
+  const handleRestoreFullHistory = () => {
+    localStorage.setItem('hairport_tickets', JSON.stringify(INITIAL_SAMPLE_TICKETS));
+    window.location.reload();
+  };
+
   return (
     <div className="flex flex-col gap-8 w-full text-white font-sans">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
@@ -1899,17 +1979,26 @@ const ClientHistoryView: React.FC<ClientHistoryViewProps> = ({ tickets }) => {
           <h3 className="text-xl font-serif uppercase tracking-wider text-[#D4AF37]">
             Client Database & Billing Logs
           </h3>
-          <div className="relative w-full md:w-80">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Search className="h-4 w-4 text-gray-500" />
+          <div className="flex items-center gap-3 w-full md:w-auto">
+            <button
+              onClick={handleRestoreFullHistory}
+              className="px-3 py-2 bg-[#D4AF37]/20 border border-[#D4AF37]/40 text-[#D4AF37] text-xs font-sans uppercase font-bold rounded-sm hover:bg-[#D4AF37] hover:text-black transition-colors cursor-pointer shrink-0"
+              title="Reload all historical client records"
+            >
+              Restore All History
+            </button>
+            <div className="relative w-full md:w-80">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Search className="h-4 w-4 text-gray-500" />
+              </div>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-sm pl-10 pr-4 py-2 text-sm focus:outline-none focus:border-[#D4AF37] transition-all text-white placeholder-gray-500 font-sans"
+                placeholder="Search by client, stylist, or service..."
+              />
             </div>
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-sm pl-10 pr-4 py-2 text-sm focus:outline-none focus:border-[#D4AF37] transition-all text-white placeholder-gray-500 font-sans"
-              placeholder="Search by client, stylist, or service..."
-            />
           </div>
         </div>
 
