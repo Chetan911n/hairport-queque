@@ -1462,15 +1462,24 @@ interface RevenueAnalyticsViewProps {
 }
 
 const RevenueAnalyticsView: React.FC<RevenueAnalyticsViewProps> = ({ tickets }) => {
-  const completedTickets = tickets.filter(t => t.status === "Completed");
+  const completedTickets = (tickets || []).filter(t => t && t.status === "Completed");
 
   const getTicketDate = (ticket: Ticket): Date | null => {
-    if (!ticket.completedAt) return null;
-    if (typeof ticket.completedAt.toDate === 'function') {
-      return ticket.completedAt.toDate();
+    if (!ticket) return null;
+    const target = ticket.completedAt || ticket.timestamp;
+    if (!target) return null;
+    if (typeof target.toDate === 'function') {
+      return target.toDate();
     }
-    if (ticket.completedAt.seconds) {
-      return new Date(ticket.completedAt.seconds * 1000);
+    if (typeof target === 'string') {
+      const d = new Date(target);
+      return isNaN(d.getTime()) ? null : d;
+    }
+    if (typeof target === 'number') {
+      return new Date(target);
+    }
+    if (target.seconds) {
+      return new Date(target.seconds * 1000);
     }
     return null;
   };
@@ -1806,21 +1815,41 @@ const ClientHistoryView: React.FC<ClientHistoryViewProps> = ({ tickets, onDelete
     return () => unsubscribe();
   }, []);
 
-  const completedTickets = tickets.filter(t => t.status === "Completed");
+  const completedTickets = (tickets || []).filter(t => t && t.status === "Completed");
 
   const filteredTickets = completedTickets.filter(t => {
-    const queryStr = searchQuery.toLowerCase();
+    if (!t) return false;
+    const queryStr = (searchQuery || "").toLowerCase();
+    const name = (t.customerName || "").toLowerCase();
+    const phone = (t.phone || "").toLowerCase();
+    const stylist = (t.stylistName || "").toLowerCase();
+    const service = (t.serviceType || "").toLowerCase();
+    const payment = (t.paymentMethod || "").toLowerCase();
     return (
-      t.customerName.toLowerCase().includes(queryStr) ||
-      t.phone.toLowerCase().includes(queryStr) ||
-      (t.stylistName && t.stylistName.toLowerCase().includes(queryStr)) ||
-      t.serviceType.toLowerCase().includes(queryStr) ||
-      (t.paymentMethod && t.paymentMethod.toLowerCase().includes(queryStr))
+      name.includes(queryStr) ||
+      phone.includes(queryStr) ||
+      stylist.includes(queryStr) ||
+      service.includes(queryStr) ||
+      payment.includes(queryStr)
     );
   }).sort((a, b) => {
-    const aTime = a.completedAt?.toDate ? a.completedAt.toDate().getTime() : (a.completedAt?.seconds * 1000 || 0);
-    const bTime = b.completedAt?.toDate ? b.completedAt.toDate().getTime() : (b.completedAt?.seconds * 1000 || 0);
-    return bTime - aTime;
+    const getTime = (t: Ticket) => {
+      if (!t) return 0;
+      if (t.completedAt) {
+        if (typeof t.completedAt.toDate === 'function') return t.completedAt.toDate().getTime();
+        if (typeof t.completedAt === 'string') return new Date(t.completedAt).getTime();
+        if (typeof t.completedAt === 'number') return t.completedAt;
+        if (t.completedAt.seconds) return t.completedAt.seconds * 1000;
+      }
+      if (t.timestamp) {
+        if (typeof t.timestamp.toDate === 'function') return t.timestamp.toDate().getTime();
+        if (typeof t.timestamp === 'string') return new Date(t.timestamp).getTime();
+        if (typeof t.timestamp === 'number') return t.timestamp;
+        if (t.timestamp.seconds) return t.timestamp.seconds * 1000;
+      }
+      return 0;
+    };
+    return getTime(b) - getTime(a);
   });
 
   const handleSettlePayment = async (docId: string, method: "UPI" | "Cash") => {
