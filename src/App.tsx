@@ -2111,11 +2111,23 @@ const ClientHistoryView: React.FC<ClientHistoryViewProps> = ({ tickets, onDelete
               <input type="file" accept=".json" onChange={handleImportBackup} className="hidden" />
             </label>
             <button
-              onClick={handleRestoreFullHistory}
-              className="px-3 py-2 bg-gray-800 border border-gray-700 text-gray-300 text-xs font-sans uppercase font-bold rounded-sm hover:bg-gray-700 transition-colors cursor-pointer shrink-0"
-              title="Reload clean historical client records"
+              onClick={async () => {
+                if (!window.confirm("Are you sure you want to delete all completed client history?")) return;
+                if (isSupabaseConfigured && supabase) {
+                  try {
+                    await supabase.from('queue').delete().eq('status', 'completed');
+                  } catch (e) {
+                    console.warn("Supabase clear history notice:", e);
+                  }
+                }
+                completedTickets.forEach(t => {
+                  if (onDeleteTicket) onDeleteTicket(t.docId);
+                });
+              }}
+              className="px-3 py-2 bg-red-950/60 border border-red-800 text-red-400 text-xs font-sans uppercase font-bold rounded-sm hover:bg-red-800 hover:text-white transition-colors cursor-pointer shrink-0"
+              title="Delete all completed client history records"
             >
-              Reset History
+              🗑️ Clear History
             </button>
             <div className="relative w-full md:w-80">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
