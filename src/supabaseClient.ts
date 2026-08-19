@@ -4,7 +4,7 @@ const supabaseUrl =
   import.meta.env.VITE_SUPABASE_URL || 
   import.meta.env.NEXT_PUBLIC_SUPABASE_URL || 
   import.meta.env.SUPABASE_URL || 
-  '';
+  'https://eggtejmtahbcbhokgyll.supabase.co';
 
 const supabaseKey = 
   import.meta.env.VITE_SUPABASE_ANON_KEY || 
