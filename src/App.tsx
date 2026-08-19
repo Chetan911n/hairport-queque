@@ -1787,16 +1787,54 @@ const ClientHistoryView: React.FC<ClientHistoryViewProps> = ({ tickets, onDelete
     }
   };
 
+  const [dataLock, setDataLock] = useState(true);
+
+  const handleExportBackup = () => {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(tickets, null, 2));
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute("download", `hairport_backup_${new Date().toISOString().split('T')[0]}.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+  };
+
+  const handleImportBackup = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const fileReader = new FileReader();
+    if (e.target.files && e.target.files[0]) {
+      fileReader.readAsText(e.target.files[0], "UTF-8");
+      fileReader.onload = (event) => {
+        try {
+          const imported = JSON.parse(event.target?.result as string);
+          if (Array.isArray(imported) && imported.length > 0) {
+            localStorage.setItem('hairport_tickets', JSON.stringify(imported));
+            localStorage.setItem('hairport_permanent_backup', JSON.stringify(imported));
+            window.location.reload();
+          }
+        } catch (err) {
+          alert("Invalid backup JSON file.");
+        }
+      };
+    }
+  };
+
   const handleDeleteEntry = async (ticket: Ticket) => {
-    if (window.confirm(`Are you sure you want to permanently delete the entry for ${ticket.customerName}?`)) {
-      try {
-        await deleteDoc(doc(db, "tickets", ticket.docId));
-      } catch (err) {
-        console.error("Error deleting entry:", err);
+    if (dataLock) {
+      if (!window.confirm(`🔒 DATA PROTECTION ACTIVE:\nAre you sure you want to permanently delete the entry for ${ticket.customerName}?`)) {
+        return;
       }
-      if (onDeleteTicket) {
-        onDeleteTicket(ticket.docId || ticket.id);
+    } else {
+      if (!window.confirm(`Are you sure you want to delete the entry for ${ticket.customerName}?`)) {
+        return;
       }
+    }
+    try {
+      await deleteDoc(doc(db, "tickets", ticket.docId));
+    } catch (err) {
+      console.error("Error deleting entry:", err);
+    }
+    if (onDeleteTicket) {
+      onDeleteTicket(ticket.docId || ticket.id);
     }
   };
 
@@ -1910,13 +1948,35 @@ const ClientHistoryView: React.FC<ClientHistoryViewProps> = ({ tickets, onDelete
           <h3 className="text-xl font-serif uppercase tracking-wider text-[#D4AF37]">
             Client Database & Billing Logs
           </h3>
-          <div className="flex items-center gap-3 w-full md:w-auto">
+          <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+            <button
+              onClick={() => setDataLock(!dataLock)}
+              className={`px-3 py-2 text-xs font-sans uppercase font-bold rounded-sm border transition-colors cursor-pointer shrink-0 ${
+                dataLock 
+                  ? 'bg-green-950/40 border-green-700/50 text-green-400 hover:bg-green-900/60' 
+                  : 'bg-red-950/40 border-red-700/50 text-red-400 hover:bg-red-900/60'
+              }`}
+              title="Toggle Auto-Delete Protection Shield"
+            >
+              {dataLock ? '🔒 Protection Shield ON' : '🔓 Deletion Unlocked'}
+            </button>
+            <button
+              onClick={handleExportBackup}
+              className="px-3 py-2 bg-[#D4AF37]/20 border border-[#D4AF37]/40 text-[#D4AF37] text-xs font-sans uppercase font-bold rounded-sm hover:bg-[#D4AF37] hover:text-black transition-colors cursor-pointer shrink-0"
+              title="Export database as JSON backup file to your computer"
+            >
+              📥 Export Backup
+            </button>
+            <label className="px-3 py-2 bg-blue-950/40 border border-blue-800/40 text-blue-400 text-xs font-sans uppercase font-bold rounded-sm hover:bg-blue-600 hover:text-white transition-colors cursor-pointer shrink-0">
+              📤 Import Backup
+              <input type="file" accept=".json" onChange={handleImportBackup} className="hidden" />
+            </label>
             <button
               onClick={handleRestoreFullHistory}
-              className="px-3 py-2 bg-[#D4AF37]/20 border border-[#D4AF37]/40 text-[#D4AF37] text-xs font-sans uppercase font-bold rounded-sm hover:bg-[#D4AF37] hover:text-black transition-colors cursor-pointer shrink-0"
-              title="Reload all historical client records"
+              className="px-3 py-2 bg-gray-800 border border-gray-700 text-gray-300 text-xs font-sans uppercase font-bold rounded-sm hover:bg-gray-700 transition-colors cursor-pointer shrink-0"
+              title="Reload clean historical client records"
             >
-              Restore All History
+              Reset History
             </button>
             <div className="relative w-full md:w-80">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
