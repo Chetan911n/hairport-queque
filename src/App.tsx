@@ -970,24 +970,27 @@ const App: React.FC = () => {
   });
   const [view, setView] = useState<"reception" | "staff" | "tv" | "owner" | "analytics">("reception");
   const [tickets, setTickets] = useState<Ticket[]>(() => {
+    const validDocIds = new Set(INITIAL_SAMPLE_TICKETS.map(t => t.docId));
     const saved = localStorage.getItem('hairport_tickets');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          const existingIds = new Set(parsed.map((t: Ticket) => t.docId || t.id));
-          const missingSamples = INITIAL_SAMPLE_TICKETS.filter(s => !existingIds.has(s.docId));
-          if (missingSamples.length > 0) {
-            const merged = [...parsed, ...missingSamples];
-            localStorage.setItem('hairport_tickets', JSON.stringify(merged));
-            return merged;
-          }
-          return parsed;
+          // Clean out any stale fake history tickets from local storage
+          const cleaned = parsed.filter((t: Ticket) => {
+            if (t.docId && t.docId.startsWith("hist-")) {
+              return validDocIds.has(t.docId);
+            }
+            return true;
+          });
+          localStorage.setItem('hairport_tickets', JSON.stringify(cleaned.length > 0 ? cleaned : INITIAL_SAMPLE_TICKETS));
+          return cleaned.length > 0 ? cleaned : INITIAL_SAMPLE_TICKETS;
         }
       } catch (e) {
         console.error("Failed to parse saved tickets", e);
       }
     }
+    localStorage.setItem('hairport_tickets', JSON.stringify(INITIAL_SAMPLE_TICKETS));
     return INITIAL_SAMPLE_TICKETS;
   });
   const [loading, setLoading] = useState(true);
@@ -1868,6 +1871,7 @@ const ClientHistoryView: React.FC<ClientHistoryViewProps> = ({ tickets }) => {
   const avgSpend = totalVisits > 0 ? totalRevenue / totalVisits : 0;
 
   const handleRestoreFullHistory = () => {
+    localStorage.clear();
     localStorage.setItem('hairport_tickets', JSON.stringify(INITIAL_SAMPLE_TICKETS));
     window.location.reload();
   };
