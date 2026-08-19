@@ -1251,34 +1251,54 @@ const App: React.FC = () => {
         console.warn("Firestore update notice:", err);
       }
 
+      const numericId = Number(completingTicket.docId);
       if (isSupabaseConfigured && supabase) {
         try {
-          await supabase.from('queue').update({
+          const supPayload = {
             status: "completed",
             price: price,
             stylist_name: stylistName,
             payment_method: paymentMethod,
             completed_at: new Date().toISOString()
-          }).eq('id', completingTicket.docId);
+          };
+          if (!isNaN(numericId)) {
+            await supabase.from('queue').update(supPayload).eq('id', numericId);
+          }
+          await supabase.from('queue').update(supPayload).eq('customer_name', completingTicket.customerName);
         } catch (e) {
           console.warn("Supabase completion update notice:", e);
         }
       }
-      
-      // Auto-compose and trigger native SMS to thank the client
-      let smsBody = "";
-      const displayStylist = splitDetails?.isSplit 
-        ? `${splitDetails.primaryStylistName} and ${splitDetails.secondaryStylistName}`
-        : stylistName;
-      if (paymentMethod === "Pending") {
-        smsBody = `Hi ${completingTicket.customerName}, thank you for visiting Hairport! Your service with ${displayStylist} is complete. Your total bill is ₹${price} (marked as pending). We hope you loved our service! Please visit again.`;
-      } else {
-        smsBody = `Hi ${completingTicket.customerName}, thank you for visiting Hairport! Your service with ${displayStylist} is complete. Your payment of ₹${price} via ${paymentMethod} has been received. We hope you love your new look. Please visit again!`;
-      }
-      const smsUrl = `sms:${completingTicket.phone}?body=${encodeURIComponent(smsBody)}`;
-      window.location.href = smsUrl;
+
+      // Instantly update local UI state so appointment moves to Completed immediately
+      setTickets(prev => prev.map(t => (t.docId === completingTicket.docId || t.customerName === completingTicket.customerName) ? {
+        ...t,
+        status: "Completed",
+        price: price,
+        stylistName: stylistName,
+        paymentMethod: paymentMethod,
+        completedAt: { seconds: Math.floor(Date.now() / 1000) }
+      } : t));
 
       setCompletingTicket(null);
+
+      // Trigger SMS safely in non-blocking timeout
+      if (completingTicket.phone) {
+        try {
+          const displayStylist = splitDetails?.isSplit 
+            ? `${splitDetails.primaryStylistName} and ${splitDetails.secondaryStylistName}`
+            : stylistName;
+          const smsBody = paymentMethod === "Pending"
+            ? `Hi ${completingTicket.customerName}, thank you for visiting Hairport! Your service with ${displayStylist} is complete. Your total bill is ₹${price} (marked as pending). We hope you loved our service! Please visit again.`
+            : `Hi ${completingTicket.customerName}, thank you for visiting Hairport! Your service with ${displayStylist} is complete. Your payment of ₹${price} via ${paymentMethod} has been received. We hope you love your new look. Please visit again!`;
+          const smsUrl = `sms:${completingTicket.phone}?body=${encodeURIComponent(smsBody)}`;
+          setTimeout(() => {
+            window.open(smsUrl, '_blank');
+          }, 300);
+        } catch (e) {
+          console.warn("SMS dispatch notice:", e);
+        }
+      }
     } catch (err) {
       console.error("Error completing ticket:", err);
       throw err;
@@ -3008,6 +3028,9 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
   };
 
   const updateStatus = async (docId: string, status: TicketStatus) => {
+    // Instantly update local UI state
+    setTickets(prev => prev.map(t => (t.docId === docId || t.id === docId) ? { ...t, status } : t));
+
     try {
       await updateDoc(doc(db, "tickets", docId), { status });
     } catch (e) {
@@ -3015,7 +3038,11 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
     }
     if (isSupabaseConfigured && supabase) {
       try {
-        await supabase.from('queue').update({ status: status.toLowerCase() }).eq('id', docId);
+        const numId = Number(docId);
+        if (!isNaN(numId)) {
+          await supabase.from('queue').update({ status: status.toLowerCase() }).eq('id', numId);
+        }
+        await supabase.from('queue').update({ status: status.toLowerCase() }).eq('customer_name', docId);
       } catch (e) {
         console.warn("Supabase status notice:", e);
       }
@@ -3023,6 +3050,9 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
   };
 
   const deleteTicket = async (docId: string) => {
+    // Instantly remove from local UI state
+    setTickets(prev => prev.filter(t => t.docId !== docId && t.id !== docId));
+
     try {
       await deleteDoc(doc(db, "tickets", docId));
     } catch (e) {
@@ -3030,7 +3060,10 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
     }
     if (isSupabaseConfigured && supabase) {
       try {
-        await supabase.from('queue').delete().eq('id', docId);
+        const numId = Number(docId);
+        if (!isNaN(numId)) {
+          await supabase.from('queue').delete().eq('id', numId);
+        }
       } catch (e) {
         console.warn("Supabase delete notice:", e);
       }
