@@ -158,7 +158,7 @@ const SERVICES_CONFIG = {
 
 const INITIAL_SAMPLE_TICKETS: Ticket[] = [
   {
-    docId: "t-001",
+    docId: "hist-001",
     id: "#001",
     customerName: "Rahul Sharma",
     phone: "9823012345",
@@ -169,11 +169,11 @@ const INITIAL_SAMPLE_TICKETS: Ticket[] = [
     price: 350,
     paymentMethod: "UPI",
     stylistName: "Prashant",
-    timestamp: { seconds: Math.floor(Date.now() / 1000) - 7200 },
-    completedAt: { seconds: Math.floor(Date.now() / 1000) - 3600 }
+    timestamp: { seconds: Math.floor(Date.now() / 1000) - 86400 * 2 },
+    completedAt: { seconds: Math.floor(Date.now() / 1000) - 86400 * 2 + 1800 }
   },
   {
-    docId: "t-002",
+    docId: "hist-002",
     id: "#002",
     customerName: "Vikram Malhotra",
     phone: "9821098765",
@@ -184,11 +184,11 @@ const INITIAL_SAMPLE_TICKETS: Ticket[] = [
     price: 3200,
     paymentMethod: "UPI",
     stylistName: "Prashant",
-    timestamp: { seconds: Math.floor(Date.now() / 1000) - 14400 },
-    completedAt: { seconds: Math.floor(Date.now() / 1000) - 10800 }
+    timestamp: { seconds: Math.floor(Date.now() / 1000) - 86400 },
+    completedAt: { seconds: Math.floor(Date.now() / 1000) - 86400 + 3600 }
   },
   {
-    docId: "t-003",
+    docId: "hist-003",
     id: "#003",
     customerName: "Ananya Roy",
     phone: "9769012345",
@@ -199,11 +199,11 @@ const INITIAL_SAMPLE_TICKETS: Ticket[] = [
     price: 1800,
     paymentMethod: "Cash",
     stylistName: "Tejas",
-    timestamp: { seconds: Math.floor(Date.now() / 1000) - 18000 },
-    completedAt: { seconds: Math.floor(Date.now() / 1000) - 14400 }
+    timestamp: { seconds: Math.floor(Date.now() / 1000) - 43200 },
+    completedAt: { seconds: Math.floor(Date.now() / 1000) - 39600 }
   },
   {
-    docId: "t-004",
+    docId: "hist-004",
     id: "#004",
     customerName: "KIRAN",
     phone: "9823001122",
@@ -214,12 +214,57 @@ const INITIAL_SAMPLE_TICKETS: Ticket[] = [
     price: 1500,
     paymentMethod: "UPI",
     stylistName: "Kunal",
-    timestamp: { seconds: Math.floor(Date.now() / 1000) - 21600 },
-    completedAt: { seconds: Math.floor(Date.now() / 1000) - 18000 }
+    timestamp: { seconds: Math.floor(Date.now() / 1000) - 28800 },
+    completedAt: { seconds: Math.floor(Date.now() / 1000) - 25200 }
   },
   {
-    docId: "t-005",
+    docId: "hist-005",
     id: "#005",
+    customerName: "Rohan Verma",
+    phone: "9819087654",
+    serviceType: "Beard Colour, Clean Shave",
+    serviceCategory: "Hair",
+    gender: "Male",
+    status: "Completed",
+    price: 500,
+    paymentMethod: "Cash",
+    stylistName: "Tejas",
+    timestamp: { seconds: Math.floor(Date.now() / 1000) - 21600 },
+    completedAt: { seconds: Math.floor(Date.now() / 1000) - 19800 }
+  },
+  {
+    docId: "hist-006",
+    id: "#006",
+    customerName: "Pooja Hegde",
+    phone: "9833445566",
+    serviceType: "Root Touch Up, Facial",
+    serviceCategory: "Skin",
+    gender: "Female",
+    status: "Completed",
+    price: 2200,
+    paymentMethod: "UPI",
+    stylistName: "Prashant",
+    timestamp: { seconds: Math.floor(Date.now() / 1000) - 14400 },
+    completedAt: { seconds: Math.floor(Date.now() / 1000) - 10800 }
+  },
+  {
+    docId: "hist-007",
+    id: "#007",
+    customerName: "Aarav Mehta",
+    phone: "9711223344",
+    serviceType: "Hair Spa, Head Massage",
+    serviceCategory: "Hair",
+    gender: "Male",
+    status: "Completed",
+    price: 950,
+    paymentMethod: "Cash",
+    stylistName: "Kunal",
+    timestamp: { seconds: Math.floor(Date.now() / 1000) - 7200 },
+    completedAt: { seconds: Math.floor(Date.now() / 1000) - 5400 }
+  },
+  {
+    docId: "hist-008",
+    id: "#008",
     customerName: "Priya Patel",
     phone: "9890123456",
     serviceType: "Blue Tox Treatment, Deep Cleansing",
@@ -232,8 +277,8 @@ const INITIAL_SAMPLE_TICKETS: Ticket[] = [
     timestamp: { seconds: Math.floor(Date.now() / 1000) - 1800 }
   },
   {
-    docId: "t-006",
-    id: "#006",
+    docId: "hist-009",
+    id: "#009",
     customerName: "Amit Deshmukh",
     phone: "9765432109",
     serviceType: "Skin De-Tan, Face Steam",
@@ -246,8 +291,8 @@ const INITIAL_SAMPLE_TICKETS: Ticket[] = [
     timestamp: { seconds: Math.floor(Date.now() / 1000) - 600 }
   },
   {
-    docId: "t-007",
-    id: "#007",
+    docId: "hist-010",
+    id: "#010",
     customerName: "Sneha Kulkarni",
     phone: "9822338669",
     serviceType: "Hair Styling, Hair Wash",
