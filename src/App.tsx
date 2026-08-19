@@ -156,6 +156,66 @@ const SERVICES_CONFIG = {
   }
 };
 
+const INITIAL_SAMPLE_TICKETS: Ticket[] = [
+  {
+    docId: "t-001",
+    id: "#001",
+    customerName: "Rahul Sharma",
+    phone: "9823012345",
+    serviceType: "Classic Haircut & Fade, Hair Wash",
+    serviceCategory: "Hair",
+    gender: "Male",
+    status: "Completed",
+    price: 350,
+    paymentMethod: "UPI",
+    stylistName: "Prashant",
+    timestamp: { seconds: Math.floor(Date.now() / 1000) - 7200 },
+    completedAt: { seconds: Math.floor(Date.now() / 1000) - 3600 }
+  },
+  {
+    docId: "t-002",
+    id: "#002",
+    customerName: "Priya Patel",
+    phone: "9890123456",
+    serviceType: "Blue Tox Treatment, Deep Cleansing",
+    serviceCategory: "Treatments",
+    gender: "Female",
+    status: "Serving",
+    price: 2500,
+    paymentMethod: "UPI",
+    stylistName: "Tejas",
+    timestamp: { seconds: Math.floor(Date.now() / 1000) - 1800 }
+  },
+  {
+    docId: "t-003",
+    id: "#003",
+    customerName: "Amit Deshmukh",
+    phone: "9765432109",
+    serviceType: "Skin De-Tan, Face Steam",
+    serviceCategory: "Skin",
+    gender: "Male",
+    status: "Waiting",
+    price: 450,
+    paymentMethod: "Cash",
+    stylistName: "Kunal",
+    timestamp: { seconds: Math.floor(Date.now() / 1000) - 600 }
+  },
+  {
+    docId: "t-004",
+    id: "#004",
+    customerName: "Sneha Kulkarni",
+    phone: "9822338669",
+    serviceType: "Hair Styling, Hair Wash",
+    serviceCategory: "Hair",
+    gender: "Female",
+    status: "Waiting",
+    price: 600,
+    paymentMethod: "UPI",
+    stylistName: "Prashant",
+    timestamp: { seconds: Math.floor(Date.now() / 1000) - 300 }
+  }
+];
+
 
 // Notifications removed
 
@@ -829,7 +889,18 @@ const App: React.FC = () => {
     return null;
   });
   const [view, setView] = useState<"reception" | "staff" | "tv" | "owner" | "analytics">("reception");
-  const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [tickets, setTickets] = useState<Ticket[]>(() => {
+    const saved = localStorage.getItem('hairport_tickets');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      } catch (e) {
+        console.error("Failed to parse saved tickets", e);
+      }
+    }
+    return INITIAL_SAMPLE_TICKETS;
+  });
   const [loading, setLoading] = useState(true);
   const [completingTicket, setCompletingTicket] = useState<Ticket | null>(null);
   
@@ -846,6 +917,13 @@ const App: React.FC = () => {
     }
   }, [user]);
 
+  // Persist tickets state to localStorage
+  useEffect(() => {
+    if (tickets && tickets.length > 0) {
+      localStorage.setItem("hairport_tickets", JSON.stringify(tickets));
+    }
+  }, [tickets]);
+
   useEffect(() => {
     const safetyTimeout = setTimeout(() => {
       setLoading(false);
@@ -856,22 +934,25 @@ const App: React.FC = () => {
       q,
       (snapshot) => {
         clearTimeout(safetyTimeout);
-        const newTickets = snapshot.docs.map(doc => ({
-          docId: doc.id,
-          ...doc.data()
-        })) as Ticket[];
-        
-        setTickets(newTickets);
+        if (!snapshot.empty) {
+          const newTickets = snapshot.docs.map(doc => ({
+            docId: doc.id,
+            ...doc.data()
+          })) as Ticket[];
+          
+          setTickets(newTickets);
+          const currentServing = newTickets.filter(t => t.status === "Serving").length;
+          prevServingCount.current = currentServing;
+        } else {
+          setTickets(prev => prev.length > 0 ? prev : INITIAL_SAMPLE_TICKETS);
+        }
         setLoading(false);
-
-        // Check for new serving tickets — no audio
-        const currentServing = newTickets.filter(t => t.status === "Serving").length;
-        prevServingCount.current = currentServing;
         isInitialLoad.current = false;
       },
       (error) => {
         console.warn("Firestore tickets snapshot warning:", error);
         clearTimeout(safetyTimeout);
+        setTickets(prev => prev.length > 0 ? prev : INITIAL_SAMPLE_TICKETS);
         setLoading(false);
       }
     );
@@ -2495,13 +2576,32 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
 
   useEffect(() => {
     const q = query(collection(db, "stylists"), orderBy("name", "asc"));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const data = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as { id: string, name: string, active: boolean }[];
-      setStylists(data);
-    });
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        if (!snapshot.empty) {
+          const data = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+          })) as { id: string, name: string, active: boolean }[];
+          setStylists(data);
+        } else {
+          setStylists([
+            { id: "s1", name: "Prashant", active: true },
+            { id: "s2", name: "Tejas", active: true },
+            { id: "s3", name: "Kunal", active: true }
+          ]);
+        }
+      },
+      (err) => {
+        console.warn("Stylists snapshot fallback:", err);
+        setStylists([
+          { id: "s1", name: "Prashant", active: true },
+          { id: "s2", name: "Tejas", active: true },
+          { id: "s3", name: "Kunal", active: true }
+        ]);
+      }
+    );
     return () => unsubscribe();
   }, []);
 
