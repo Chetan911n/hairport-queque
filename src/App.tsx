@@ -34,7 +34,7 @@ const db = getFirestore(app);
 
 // Types
 type TicketStatus = "Waiting" | "Serving" | "Completed";
-type Role = "receptionist" | "stylist" | "owner" | "owner_stylist" | "tv";
+type Role = "receptionist" | "stylist" | "owner" | "owner_stylist" | "tv" | "developer";
 
 interface User {
   username: string;
@@ -545,9 +545,13 @@ const Login: React.FC<{ onLogin: (user: User) => void }> = ({ onLogin }) => {
       return;
     }
 
-    if (lowerInput === "chetan" || lowerInput === "prashant" || lowerInput === "owner" || lowerInput === "admin") {
-      const displayName = lowerInput === "chetan" ? "Chetan" : "Prashant";
-      onLogin({ username: lowerInput, role: "owner_stylist", name: displayName });
+    if (lowerInput === "chetan" || lowerInput === "dev" || lowerInput === "developer") {
+      onLogin({ username: lowerInput, role: "developer", name: "Chetan (Developer)" });
+      return;
+    }
+
+    if (lowerInput === "prashant" || lowerInput === "owner" || lowerInput === "admin") {
+      onLogin({ username: "prashant", role: "owner_stylist", name: "Prashant" });
       return;
     }
 
@@ -1430,7 +1434,7 @@ const App: React.FC = () => {
 
           <div className="flex flex-col sm:flex-row items-center w-full lg:w-auto gap-4 sm:gap-6">
             <div className={`flex flex-wrap items-center justify-center p-1 rounded-sm border transition-colors duration-500 w-full lg:w-auto ${isDarkView ? 'bg-[#1A1A1A] border-[#2A2A2A]' : 'bg-[#F5F5F0] border-[#E5E5E0]'}`}>
-              {(user?.role === "owner" || user?.role === "owner_stylist") && (
+              {(user?.role === "owner" || user?.role === "owner_stylist" || user?.role === "developer") && (
                 <button
                   onClick={() => setView("owner")}
                   className={`flex items-center justify-center gap-1.5 px-3 sm:px-6 py-2.5 rounded-sm text-xs sm:text-sm font-medium transition-all duration-300 cursor-pointer flex-1 lg:flex-none ${
@@ -1443,7 +1447,7 @@ const App: React.FC = () => {
                   <span className="hidden xs:inline">OWNER</span>
                 </button>
               )}
-              {(user?.role === "owner" || user?.role === "owner_stylist") && (
+              {(user?.role === "owner" || user?.role === "owner_stylist" || user?.role === "developer") && (
                 <button
                   onClick={() => setView("analytics")}
                   className={`flex items-center justify-center gap-1.5 px-3 sm:px-6 py-2.5 rounded-sm text-xs sm:text-sm font-medium transition-all duration-300 cursor-pointer flex-1 lg:flex-none ${
@@ -1456,7 +1460,7 @@ const App: React.FC = () => {
                   <span className="hidden xs:inline">ANALYTICS</span>
                 </button>
               )}
-              {(user?.role === "receptionist" || user?.role === "owner" || user?.role === "owner_stylist") && (
+              {(user?.role === "receptionist" || user?.role === "owner" || user?.role === "owner_stylist" || user?.role === "developer") && (
                 <button
                   onClick={() => setView("reception")}
                   className={`flex items-center justify-center gap-1.5 px-3 sm:px-6 py-2.5 rounded-sm text-xs sm:text-sm font-medium transition-all duration-300 cursor-pointer flex-1 lg:flex-none ${
@@ -1471,17 +1475,17 @@ const App: React.FC = () => {
                   <span>RECEPTION</span>
                 </button>
               )}
-              {(user?.role === "stylist" || user?.role === "owner_stylist") && (
+              {(user?.role === "stylist" || user?.role === "owner_stylist" || user?.role === "developer") && (
                 <button
-                  onClick={() => setView("reception")}
+                  onClick={() => setView("staff")}
                   className={`flex items-center justify-center gap-1.5 px-3 sm:px-6 py-2.5 rounded-sm text-xs sm:text-sm font-medium transition-all duration-300 cursor-pointer flex-1 lg:flex-none ${
-                    view === "reception" 
+                    view === "staff" 
                       ? "bg-[#2A2A2A] text-[#D4AF37] shadow-[0_2px_10px_rgba(0,0,0,0.5)] border-b border-[#D4AF37]/50" 
                       : isDarkView ? "text-gray-500 hover:text-gray-300" : "text-gray-500 hover:text-gray-800"
                   }`}
                 >
-                  <UserPlus className="w-3.5 h-3.5" />
-                  <span className="hidden xs:inline">RECEPTION</span>
+                  <Scissors className="w-3.5 h-3.5" />
+                  <span className="hidden xs:inline">QUEUE</span>
                 </button>
               )}
               {(user?.role === "stylist" || user?.role === "owner_stylist") && (
