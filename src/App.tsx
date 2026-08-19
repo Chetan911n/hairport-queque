@@ -1091,17 +1091,17 @@ const App: React.FC = () => {
               completedAt: d.completed_at ? { seconds: Math.floor(new Date(d.completed_at).getTime() / 1000) } : null
             }));
 
-            const uniqueMap = new Map<string, Ticket>();
+            const ticketGroup = new Map<string, Ticket>();
             mapped.forEach(item => {
-              const contentKey = `${item.customerName.trim().toLowerCase()}_${item.serviceType.trim().toLowerCase()}_${item.status.toLowerCase()}`;
-              const exists = Array.from(uniqueMap.values()).some(existing => 
-                `${existing.customerName.trim().toLowerCase()}_${existing.serviceType.trim().toLowerCase()}_${existing.status.toLowerCase()}` === contentKey
-              );
-              if (!uniqueMap.has(item.docId) && !exists) {
-                uniqueMap.set(item.docId, item);
+              const baseKey = `${item.customerName.trim().toLowerCase()}_${item.serviceType.trim().toLowerCase()}`;
+              const existing = ticketGroup.get(baseKey);
+              const statusRank = (s: string) => (s === "Completed" ? 3 : s === "Serving" ? 2 : 1);
+
+              if (!existing || statusRank(item.status) >= statusRank(existing.status)) {
+                ticketGroup.set(baseKey, item);
               }
             });
-            setTickets(Array.from(uniqueMap.values()));
+            setTickets(Array.from(ticketGroup.values()));
             setLoading(false);
           }
         } catch (e) {
