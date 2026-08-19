@@ -1061,9 +1061,12 @@ const App: React.FC = () => {
     if (isSupabaseConfigured && supabase) {
       const fetchSupabaseTickets = async () => {
         try {
-          const { data, error } = await supabase.from('tickets').select('*');
-          if (!error && data && data.length > 0) {
-            const mapped = data.map((d: any) => ({
+          let res = await supabase.from('tickets').select('*');
+          if (res.error || !res.data || res.data.length === 0) {
+            res = await supabase.from('queue').select('*');
+          }
+          if (!res.error && res.data && res.data.length > 0) {
+            const mapped = res.data.map((d: any) => ({
               docId: String(d.id || d.docId),
               id: d.ticket_id || d.id || "#000",
               customerName: d.customer_name || d.customerName || "Guest",
