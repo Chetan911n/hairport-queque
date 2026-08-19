@@ -107,7 +107,6 @@ const SERVICES_CONFIG = {
       "Back Wax",
       "Full Arms Wax",
       "Full Legs Wax",
-      "Underarms Wax",
       "Rica Wax (Arms/Legs)"
     ]
   },
@@ -148,7 +147,6 @@ const SERVICES_CONFIG = {
       "Roll-On Wax",
       "Full Arms Wax",
       "Full Legs Wax",
-      "Underarms Wax",
       "Half Arms Wax",
       "Half Legs Wax",
       "Full Body Wax",
