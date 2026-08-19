@@ -1061,14 +1061,14 @@ const App: React.FC = () => {
     if (isSupabaseConfigured && supabase) {
       const fetchSupabaseTickets = async () => {
         try {
-          let res = await supabase.from('tickets').select('*');
-          if (res.error || !res.data || res.data.length === 0) {
-            res = await supabase.from('queue').select('*');
-          }
-          if (!res.error && res.data && res.data.length > 0) {
-            const mapped = res.data.map((d: any) => ({
+          const { data: queueData } = await supabase.from('queue').select('*');
+          const { data: ticketsData } = await supabase.from('tickets').select('*');
+
+          const combined = [...(queueData || []), ...(ticketsData || [])];
+          if (combined.length > 0) {
+            const mapped = combined.map((d: any) => ({
               docId: String(d.id || d.docId),
-              id: d.ticket_id || d.id || "#000",
+              id: d.ticket_id || `#${String(d.id).padStart(3, '0')}`,
               customerName: d.customer_name || d.customerName || "Guest",
               phone: d.phone || "",
               serviceType: d.service_type || d.serviceType || "",
@@ -1083,7 +1083,10 @@ const App: React.FC = () => {
               serviceCategory: d.service_category || d.serviceCategory || "Hair",
               completedAt: d.completed_at ? { seconds: Math.floor(new Date(d.completed_at).getTime() / 1000) } : null
             }));
-            setTickets(mapped);
+
+            const uniqueMap = new Map<string, Ticket>();
+            mapped.forEach(item => uniqueMap.set(item.docId, item));
+            setTickets(Array.from(uniqueMap.values()));
             setLoading(false);
           }
         } catch (e) {
@@ -1094,7 +1097,10 @@ const App: React.FC = () => {
       fetchSupabaseTickets();
 
       const channel = supabase
-        .channel('tickets_channel')
+        .channel('tickets_and_queue_channel')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'queue' }, () => {
+          fetchSupabaseTickets();
+        })
         .on('postgres_changes', { event: '*', schema: 'public', table: 'tickets' }, () => {
           fetchSupabaseTickets();
         })
