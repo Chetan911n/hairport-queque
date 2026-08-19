@@ -587,17 +587,13 @@ const CompletionModal: React.FC<CompletionModalProps> = ({ ticket, onClose, onCo
     // Init rows from services
     const initRows = ticketServicesList.slice(0, 4).map((svc, i) => ({
       stylist: ticket.stylistName || "",
-      price: "",
+      price: ticket.price ? String(ticket.price) : "",
       service: svc,
     }));
-    setRows(initRows.length > 0 ? initRows : [{ stylist: ticket.stylistName || "", price: "", service: "" }]);
+    setRows(initRows.length > 0 ? initRows : [{ stylist: ticket.stylistName || "", price: ticket.price ? String(ticket.price) : "", service: "" }]);
 
-    // Auto-suggest split mode if > 1 service
-    if (ticketServicesList.length > 1) {
-      setBillingMode("split");
-    } else {
-      setBillingMode("single");
-    }
+    // Default to single mode for fast 1-click completion
+    setBillingMode("single");
 
     const q = query(collection(db, "stylists"), orderBy("name", "asc"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -671,12 +667,6 @@ const CompletionModal: React.FC<CompletionModalProps> = ({ ticket, onClose, onCo
           setError(`Please select a stylist for row ${i + 1}.`);
           return;
         }
-      }
-      // Check for duplicate stylists
-      const names = rows.map(r => r.stylist);
-      if (new Set(names).size !== names.length) {
-        setError("Each stylist must be different. Please assign unique stylists.");
-        return;
       }
 
       const total = rows.reduce((sum, r) => sum + (parseFloat(r.price) || 0), 0);
