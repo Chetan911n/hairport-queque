@@ -175,6 +175,51 @@ const INITIAL_SAMPLE_TICKETS: Ticket[] = [
   {
     docId: "t-002",
     id: "#002",
+    customerName: "Vikram Malhotra",
+    phone: "9821098765",
+    serviceType: "Nano Plastia Treatment, Hair Wash",
+    serviceCategory: "Treatments",
+    gender: "Male",
+    status: "Completed",
+    price: 3200,
+    paymentMethod: "UPI",
+    stylistName: "Prashant",
+    timestamp: { seconds: Math.floor(Date.now() / 1000) - 14400 },
+    completedAt: { seconds: Math.floor(Date.now() / 1000) - 10800 }
+  },
+  {
+    docId: "t-003",
+    id: "#003",
+    customerName: "Ananya Roy",
+    phone: "9769012345",
+    serviceType: "Global Colour, Hair Spa",
+    serviceCategory: "Hair",
+    gender: "Female",
+    status: "Completed",
+    price: 1800,
+    paymentMethod: "Cash",
+    stylistName: "Tejas",
+    timestamp: { seconds: Math.floor(Date.now() / 1000) - 18000 },
+    completedAt: { seconds: Math.floor(Date.now() / 1000) - 14400 }
+  },
+  {
+    docId: "t-004",
+    id: "#004",
+    customerName: "KIRAN",
+    phone: "9823001122",
+    serviceType: "Hair Colour",
+    serviceCategory: "Hair",
+    gender: "Female",
+    status: "Completed",
+    price: 1500,
+    paymentMethod: "UPI",
+    stylistName: "Kunal",
+    timestamp: { seconds: Math.floor(Date.now() / 1000) - 21600 },
+    completedAt: { seconds: Math.floor(Date.now() / 1000) - 18000 }
+  },
+  {
+    docId: "t-005",
+    id: "#005",
     customerName: "Priya Patel",
     phone: "9890123456",
     serviceType: "Blue Tox Treatment, Deep Cleansing",
@@ -187,8 +232,8 @@ const INITIAL_SAMPLE_TICKETS: Ticket[] = [
     timestamp: { seconds: Math.floor(Date.now() / 1000) - 1800 }
   },
   {
-    docId: "t-003",
-    id: "#003",
+    docId: "t-006",
+    id: "#006",
     customerName: "Amit Deshmukh",
     phone: "9765432109",
     serviceType: "Skin De-Tan, Face Steam",
@@ -201,8 +246,8 @@ const INITIAL_SAMPLE_TICKETS: Ticket[] = [
     timestamp: { seconds: Math.floor(Date.now() / 1000) - 600 }
   },
   {
-    docId: "t-004",
-    id: "#004",
+    docId: "t-007",
+    id: "#007",
     customerName: "Sneha Kulkarni",
     phone: "9822338669",
     serviceType: "Hair Styling, Hair Wash",
@@ -3811,16 +3856,22 @@ const StaffAnalyticsDashboard: React.FC<StaffAnalyticsProps> = ({ tickets }) => 
     return () => unsubscribe();
   }, []);
 
-  const getTicketDate = (ticket: Ticket): Date | null => {
-    if (!ticket.completedAt) return null;
-    if (typeof ticket.completedAt.toDate === 'function') return ticket.completedAt.toDate();
-    if (ticket.completedAt.seconds) return new Date(ticket.completedAt.seconds * 1000);
-    return null;
+  const getTicketDate = (ticket: Ticket): Date => {
+    if (ticket.completedAt) {
+      if (typeof ticket.completedAt.toDate === 'function') return ticket.completedAt.toDate();
+      if (ticket.completedAt.seconds) return new Date(ticket.completedAt.seconds * 1000);
+      if (typeof ticket.completedAt === 'string') return new Date(ticket.completedAt);
+    }
+    if (ticket.timestamp) {
+      if (typeof ticket.timestamp.toDate === 'function') return ticket.timestamp.toDate();
+      if (ticket.timestamp.seconds) return new Date(ticket.timestamp.seconds * 1000);
+      if (typeof ticket.timestamp === 'string') return new Date(ticket.timestamp);
+    }
+    return new Date();
   };
 
   const isInRange = (ticket: Ticket): boolean => {
     const d = getTicketDate(ticket);
-    if (!d) return false;
     const now = new Date();
     if (dateRange === "today") {
       return d.getDate() === now.getDate() && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
