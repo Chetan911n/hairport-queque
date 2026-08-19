@@ -1085,7 +1085,15 @@ const App: React.FC = () => {
             }));
 
             const uniqueMap = new Map<string, Ticket>();
-            mapped.forEach(item => uniqueMap.set(item.docId, item));
+            mapped.forEach(item => {
+              const contentKey = `${item.customerName.trim().toLowerCase()}_${item.serviceType.trim().toLowerCase()}_${item.status.toLowerCase()}`;
+              const exists = Array.from(uniqueMap.values()).some(existing => 
+                `${existing.customerName.trim().toLowerCase()}_${existing.serviceType.trim().toLowerCase()}_${existing.status.toLowerCase()}` === contentKey
+              );
+              if (!uniqueMap.has(item.docId) && !exists) {
+                uniqueMap.set(item.docId, item);
+              }
+            });
             setTickets(Array.from(uniqueMap.values()));
             setLoading(false);
           }
@@ -1106,8 +1114,13 @@ const App: React.FC = () => {
         })
         .subscribe();
 
+      const interval = setInterval(() => {
+        fetchSupabaseTickets();
+      }, 3000);
+
       return () => {
         supabase.removeChannel(channel);
+        clearInterval(interval);
       };
     }
   }, []);
