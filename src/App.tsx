@@ -1204,10 +1204,25 @@ const App: React.FC = () => {
         }
         updateData.stylistName = stylistsDisplay;
       }
-      if (!completingTicket.servedAt) {
-        updateData.servedAt = serverTimestamp();
+      try {
+        await updateDoc(doc(db, "tickets", completingTicket.docId), updateData);
+      } catch (err) {
+        console.warn("Firestore update notice:", err);
       }
-      await updateDoc(doc(db, "tickets", completingTicket.docId), updateData);
+
+      if (isSupabaseConfigured && supabase) {
+        try {
+          await supabase.from('queue').update({
+            status: "completed",
+            price: price,
+            stylist_name: stylistName,
+            payment_method: paymentMethod,
+            completed_at: new Date().toISOString()
+          }).eq('id', completingTicket.docId);
+        } catch (e) {
+          console.warn("Supabase completion update notice:", e);
+        }
+      }
       
       // Auto-compose and trigger native SMS to thank the client
       let smsBody = "";
@@ -2907,17 +2922,34 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
         s.toLowerCase().includes("touch up")
       );
 
-      await addDoc(collection(db, "tickets"), {
-        id: generateNextId(),
-        customerName,
-        phone,
-        serviceType: selectedServices.join(", "),
-        colourNumber: hasColourService ? colourNumber : "",
-        gender,
-        serviceCategory,
-        status: "Waiting",
-        timestamp: serverTimestamp()
-      });
+      try {
+        await addDoc(collection(db, "tickets"), {
+          id: generateNextId(),
+          customerName,
+          phone,
+          serviceType: selectedServices.join(", "),
+          colourNumber: hasColourService ? colourNumber : "",
+          gender,
+          serviceCategory,
+          status: "Waiting",
+          timestamp: serverTimestamp()
+        });
+      } catch (error) {
+        console.warn("Firestore notice:", error);
+      }
+
+      if (isSupabaseConfigured && supabase) {
+        try {
+          await supabase.from('queue').insert([{
+            customer_name: customerName,
+            service_type: selectedServices.join(", "),
+            status: "waiting"
+          }]);
+        } catch (e) {
+          console.warn("Supabase insert notice:", e);
+        }
+      }
+
       setCustomerName("");
       setPhone("");
       setSelectedServices([]);
@@ -2930,11 +2962,33 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
   };
 
   const updateStatus = async (docId: string, status: TicketStatus) => {
-    await updateDoc(doc(db, "tickets", docId), { status });
+    try {
+      await updateDoc(doc(db, "tickets", docId), { status });
+    } catch (e) {
+      console.warn("Firestore status notice:", e);
+    }
+    if (isSupabaseConfigured && supabase) {
+      try {
+        await supabase.from('queue').update({ status: status.toLowerCase() }).eq('id', docId);
+      } catch (e) {
+        console.warn("Supabase status notice:", e);
+      }
+    }
   };
 
   const deleteTicket = async (docId: string) => {
-    await deleteDoc(doc(db, "tickets", docId));
+    try {
+      await deleteDoc(doc(db, "tickets", docId));
+    } catch (e) {
+      console.warn("Firestore delete notice:", e);
+    }
+    if (isSupabaseConfigured && supabase) {
+      try {
+        await supabase.from('queue').delete().eq('id', docId);
+      } catch (e) {
+        console.warn("Supabase delete notice:", e);
+      }
+    }
   };
 
   return (
