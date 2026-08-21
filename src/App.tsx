@@ -961,10 +961,16 @@ const App: React.FC = () => {
               completedAt: d.completed_at ? { seconds: Math.floor(new Date(d.completed_at).getTime() / 1000) } : null
             }));
 
-            setTickets(mapped);
+            setTickets(prev => {
+              const tempTickets = prev.filter(t => t.docId.startsWith("temp_"));
+              const pendingTemps = tempTickets.filter(temp => 
+                !mapped.some(m => m.customerName === temp.customerName && m.serviceType === temp.serviceType)
+              );
+              return [...pendingTemps, ...mapped];
+            });
             setLoading(false);
           } else {
-            setTickets([]);
+            setTickets(prev => prev.filter(t => t.docId.startsWith("temp_")));
             setLoading(false);
           }
         } catch (e) {
