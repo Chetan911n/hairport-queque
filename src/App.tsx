@@ -1065,40 +1065,39 @@ const App: React.FC = () => {
     if (isSupabaseConfigured && supabase) {
       const fetchSupabaseTickets = async () => {
         try {
-          const { data: queueData } = await supabase.from('queue').select('*');
-          const { data: ticketsData } = await supabase.from('tickets').select('*');
+          const { data: queueData, error } = await supabase
+            .from('queue')
+            .select('*')
+            .order('id', { ascending: false });
 
-          const combined = [...(queueData || []), ...(ticketsData || [])];
-          if (combined.length > 0) {
-            const mapped = combined.map((d: any) => ({
-              docId: String(d.id || d.docId),
+          if (error) {
+            console.warn("Supabase queue fetch error:", error);
+            return;
+          }
+
+          if (queueData && queueData.length > 0) {
+            const mapped = queueData.map((d: any) => ({
+              docId: String(d.id),
               id: d.ticket_id || `#${String(d.id).padStart(3, '0')}`,
-              customerName: d.customer_name || d.customerName || "Guest",
-              phone: d.phone || "",
-              serviceType: d.service_type || d.serviceType || "",
+              customerName: d.customer_name || "Guest",
+              phone: d.phone || "N/A",
+              serviceType: d.service_type || "General Service",
               status: (d.status && d.status.toString().toLowerCase() === "completed") 
                 ? "Completed" 
                 : ((d.status && d.status.toString().toLowerCase() === "serving") ? "Serving" : "Waiting"),
-              timestamp: d.timestamp || d.created_at || new Date().toISOString(),
-              stylistName: d.stylist_name || d.stylistName || "",
+              timestamp: d.created_at || new Date().toISOString(),
+              stylistName: d.stylist_name || "",
               price: Number(d.price || 0),
-              paymentMethod: d.payment_method || d.paymentMethod || "UPI",
+              paymentMethod: d.payment_method || "UPI",
               gender: d.gender || "Male",
-              serviceCategory: d.service_category || d.serviceCategory || "Hair",
+              serviceCategory: d.service_category || "Hair",
               completedAt: d.completed_at ? { seconds: Math.floor(new Date(d.completed_at).getTime() / 1000) } : null
             }));
 
-            const ticketGroup = new Map<string, Ticket>();
-            mapped.forEach(item => {
-              const baseKey = `${item.customerName.trim().toLowerCase()}_${item.serviceType.trim().toLowerCase()}`;
-              const existing = ticketGroup.get(baseKey);
-              const statusRank = (s: string) => (s === "Completed" ? 3 : s === "Serving" ? 2 : 1);
-
-              if (!existing || statusRank(item.status) >= statusRank(existing.status)) {
-                ticketGroup.set(baseKey, item);
-              }
-            });
-            setTickets(Array.from(ticketGroup.values()));
+            setTickets(mapped);
+            setLoading(false);
+          } else {
+            setTickets([]);
             setLoading(false);
           }
         } catch (e) {
@@ -1113,14 +1112,11 @@ const App: React.FC = () => {
         .on('postgres_changes', { event: '*', schema: 'public', table: 'queue' }, () => {
           fetchSupabaseTickets();
         })
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'tickets' }, () => {
-          fetchSupabaseTickets();
-        })
         .subscribe();
 
       const interval = setInterval(() => {
         fetchSupabaseTickets();
-      }, 3000);
+      }, 2000);
 
       return () => {
         supabase.removeChannel(channel);
