@@ -2965,25 +2965,49 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
 
   const handleDeployTicket = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!customerName || !phone) return;
+    if (!customerName || !customerName.trim()) {
+      alert("Please enter client name.");
+      return;
+    }
     if (selectedServices.length === 0) {
       alert("Please select at least one service.");
       return;
     }
     setIsSubmitting(true);
     
-    try {
-      const hasColourService = selectedServices.some(s => 
-        s.toLowerCase().includes("colour") || 
-        s.toLowerCase().includes("highlights") || 
-        s.toLowerCase().includes("touch up")
-      );
+    const clientPhone = phone.trim() || "N/A";
+    const hasColourService = selectedServices.some(s => 
+      s.toLowerCase().includes("colour") || 
+      s.toLowerCase().includes("highlights") || 
+      s.toLowerCase().includes("touch up")
+    );
+    const newId = generateNextId();
 
+    const newTicket: Ticket = {
+      docId: `temp_${Date.now()}`,
+      id: newId,
+      customerName: customerName.trim(),
+      phone: clientPhone,
+      serviceType: selectedServices.join(", "),
+      colourNumber: hasColourService ? colourNumber : "",
+      gender,
+      serviceCategory,
+      stylistName: selectedStylist || "",
+      status: "Waiting",
+      timestamp: new Date().toISOString(),
+      price: 0,
+      paymentMethod: "UPI"
+    };
+
+    // Optimistically update local UI state immediately
+    setTickets(prev => [newTicket, ...prev]);
+
+    try {
       try {
         await addDoc(collection(db, "tickets"), {
-          id: generateNextId(),
-          customerName,
-          phone,
+          id: newId,
+          customerName: customerName.trim(),
+          phone: clientPhone,
           serviceType: selectedServices.join(", "),
           colourNumber: hasColourService ? colourNumber : "",
           gender,
@@ -2999,7 +3023,7 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
       if (isSupabaseConfigured && supabase) {
         try {
           await supabase.from('queue').insert([{
-            customer_name: customerName,
+            customer_name: customerName.trim(),
             service_type: selectedServices.join(", "),
             stylist_name: selectedStylist || "",
             status: "waiting"
@@ -3155,8 +3179,7 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
                         className="w-full bg-[#1A1A1A]/80 border border-[#2A2A2A] rounded-sm pl-10 pr-4 py-3 focus:outline-none focus:border-[#D4AF37] transition-all text-white placeholder-gray-500 font-sans"
-                        placeholder="Enter phone number"
-                        required
+                        placeholder="Enter phone number (Optional)"
                       />
                     </div>
                   </div>
