@@ -19,6 +19,9 @@ import {
 import { motion, AnimatePresence } from 'motion/react';
 import { Play, CheckCircle, Trash2, Monitor, Scissors, UserPlus, Phone, Loader2, User, Clock, ChevronRight, Search, X } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from './supabaseClient';
+import { findOrCreateClient } from './services/clientService';
+import { completeTicketAndCreateVisitTransaction } from './services/visitService';
+import { ClientHistoryView } from './components/ClientHistory/ClientHistoryView';
 
 // Firebase Configuration
 const firebaseConfig = {
@@ -58,6 +61,9 @@ interface Ticket {
   paymentMethod?: "Cash" | "UPI" | "Pending";
   gender?: "Male" | "Female";
   serviceCategory?: "Hair" | "Skin" | "Treatments" | "Waxing";
+  colourNumber?: string;
+  notes?: string;
+  clientId?: string;
   isSplit?: boolean;
   primaryStylistName?: string;
   primaryStylistPrice?: number;
@@ -1070,6 +1076,36 @@ const App: React.FC = () => {
         }
       } catch (err) {
         console.warn("Firestore update notice:", err);
+      }
+
+      // Execute Atomic & Idempotent Visit Transaction
+      try {
+        await completeTicketAndCreateVisitTransaction(db, {
+          ticketDocId: completingTicket.docId,
+          ticketId: completingTicket.id,
+          customerName: completingTicket.customerName,
+          phone: completingTicket.phone,
+          serviceType: completingTicket.serviceType,
+          serviceCategory: completingTicket.serviceCategory || "Hair",
+          stylistName: updateData.stylistName || stylistName,
+          colourNumber: completingTicket.colourNumber || "",
+          price: price,
+          paymentMethod: paymentMethod,
+          gender: completingTicket.gender || "Male",
+          isSplit: splitDetails?.isSplit || false,
+          primaryStylistName: splitDetails?.primaryStylistName,
+          primaryStylistPrice: splitDetails?.primaryStylistPrice,
+          primaryStylistService: splitDetails?.primaryStylistService,
+          secondaryStylistName: splitDetails?.secondaryStylistName,
+          secondaryStylistPrice: splitDetails?.secondaryStylistPrice,
+          secondaryStylistService: splitDetails?.secondaryStylistService,
+          tertiaryStylistName: splitDetails?.tertiaryStylistName,
+          tertiaryStylistPrice: splitDetails?.tertiaryStylistPrice,
+          tertiaryStylistService: splitDetails?.tertiaryStylistService,
+          clientId: completingTicket.clientId
+        }, user?.name || "Receptionist");
+      } catch (transErr) {
+        console.warn("Notice executing completeTicketAndCreateVisitTransaction:", transErr);
       }
 
       const numericId = Number(completingTicket.docId);
@@ -2792,6 +2828,20 @@ const ReceptionDashboard: React.FC<{
         paymentMethod: "UPI"
       };
 
+      // 0. Find or Create Client profile (isolated error handling)
+      let resolvedClientId = "";
+      try {
+        const clientProfile = await findOrCreateClient(db, {
+          name: newTicket.customerName,
+          phone: clientPhone,
+          gender
+        });
+        resolvedClientId = clientProfile.clientId;
+        newTicket.clientId = resolvedClientId;
+      } catch (clientErr) {
+        console.warn("Client profile creation notice:", clientErr);
+      }
+
       // 1. Instantly update local UI state
       setTickets(prev => [newTicket, ...prev]);
 
@@ -2830,11 +2880,12 @@ const ReceptionDashboard: React.FC<{
           serviceCategory,
           stylistName: newTicket.stylistName,
           status: "Waiting",
+          clientId: resolvedClientId || "",
           timestamp: serverTimestamp()
         });
         
         // Update local state ticket with the real Firestore docId
-        setTickets(prev => prev.map(t => t.docId === newTicket.docId ? { ...t, docId: docRef.id } : t));
+        setTickets(prev => prev.map(t => t.docId === newTicket.docId ? { ...t, docId: docRef.id, clientId: resolvedClientId } : t));
       } catch (err) {
         console.warn("Firestore insert notice:", err);
       }
@@ -3508,7 +3559,7 @@ const ReceptionDashboard: React.FC<{
             exit={{ opacity: 0, y: -10 }}
             className="w-full flex flex-col gap-6 flex-1"
           >
-            <ClientHistoryView tickets={tickets} onDeleteTicket={onDeleteTicket} />
+            <ClientHistoryView db={db} tickets={tickets} currentUser={user?.name} userRole={user?.role} />
           </motion.div>
         ) : activeTab === "revenue" ? (
           <motion.div
