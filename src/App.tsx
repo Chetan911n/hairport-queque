@@ -2645,6 +2645,7 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
   const [serviceCategory, setServiceCategory] = useState<"Hair" | "Skin" | "Treatments" | "Waxing">("Hair");
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [colourNumber, setColourNumber] = useState("");
+  const [serviceSearchQuery, setServiceSearchQuery] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Edit ticket state
@@ -2937,48 +2938,60 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
           >
             {/* Left Column: Form & Stylists */}
             <div className="xl:col-span-4 flex flex-col gap-6">
-              <div className="bg-black/60 border border-[#D4AF37]/30 p-8 rounded-sm shadow-2xl backdrop-blur-md">
-                <h2 className="text-2xl font-serif text-[#D4AF37] mb-8 border-b border-[#2A2A2A] pb-4 tracking-wide uppercase">
-                  Add Client
-                </h2>
+              <div className="bg-black/70 border border-[#D4AF37]/40 p-6 md:p-8 rounded-sm shadow-2xl backdrop-blur-md relative overflow-hidden">
+                <div className="flex items-center justify-between mb-6 border-b border-[#2A2A2A] pb-4">
+                  <div>
+                    <h2 className="text-2xl font-serif text-[#D4AF37] tracking-wide uppercase font-bold">
+                      New Walk-In Client
+                    </h2>
+                    <p className="text-[10px] text-gray-400 font-sans tracking-widest uppercase mt-0.5">
+                      Express Queue Deployment · Hairport Nashik
+                    </p>
+                  </div>
+                  <span className="text-xs font-mono bg-[#D4AF37]/10 text-[#D4AF37] border border-[#D4AF37]/30 px-3 py-1 rounded-sm font-bold">
+                    {generateNextId()}
+                  </span>
+                </div>
 
                 <form onSubmit={handleDeployTicket} className="space-y-6">
-                  <div className="space-y-2">
-                    <label className="text-xs font-sans text-gray-400 uppercase tracking-widest">Client Name</label>
-                    <div className="relative group/input">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <User className="h-4 w-4 text-gray-500 group-focus-within/input:text-[#D4AF37] transition-colors" />
-                      </div>
+                  {/* Client Name & Phone */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-xs font-sans text-gray-300 uppercase tracking-widest font-semibold flex items-center gap-1.5">
+                        <User className="h-3.5 w-3.5 text-[#D4AF37]" />
+                        Client Name *
+                      </label>
                       <input 
                         type="text" 
                         value={customerName}
                         onChange={(e) => setCustomerName(e.target.value)}
-                        className="w-full bg-[#1A1A1A]/80 border border-[#2A2A2A] rounded-sm pl-10 pr-4 py-3 focus:outline-none focus:border-[#D4AF37] transition-all text-white placeholder-gray-500 font-sans"
-                        placeholder="Enter name"
+                        className="w-full bg-[#1A1A1A]/90 border border-[#2A2A2A] rounded-sm px-4 py-3 focus:outline-none focus:border-[#D4AF37] transition-all text-white placeholder-gray-500 font-sans text-sm"
+                        placeholder="e.g. Chetan Sharma"
                         required
                       />
                     </div>
-                  </div>
 
-                  <div className="space-y-2">
-                    <label className="text-xs font-sans text-gray-400 uppercase tracking-widest">Contact Number</label>
-                    <div className="relative group/input">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <Phone className="h-4 w-4 text-gray-500 group-focus-within/input:text-[#D4AF37] transition-colors" />
-                      </div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-sans text-gray-300 uppercase tracking-widest font-semibold flex items-center gap-1.5">
+                        <Phone className="h-3.5 w-3.5 text-[#D4AF37]" />
+                        Mobile Number
+                      </label>
                       <input 
                         type="tel" 
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
-                        className="w-full bg-[#1A1A1A]/80 border border-[#2A2A2A] rounded-sm pl-10 pr-4 py-3 focus:outline-none focus:border-[#D4AF37] transition-all text-white placeholder-gray-500 font-sans"
-                        placeholder="Enter phone number (Optional)"
+                        className="w-full bg-[#1A1A1A]/90 border border-[#2A2A2A] rounded-sm px-4 py-3 focus:outline-none focus:border-[#D4AF37] transition-all text-white placeholder-gray-500 font-sans text-sm"
+                        placeholder="Optional (10 digits)"
                       />
                     </div>
                   </div>
 
+                  {/* Gender Category */}
                   <div className="space-y-2">
-                    <label className="text-xs font-sans text-gray-400 uppercase tracking-widest block">Gender</label>
-                    <div className="flex gap-2">
+                    <label className="text-xs font-sans text-gray-300 uppercase tracking-widest block font-semibold">
+                      Gender Category
+                    </label>
+                    <div className="grid grid-cols-2 gap-3">
                       {(["Male", "Female"] as const).map((g) => (
                         <button
                           key={g}
@@ -2987,31 +3000,71 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
                             setGender(g);
                             setSelectedServices([]);
                           }}
-                          className={`flex-1 py-3 rounded-sm border text-xs font-sans tracking-widest uppercase transition-all duration-300 cursor-pointer font-bold ${
+                          className={`py-3 px-4 rounded-sm border text-xs font-sans tracking-widest uppercase transition-all duration-300 cursor-pointer font-bold flex items-center justify-center gap-2 ${
                             gender === g
-                              ? "bg-[#D4AF37]/20 border-[#D4AF37] text-[#D4AF37] shadow-[0_0_15px_rgba(212,175,55,0.15)]"
+                              ? "bg-[#D4AF37] text-black border-[#D4AF37] shadow-[0_0_20px_rgba(212,175,55,0.2)]"
                               : "bg-[#1A1A1A]/80 border-[#2A2A2A] text-gray-400 hover:text-white"
                           }`}
                         >
-                          {g}
+                          {g === "Male" ? "👨 Male Grooming" : "👩 Female Styling"}
                         </button>
                       ))}
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <label className="text-xs font-sans text-gray-400 uppercase tracking-widest block">Service Category</label>
-                    <div className="flex gap-2">
+                  {/* One-Tap Quick Shortcuts */}
+                  <div className="space-y-2 pt-1">
+                    <label className="text-[10px] font-sans text-gray-400 uppercase tracking-widest block font-bold">
+                      ⚡ Quick Service Shortcuts
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        { label: "✂️ Cut & Wash", category: "Hair" as const, services: ["Classic Haircut & Fade", "Hair Wash & Styling", "Haircut", "Hair Wash"] },
+                        { label: "🧔 Cut + Beard", category: "Hair" as const, services: ["Classic Haircut & Fade", "Beard Trim & Sculpt", "Beard Style"] },
+                        { label: "💆 Hair Spa", category: "Hair" as const, services: ["Hair Spa", "Restorative Hair Spa", "Hair Wash"] },
+                        { label: "✨ Skin De-Tan", category: "Skin" as const, services: ["Skin De-Tan", "De-Tan", "Deep Cleansing"] }
+                      ].map((preset) => (
+                        <button
+                          key={preset.label}
+                          type="button"
+                          onClick={() => {
+                            setServiceCategory(preset.category);
+                            const available = SERVICES_CONFIG[gender][preset.category];
+                            const toAdd = preset.services.filter(s => available.includes(s));
+                            if (toAdd.length > 0) {
+                              setSelectedServices(prev => Array.from(new Set([...prev, ...toAdd])));
+                            }
+                          }}
+                          className="px-3 py-1.5 bg-[#222222] border border-[#333333] hover:border-[#D4AF37] hover:text-[#D4AF37] text-gray-300 text-[11px] font-sans rounded-sm transition-all cursor-pointer font-medium"
+                        >
+                          {preset.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Category Filter & Search */}
+                  <div className="space-y-3 pt-2">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-sans text-gray-300 uppercase tracking-widest font-semibold">
+                        Service Category
+                      </label>
+                      {selectedServices.length > 0 && (
+                        <span className="text-[10px] bg-[#D4AF37]/20 text-[#D4AF37] border border-[#D4AF37]/30 px-2.5 py-0.5 rounded-sm font-bold font-sans">
+                          {selectedServices.length} Selected
+                        </span>
+                      )}
+                    </div>
+                    
+                    <div className="grid grid-cols-4 gap-2">
                       {(["Hair", "Skin", "Treatments", "Waxing"] as const).map((cat) => (
                         <button
                           key={cat}
                           type="button"
-                          onClick={() => {
-                            setServiceCategory(cat);
-                          }}
-                          className={`flex-1 py-3 rounded-sm border text-xs font-sans tracking-widest uppercase transition-all duration-300 cursor-pointer font-bold ${
+                          onClick={() => setServiceCategory(cat)}
+                          className={`py-2.5 px-2 rounded-sm border text-[11px] font-sans tracking-wider uppercase transition-all duration-200 cursor-pointer font-bold text-center ${
                             serviceCategory === cat
-                              ? "bg-[#D4AF37]/20 border-[#D4AF37] text-[#D4AF37] shadow-[0_0_15px_rgba(212,175,55,0.15)]"
+                              ? "bg-[#D4AF37]/20 border-[#D4AF37] text-[#D4AF37] shadow-sm"
                               : "bg-[#1A1A1A]/80 border-[#2A2A2A] text-gray-400 hover:text-white"
                           }`}
                         >
@@ -3019,46 +3072,61 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
                         </button>
                       ))}
                     </div>
-                  </div>
 
-                  <div className="space-y-2">
-                    <label className="text-xs font-sans text-gray-400 uppercase tracking-widest block mb-2">Select Services (Multiple)</label>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-2 border border-[#2A2A2A] p-3 rounded-sm bg-[#1A1A1A]/80">
-                      {SERVICES_CONFIG[gender][serviceCategory].map((serviceName) => {
-                        const isSelected = selectedServices.includes(serviceName);
-                        return (
-                          <button
-                            key={serviceName}
-                            type="button"
-                            onClick={() => {
-                              setSelectedServices(prev => 
-                                prev.includes(serviceName)
-                                  ? prev.filter(s => s !== serviceName)
-                                  : [...prev, serviceName]
-                              );
-                            }}
-                            className={`flex items-center gap-2 px-3 py-2 rounded-sm border text-xs font-sans text-left transition-colors cursor-pointer ${
-                              isSelected
-                                ? 'bg-[#D4AF37]/20 border-[#D4AF37] text-[#D4AF37] font-semibold font-sans'
-                                : 'bg-[#222222]/80 border-[#333333] text-gray-300 hover:border-gray-500 font-sans'
-                            }`}
-                          >
-                            <div className={`w-3.5 h-3.5 border rounded-sm flex items-center justify-center shrink-0 ${
-                              isSelected ? 'border-[#D4AF37] bg-[#D4AF37] text-[#111111]' : 'border-gray-500 bg-[#1A1A1A]'
-                            }`}>
-                              {isSelected && <span className="text-[10px] leading-none font-bold">✓</span>}
-                            </div>
-                            <span className="truncate">{serviceName}</span>
-                          </button>
-                        );
-                      })}
+                    {/* Search Services Filter */}
+                    <div className="relative mt-2">
+                      <Search className="h-3.5 w-3.5 text-gray-500 absolute left-3 top-3" />
+                      <input
+                        type="text"
+                        value={serviceSearchQuery}
+                        onChange={(e) => setServiceSearchQuery(e.target.value)}
+                        placeholder={`Search ${gender} ${serviceCategory} services...`}
+                        className="w-full bg-[#151515] border border-[#2A2A2A] rounded-sm pl-9 pr-4 py-2 text-xs focus:outline-none focus:border-[#D4AF37] text-white placeholder-gray-500 font-sans"
+                      />
+                    </div>
+
+                    {/* Services Multi-Select Grid */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-56 overflow-y-auto pr-1 border border-[#2A2A2A] p-3 rounded-sm bg-[#161616]">
+                      {SERVICES_CONFIG[gender][serviceCategory]
+                        .filter(s => s.toLowerCase().includes(serviceSearchQuery.toLowerCase()))
+                        .map((serviceName) => {
+                          const isSelected = selectedServices.includes(serviceName);
+                          return (
+                            <button
+                              key={serviceName}
+                              type="button"
+                              onClick={() => {
+                                setSelectedServices(prev => 
+                                  prev.includes(serviceName)
+                                    ? prev.filter(s => s !== serviceName)
+                                    : [...prev, serviceName]
+                                );
+                              }}
+                              className={`flex items-center gap-2.5 px-3 py-2.5 rounded-sm border text-xs font-sans text-left transition-all cursor-pointer ${
+                                isSelected
+                                  ? 'bg-[#D4AF37]/20 border-[#D4AF37] text-[#D4AF37] font-semibold'
+                                  : 'bg-[#202020] border-[#2C2C2C] text-gray-300 hover:border-gray-500'
+                              }`}
+                            >
+                              <div className={`w-4 h-4 border rounded-sm flex items-center justify-center shrink-0 ${
+                                isSelected ? 'border-[#D4AF37] bg-[#D4AF37] text-black' : 'border-gray-600 bg-[#1A1A1A]'
+                              }`}>
+                                {isSelected && <span className="text-[10px] leading-none font-bold">✓</span>}
+                              </div>
+                              <span className="truncate">{serviceName}</span>
+                            </button>
+                          );
+                        })}
                     </div>
                   </div>
 
+                  {/* Selected Service Chips */}
                   {selectedServices.length > 0 && (
-                    <div className="bg-[#D4AF37]/10 border border-[#D4AF37]/30 p-3 rounded-sm space-y-2 mt-4">
+                    <div className="bg-[#D4AF37]/10 border border-[#D4AF37]/30 p-3 rounded-sm space-y-2">
                       <div className="flex justify-between items-center">
-                        <span className="text-[10px] text-[#D4AF37] uppercase tracking-widest font-bold">Selected ({selectedServices.length})</span>
+                        <span className="text-[10px] text-[#D4AF37] uppercase tracking-widest font-bold">
+                          Selected Services ({selectedServices.length})
+                        </span>
                         <button 
                           type="button" 
                           onClick={() => setSelectedServices([])}
@@ -3084,48 +3152,80 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
                     </div>
                   )}
 
+                  {/* Hair Colour Formula Input */}
                   {selectedServices.some(s => 
                     s.toLowerCase().includes("colour") || 
                     s.toLowerCase().includes("highlights") || 
                     s.toLowerCase().includes("touch up")
                   ) && (
-                    <div className="space-y-2 mt-4 animate-fadeIn">
-                      <label className="text-xs font-sans text-gray-400 uppercase tracking-widest block">Hair Colour Number / Shade</label>
+                    <div className="space-y-2 bg-[#1A1A1A]/90 p-4 border border-[#D4AF37]/30 rounded-sm">
+                      <label className="text-xs font-sans text-[#D4AF37] uppercase tracking-widest block font-bold">
+                        🎨 Hair Colour Shade / Formula Code
+                      </label>
                       <input 
                         type="text" 
                         value={colourNumber}
                         onChange={(e) => setColourNumber(e.target.value)}
-                        placeholder="e.g. Igora 5-0, Yutika 4.0"
-                        className="w-full bg-[#1A1A1A]/80 border border-[#2A2A2A] rounded-sm px-4 py-3 focus:outline-none focus:border-[#D4AF37] text-white placeholder-gray-500 font-sans"
+                        placeholder="e.g. Igora Royal 5-0, Matrix 6.1"
+                        className="w-full bg-[#111111] border border-[#2A2A2A] rounded-sm px-4 py-2.5 focus:outline-none focus:border-[#D4AF37] text-white placeholder-gray-500 font-sans text-xs"
                       />
                     </div>
                   )}
 
-                  <div className="space-y-2">
-                    <label className="text-xs font-sans text-gray-400 uppercase tracking-widest block">Choose Stylist (Optional)</label>
-                    <select
-                      value={selectedStylist}
-                      onChange={(e) => setSelectedStylist(e.target.value)}
-                      className="w-full bg-[#1A1A1A]/80 border border-[#2A2A2A] rounded-sm px-4 py-3 focus:outline-none focus:border-[#D4AF37] text-white font-sans text-sm cursor-pointer font-semibold"
-                    >
-                      <option value="">Any Available Stylist</option>
+                  {/* Visual Duty Stylist Cards */}
+                  <div className="space-y-2.5 pt-1">
+                    <label className="text-xs font-sans text-gray-300 uppercase tracking-widest block font-semibold">
+                      Assign Stylist (Optional)
+                    </label>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedStylist("")}
+                        className={`p-3 rounded-sm border text-center transition-all cursor-pointer flex flex-col items-center justify-center gap-1 ${
+                          selectedStylist === ""
+                            ? "bg-[#D4AF37]/20 border-[#D4AF37] text-[#D4AF37] font-bold"
+                            : "bg-[#1A1A1A] border-[#2A2A2A] text-gray-400 hover:text-white"
+                        }`}
+                      >
+                        <span className="text-xs font-serif uppercase tracking-wider font-bold">Any Available</span>
+                        <span className="text-[9px] text-gray-500">Auto Assign</span>
+                      </button>
+                      
                       {(stylists.length > 0 ? stylists : [
                         { id: "s1", name: "Prashant", active: true },
                         { id: "s2", name: "Tejas", active: true },
                         { id: "s3", name: "Kunal", active: true }
-                      ]).map((s) => (
-                        <option key={s.id} value={s.name}>{s.name}</option>
-                      ))}
-                    </select>
+                      ]).map((s) => {
+                        const isSelected = selectedStylist === s.name;
+                        return (
+                          <button
+                            key={s.id}
+                            type="button"
+                            onClick={() => setSelectedStylist(s.name)}
+                            className={`p-2.5 rounded-sm border text-center transition-all cursor-pointer flex flex-col items-center justify-center gap-1 ${
+                              isSelected
+                                ? "bg-[#D4AF37] text-black border-[#D4AF37] font-bold shadow-md"
+                                : "bg-[#1A1A1A] border-[#2A2A2A] text-gray-300 hover:border-gray-500"
+                            }`}
+                          >
+                            <span className="text-xs font-serif font-bold uppercase tracking-wide">{s.name}</span>
+                            <span className={`text-[9px] font-sans ${isSelected ? "text-black font-semibold" : s.active ? "text-green-400" : "text-gray-500"}`}>
+                              {s.active ? "● On Duty" : "Offline"}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
 
+                  {/* Submit Button */}
                   <button 
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full mt-8 bg-[#D4AF37] hover:bg-[#C5A059] text-[#111111] font-serif font-bold tracking-widest uppercase py-4 px-6 rounded-sm transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg"
+                    className="w-full mt-8 bg-[#D4AF37] hover:bg-[#C5A059] text-black font-serif font-bold tracking-widest uppercase py-4 px-6 rounded-sm transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-[0_0_25px_rgba(212,175,55,0.25)] hover:shadow-[0_0_35px_rgba(212,175,55,0.4)] text-base cursor-pointer"
                   >
-                    {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : null}
-                    {isSubmitting ? "Adding..." : "Add to Queue"}
+                    {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin text-black" /> : null}
+                    {isSubmitting ? "Deploying Client..." : "🚀 Deploy Client to Queue"}
                   </button>
                 </form>
               </div>
