@@ -2792,47 +2792,40 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
     // Optimistically update local UI state immediately
     setTickets(prev => [newTicket, ...prev]);
 
-    try {
+    // Fast Supabase Insert
+    if (isSupabaseConfigured && supabase) {
       try {
-        await addDoc(collection(db, "tickets"), {
-          id: newId,
-          customerName: customerName.trim(),
-          phone: clientPhone,
-          serviceType: selectedServices.join(", "),
-          colourNumber: hasColourService ? colourNumber : "",
-          gender,
-          serviceCategory,
-          stylistName: selectedStylist || "",
-          status: "Waiting",
-          timestamp: serverTimestamp()
-        });
-      } catch (error) {
-        console.warn("Firestore notice:", error);
+        await supabase.from('queue').insert([{
+          customer_name: customerName.trim(),
+          service_type: selectedServices.join(", "),
+          stylist_name: selectedStylist || "",
+          status: "waiting"
+        }]);
+      } catch (e) {
+        console.warn("Supabase insert notice:", e);
       }
-
-      if (isSupabaseConfigured && supabase) {
-        try {
-          await supabase.from('queue').insert([{
-            customer_name: customerName.trim(),
-            service_type: selectedServices.join(", "),
-            stylist_name: selectedStylist || "",
-            status: "waiting"
-          }]);
-        } catch (e) {
-          console.warn("Supabase insert notice:", e);
-        }
-      }
-
-      setCustomerName("");
-      setPhone("");
-      setSelectedServices([]);
-      setColourNumber("");
-      setSelectedStylist("");
-    } catch (error) {
-      console.error("Failed to add client:", error);
-    } finally {
-      setIsSubmitting(false);
     }
+
+    // Non-blocking background Firestore sync
+    addDoc(collection(db, "tickets"), {
+      id: newId,
+      customerName: customerName.trim(),
+      phone: clientPhone,
+      serviceType: selectedServices.join(", "),
+      colourNumber: hasColourService ? colourNumber : "",
+      gender,
+      serviceCategory,
+      stylistName: selectedStylist || "",
+      status: "Waiting",
+      timestamp: serverTimestamp()
+    }).catch(err => console.warn("Firestore background insert notice:", err));
+
+    setCustomerName("");
+    setPhone("");
+    setSelectedServices([]);
+    setColourNumber("");
+    setSelectedStylist("");
+    setIsSubmitting(false);
   };
 
   const updateStatus = async (docId: string, status: TicketStatus) => {
