@@ -1067,7 +1067,15 @@ const App: React.FC = () => {
         updateData.stylistName = stylistsDisplay;
       }
       try {
-        await updateDoc(doc(db, "tickets", completingTicket.docId), updateData);
+        if (completingTicket.docId && !completingTicket.docId.startsWith("temp_")) {
+          await updateDoc(doc(db, "tickets", completingTicket.docId), updateData);
+        } else {
+          const q = query(collection(db, "tickets"), where("customerName", "==", completingTicket.customerName));
+          const snap = await getDocs(q);
+          snap.forEach(async (d) => {
+            await updateDoc(doc(db, "tickets", d.id), updateData);
+          });
+        }
       } catch (err) {
         console.warn("Firestore update notice:", err);
       }
@@ -2810,7 +2818,7 @@ const ReceptionDashboard: React.FC<{
       setColourNumber("");
       setSelectedStylist("");
 
-      // 3. Fast Supabase Insert
+      // 3. Fast Supabase Insert (Optional)
       if (isSupabaseConfigured && supabase) {
         try {
           const { error } = await supabase.from('queue').insert([{
@@ -2826,19 +2834,26 @@ const ReceptionDashboard: React.FC<{
         }
       }
 
-      // 4. Non-blocking background Firestore sync
-      addDoc(collection(db, "tickets"), {
-        id: newId,
-        customerName: newTicket.customerName,
-        phone: clientPhone,
-        serviceType: newTicket.serviceType,
-        colourNumber: newTicket.colourNumber,
-        gender,
-        serviceCategory,
-        stylistName: newTicket.stylistName,
-        status: "Waiting",
-        timestamp: serverTimestamp()
-      }).catch(err => console.warn("Firestore background insert notice:", err));
+      // 4. Firestore sync - await to get real document ID
+      try {
+        const docRef = await addDoc(collection(db, "tickets"), {
+          id: newId,
+          customerName: newTicket.customerName,
+          phone: clientPhone,
+          serviceType: newTicket.serviceType,
+          colourNumber: newTicket.colourNumber,
+          gender,
+          serviceCategory,
+          stylistName: newTicket.stylistName,
+          status: "Waiting",
+          timestamp: serverTimestamp()
+        });
+        
+        // Update local state ticket with the real Firestore docId
+        setTickets(prev => prev.map(t => t.docId === newTicket.docId ? { ...t, docId: docRef.id } : t));
+      } catch (err) {
+        console.warn("Firestore insert notice:", err);
+      }
 
     } catch (err) {
       console.error("Critical handleDeployTicket error:", err);
@@ -2852,7 +2867,18 @@ const ReceptionDashboard: React.FC<{
     setTickets(prev => prev.map(t => (t.docId === docId || t.id === docId) ? { ...t, status } : t));
 
     try {
-      await updateDoc(doc(db, "tickets", docId), { status });
+      if (docId && !docId.startsWith("temp_")) {
+        await updateDoc(doc(db, "tickets", docId), { status });
+      } else {
+        const targetTicket = tickets.find(t => t.docId === docId || t.id === docId);
+        if (targetTicket) {
+          const q = query(collection(db, "tickets"), where("customerName", "==", targetTicket.customerName));
+          const snap = await getDocs(q);
+          snap.forEach(async (d) => {
+            await updateDoc(doc(db, "tickets", d.id), { status });
+          });
+        }
+      }
     } catch (e) {
       console.warn("Firestore status notice:", e);
     }
@@ -2874,7 +2900,18 @@ const ReceptionDashboard: React.FC<{
     setTickets(prev => prev.filter(t => t.docId !== docId && t.id !== docId));
 
     try {
-      await deleteDoc(doc(db, "tickets", docId));
+      if (docId && !docId.startsWith("temp_")) {
+        await deleteDoc(doc(db, "tickets", docId));
+      } else {
+        const targetTicket = tickets.find(t => t.docId === docId || t.id === docId);
+        if (targetTicket) {
+          const q = query(collection(db, "tickets"), where("customerName", "==", targetTicket.customerName));
+          const snap = await getDocs(q);
+          snap.forEach(async (d) => {
+            await deleteDoc(doc(db, "tickets", d.id));
+          });
+        }
+      }
     } catch (e) {
       console.warn("Firestore delete notice:", e);
     }
