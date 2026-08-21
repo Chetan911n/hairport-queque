@@ -2751,7 +2751,8 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
 
   const generateNextId = () => {
     const maxIdNum = tickets.reduce((max, t) => {
-      const num = parseInt(t.id.replace('#', '')) || 0;
+      const idStr = String(t?.id || '');
+      const num = parseInt(idStr.replace('#', ''), 10) || 0;
       return num > max ? num : max;
     }, 0);
     return `#${(maxIdNum + 1).toString().padStart(3, '0')}`;
@@ -2765,16 +2766,13 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
       alert("Please enter client name.");
       return;
     }
-    if (selectedServices.length === 0) {
-      alert("Please select at least one service.");
-      return;
-    }
 
     setIsSubmitting(true);
     
     try {
+      const finalServices = selectedServices.length > 0 ? selectedServices : ["Haircut"];
       const clientPhone = phone.trim() || "N/A";
-      const hasColourService = selectedServices.some(s => 
+      const hasColourService = finalServices.some(s => 
         s.toLowerCase().includes("colour") || 
         s.toLowerCase().includes("highlights") || 
         s.toLowerCase().includes("touch up")
@@ -2782,11 +2780,11 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
       const newId = generateNextId();
 
       const newTicket: Ticket = {
-        docId: `temp_${Date.now()}`,
+        docId: `temp_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
         id: newId,
         customerName: customerName.trim(),
         phone: clientPhone,
-        serviceType: selectedServices.join(", "),
+        serviceType: finalServices.join(", "),
         colourNumber: hasColourService ? colourNumber : "",
         gender,
         serviceCategory,
