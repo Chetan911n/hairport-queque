@@ -1916,47 +1916,6 @@ const ClientHistoryView: React.FC<ClientHistoryViewProps> = ({ tickets, onDelete
             Client Database & Billing Logs
           </h3>
           <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
-            <button
-              onClick={() => setDataLock(!dataLock)}
-              className={`px-3 py-2 text-xs font-sans uppercase font-bold rounded-sm border transition-colors cursor-pointer shrink-0 ${
-                dataLock 
-                  ? 'bg-green-950/40 border-green-700/50 text-green-400 hover:bg-green-900/60' 
-                  : 'bg-red-950/40 border-red-700/50 text-red-400 hover:bg-red-900/60'
-              }`}
-              title="Toggle Auto-Delete Protection Shield"
-            >
-              {dataLock ? '🔒 Protection Shield ON' : '🔓 Deletion Unlocked'}
-            </button>
-            <button
-              onClick={handleExportBackup}
-              className="px-3 py-2 bg-[#D4AF37]/20 border border-[#D4AF37]/40 text-[#D4AF37] text-xs font-sans uppercase font-bold rounded-sm hover:bg-[#D4AF37] hover:text-black transition-colors cursor-pointer shrink-0"
-              title="Export database as JSON backup file to your computer"
-            >
-              📥 Export Backup
-            </button>
-            <label className="px-3 py-2 bg-blue-950/40 border border-blue-800/40 text-blue-400 text-xs font-sans uppercase font-bold rounded-sm hover:bg-blue-600 hover:text-white transition-colors cursor-pointer shrink-0">
-              📤 Import Backup
-              <input type="file" accept=".json" onChange={handleImportBackup} className="hidden" />
-            </label>
-            <button
-              onClick={async () => {
-                if (!window.confirm("Are you sure you want to delete all completed client history?")) return;
-                if (isSupabaseConfigured && supabase) {
-                  try {
-                    await supabase.from('queue').delete().eq('status', 'completed');
-                  } catch (e) {
-                    console.warn("Supabase clear history notice:", e);
-                  }
-                }
-                completedTickets.forEach(t => {
-                  if (onDeleteTicket) onDeleteTicket(t.docId);
-                });
-              }}
-              className="px-3 py-2 bg-red-950/60 border border-red-800 text-red-400 text-xs font-sans uppercase font-bold rounded-sm hover:bg-red-800 hover:text-white transition-colors cursor-pointer shrink-0"
-              title="Delete all completed client history records"
-            >
-              🗑️ Clear History
-            </button>
             <div className="relative w-full md:w-80">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <Search className="h-4 w-4 text-gray-500" />
