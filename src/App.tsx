@@ -2763,69 +2763,80 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
       alert("Please select at least one service.");
       return;
     }
+
     setIsSubmitting(true);
     
-    const clientPhone = phone.trim() || "N/A";
-    const hasColourService = selectedServices.some(s => 
-      s.toLowerCase().includes("colour") || 
-      s.toLowerCase().includes("highlights") || 
-      s.toLowerCase().includes("touch up")
-    );
-    const newId = generateNextId();
+    try {
+      const clientPhone = phone.trim() || "N/A";
+      const hasColourService = selectedServices.some(s => 
+        s.toLowerCase().includes("colour") || 
+        s.toLowerCase().includes("highlights") || 
+        s.toLowerCase().includes("touch up")
+      );
+      const newId = generateNextId();
 
-    const newTicket: Ticket = {
-      docId: `temp_${Date.now()}`,
-      id: newId,
-      customerName: customerName.trim(),
-      phone: clientPhone,
-      serviceType: selectedServices.join(", "),
-      colourNumber: hasColourService ? colourNumber : "",
-      gender,
-      serviceCategory,
-      stylistName: selectedStylist || "",
-      status: "Waiting",
-      timestamp: new Date().toISOString(),
-      price: 0,
-      paymentMethod: "UPI"
-    };
+      const newTicket: Ticket = {
+        docId: `temp_${Date.now()}`,
+        id: newId,
+        customerName: customerName.trim(),
+        phone: clientPhone,
+        serviceType: selectedServices.join(", "),
+        colourNumber: hasColourService ? colourNumber : "",
+        gender,
+        serviceCategory,
+        stylistName: selectedStylist || "",
+        status: "Waiting",
+        timestamp: new Date().toISOString(),
+        price: 0,
+        paymentMethod: "UPI"
+      };
 
-    // Optimistically update local UI state immediately
-    setTickets(prev => [newTicket, ...prev]);
+      // 1. Instantly update local UI state
+      setTickets(prev => [newTicket, ...prev]);
 
-    // Fast Supabase Insert
-    if (isSupabaseConfigured && supabase) {
-      try {
-        await supabase.from('queue').insert([{
-          customer_name: customerName.trim(),
-          service_type: selectedServices.join(", "),
-          stylist_name: selectedStylist || "",
-          status: "waiting"
-        }]);
-      } catch (e) {
-        console.warn("Supabase insert notice:", e);
+      // 2. Clear form fields immediately
+      setCustomerName("");
+      setPhone("");
+      setSelectedServices([]);
+      setColourNumber("");
+      setSelectedStylist("");
+
+      // 3. Fast Supabase Insert
+      if (isSupabaseConfigured && supabase) {
+        try {
+          const { error } = await supabase.from('queue').insert([{
+            customer_name: newTicket.customerName,
+            service_type: newTicket.serviceType,
+            stylist_name: newTicket.stylistName,
+            status: "waiting"
+          }]);
+          if (error) {
+            console.warn("Supabase insert error:", error);
+          }
+        } catch (e) {
+          console.warn("Supabase insert catch notice:", e);
+        }
       }
+
+      // 4. Non-blocking background Firestore sync
+      addDoc(collection(db, "tickets"), {
+        id: newId,
+        customerName: newTicket.customerName,
+        phone: clientPhone,
+        serviceType: newTicket.serviceType,
+        colourNumber: newTicket.colourNumber,
+        gender,
+        serviceCategory,
+        stylistName: newTicket.stylistName,
+        status: "Waiting",
+        timestamp: serverTimestamp()
+      }).catch(err => console.warn("Firestore background insert notice:", err));
+
+    } catch (err) {
+      console.error("Critical handleDeployTicket error:", err);
+    } finally {
+      setIsSubmitting(false);
     }
-
-    // Non-blocking background Firestore sync
-    addDoc(collection(db, "tickets"), {
-      id: newId,
-      customerName: customerName.trim(),
-      phone: clientPhone,
-      serviceType: selectedServices.join(", "),
-      colourNumber: hasColourService ? colourNumber : "",
-      gender,
-      serviceCategory,
-      stylistName: selectedStylist || "",
-      status: "Waiting",
-      timestamp: serverTimestamp()
-    }).catch(err => console.warn("Firestore background insert notice:", err));
-
-    setCustomerName("");
-    setPhone("");
-    setSelectedServices([]);
-    setColourNumber("");
-    setSelectedStylist("");
-    setIsSubmitting(false);
   };
 
   const updateStatus = async (docId: string, status: TicketStatus) => {
