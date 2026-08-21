@@ -320,15 +320,7 @@ const Login: React.FC<{ onLogin: (user: User) => void }> = ({ onLogin }) => {
         className="max-w-md flex flex-col text-left gap-6 z-10 text-white animate-fadeIn pr-0 md:pr-10 border-b md:border-b-0 md:border-r border-[#D4AF37]/20 pb-6 md:pb-0"
       >
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-sm border border-[#D4AF37]/50 bg-[#1A1A1A] flex items-center justify-center shadow-lg">
-            <Scissors className="w-6 h-6 text-[#D4AF37]" />
-          </div>
-          <div>
-            <h1 className="text-3xl sm:text-4xl font-bold tracking-widest font-serif uppercase text-[#D4AF37] drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
-              Hairport
-            </h1>
-            <p className="text-[10px] uppercase tracking-[0.3em] text-[#D4AF37] font-sans font-bold mt-0.5">Premium Grooming</p>
-          </div>
+          <img src="/pn_hairport_logo_light.png" alt="PN HAIRPORT hair n beauty lounge" className="h-16 sm:h-20 w-auto object-contain drop-shadow-xl" />
         </div>
 
         <div className="space-y-4 mt-2">
@@ -1173,15 +1165,7 @@ const App: React.FC = () => {
         <header className="relative z-20 flex flex-col lg:flex-row justify-between items-center px-4 sm:px-8 py-4 sm:py-6 gap-4 sm:gap-6 border-b transition-colors duration-500 bg-black/60 border-[#D4AF37]/30 backdrop-blur-md">
           <div className="flex items-center justify-between w-full lg:w-auto gap-4">
             <div className="flex items-center gap-3 sm:gap-4">
-              <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-sm border transition-colors duration-500 flex items-center justify-center ${isDarkView ? 'border-[#D4AF37]/50 bg-[#1A1A1A]' : 'border-[#111111] bg-[#111111]'}`}>
-                <Scissors className="w-5 h-5 sm:w-6 sm:h-6 text-[#D4AF37]" />
-              </div>
-              <div>
-                <h1 className={`text-2xl sm:text-3xl font-bold tracking-widest font-serif uppercase transition-colors duration-500 ${isDarkView ? 'text-[#D4AF37]' : 'text-[#111111]'}`}>
-                  Hairport
-                </h1>
-                <p className="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-gray-500 font-sans mt-0.5 sm:mt-1">Premium Grooming</p>
-              </div>
+              <img src="/pn_hairport_logo_light.png" alt="PN HAIRPORT hair n beauty lounge" className="h-10 sm:h-12 w-auto object-contain drop-shadow-md" />
 
               {/* Live Date display */}
               <HeaderClock isDarkView={isDarkView} />
