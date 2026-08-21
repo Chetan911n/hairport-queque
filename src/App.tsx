@@ -1316,7 +1316,7 @@ const App: React.FC = () => {
               <StaffAnalyticsDashboard key="analytics" tickets={tickets} />
             )}
             {view === "reception" && (
-              <ReceptionDashboard key="reception" tickets={tickets} onCompleteTicket={setCompletingTicket} onDeleteTicket={handleDeleteTicket} />
+              <ReceptionDashboard key="reception" tickets={tickets} setTickets={setTickets} onCompleteTicket={setCompletingTicket} onDeleteTicket={handleDeleteTicket} />
             )}
             {view === "staff" && user && (
               <StaffLineView key="staff" tickets={tickets} user={user} onCompleteTicket={setCompletingTicket} />
@@ -2643,7 +2643,12 @@ const ExpenseTrackerView: React.FC = () => {
 // ---------------------------------------------------------
 // RECEPTION DASHBOARD COMPONENT
 // ---------------------------------------------------------
-const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticket: Ticket) => void, onDeleteTicket?: (id: string) => void }> = ({ tickets, onCompleteTicket, onDeleteTicket }) => {
+const ReceptionDashboard: React.FC<{ 
+  tickets: Ticket[], 
+  setTickets: React.Dispatch<React.SetStateAction<Ticket[]>>, 
+  onCompleteTicket: (ticket: Ticket) => void, 
+  onDeleteTicket?: (id: string) => void 
+}> = ({ tickets, setTickets, onCompleteTicket, onDeleteTicket }) => {
   const [activeTab, setActiveTab] = useState<"queue" | "history" | "revenue" | "expenses">("queue");
   const [customerName, setCustomerName] = useState("");
   const [phone, setPhone] = useState("");
