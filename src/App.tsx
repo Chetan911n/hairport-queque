@@ -4348,8 +4348,7 @@ const OwnerDashboard: React.FC<OwnerDashboardProps> = ({ tickets }) => {
                   <th className="py-4 font-semibold">Duty Status</th>
                   <th className="py-4 font-semibold">Current Client</th>
                   <th className="py-4 font-semibold text-center">Served Today</th>
-                  <th className="py-4 font-semibold text-center">Earnings Today</th>
-                  <th className="py-4 font-semibold text-right">Total Work Duration</th>
+                  <th className="py-4 font-semibold text-right">Earnings Today</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#2A2A2A]">
@@ -4362,15 +4361,9 @@ const OwnerDashboard: React.FC<OwnerDashboardProps> = ({ tickets }) => {
                     && isCompletedToday(t)
                   );
                   
-                  let completedSecs = 0;
                   let earningsToday = 0;
 
                   completedList.forEach(t => {
-                    if (t.servedAt && t.completedAt) {
-                      const start = t.servedAt.toDate ? t.servedAt.toDate().getTime() : (t.servedAt.seconds * 1000);
-                      const end = t.completedAt.toDate ? t.completedAt.toDate().getTime() : (t.completedAt.seconds * 1000);
-                      completedSecs += Math.max(0, Math.floor((end - start) / 1000));
-                    }
                     if (t.isSplit) {
                       if (t.primaryStylistName === stylist.name) {
                         earningsToday += t.primaryStylistPrice || 0;
@@ -4419,25 +4412,15 @@ const OwnerDashboard: React.FC<OwnerDashboardProps> = ({ tickets }) => {
                       <td className="py-5 text-center font-semibold text-white">
                         {completedList.length}
                       </td>
-                      <td className="py-5 text-center font-semibold text-[#D4AF37]">
+                      <td className="py-5 text-right font-semibold text-[#D4AF37]">
                         ₹{earningsToday}
-                      </td>
-                      <td className="py-5 text-right font-mono text-white">
-                        {activeServingTicket ? (
-                          <div className="flex items-center justify-end gap-1.5 text-amber-400 font-bold">
-                            <span className="w-1.5 h-1.5 bg-amber-400 rounded-full animate-ping"></span>
-                            <LiveStylistTimer servedAt={activeServingTicket.servedAt} baseSeconds={completedSecs} />
-                          </div>
-                        ) : (
-                          formatDuration(completedSecs)
-                        )}
                       </td>
                     </tr>
                   );
                 })}
                 {stylists.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="py-10 text-center text-gray-500 italic">
+                    <td colSpan={5} className="py-10 text-center text-gray-500 italic">
                       No stylists registered in system.
                     </td>
                   </tr>
