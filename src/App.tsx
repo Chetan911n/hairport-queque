@@ -1072,7 +1072,6 @@ const App: React.FC = () => {
           const supPayload: any = {
             status: "completed"
           };
-          if (stylistName) supPayload.stylist_name = stylistName;
 
           if (!isNaN(numericId) && numericId > 0) {
             await supabase.from('queue').update(supPayload).eq('id', numericId);
@@ -2807,7 +2806,6 @@ const ReceptionDashboard: React.FC<{ tickets: Ticket[], onCompleteTicket: (ticke
           const { error } = await supabase.from('queue').insert([{
             customer_name: newTicket.customerName,
             service_type: newTicket.serviceType,
-            stylist_name: newTicket.stylistName,
             status: "waiting"
           }]);
           if (error) {
