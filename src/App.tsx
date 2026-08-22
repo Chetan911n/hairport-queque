@@ -17,7 +17,7 @@ import {
   getDoc
 } from "firebase/firestore";
 import { motion, AnimatePresence } from 'motion/react';
-import { Play, CheckCircle, Trash2, Monitor, Scissors, UserPlus, Phone, Loader2, User, Clock, ChevronRight, Search, X } from 'lucide-react';
+import { Play, CheckCircle, Trash2, Monitor, Scissors, UserPlus, Phone, Loader2, User, Clock, ChevronRight, Search, X, Shield } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from './supabaseClient';
 import { findOrCreateClient } from './services/clientService';
 import { completeTicketAndCreateVisitTransaction } from './services/visitService';
