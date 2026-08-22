@@ -1,0 +1,173 @@
+/* ==========================================================================
+   HERO SECTION STYLES & COLOR SYSTEM
+   Shortcuts Unisex Salon & Academy (Vintage Luxury Aesthetic)
+   ========================================================================== */
+
+:root {
+  /* Core Hero Colors */
+  --hero-bg-dark: #111114;           /* Deep Charcoal / Espresso Black */
+  --hero-bg-overlay: rgba(17, 17, 20, 0.75); /* Ambient Dark Layer */
+  --hero-card-bg: rgba(28, 31, 43, 0.85);   /* Glassmorphic Container */
+  
+  /* Gold Accents & Highlights */
+  --gold-primary: #B58A4E;          /* Vintage Metallic Gold */
+  --gold-hover: #D4AF37;            /* Bright Luxury Gold */
+  --gold-glow: rgba(181, 138, 78, 0.25); /* Subtle Gold Ambient Glow */
+  --gold-border: rgba(181, 138, 78, 0.4); /* 1px Frame Border */
+
+  /* Text Colors */
+  --text-primary: #FFFFFF;          /* High Contrast Pure White */
+  --text-muted: #CBD5E1;            /* Soft Slate Gray */
+  --text-cream: #F6F3EE;            /* Warm Cream Sub-headline */
+}
+
+/* 1. Hero Container & Background */
+.hero-section {
+  position: relative;
+  min-height: 90vh;
+  background-color: var(--hero-bg-dark);
+  background-image: 
+    linear-gradient(var(--hero-bg-overlay), var(--hero-bg-overlay)),
+    url('https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=1920&q=80');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5rem 1rem;
+}
+
+/* 2. Rating & Announcement Pill Badge */
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 1.25rem;
+  border-radius: 9999px;
+  background: rgba(17, 17, 20, 0.8);
+  border: 1px solid var(--gold-border);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 10px 25px -5px var(--gold-glow);
+  margin-bottom: 2rem;
+}
+
+.hero-badge-star {
+  color: var(--gold-primary);
+  font-size: 0.875rem;
+}
+
+.hero-badge-text {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--text-cream);
+}
+
+/* 3. Main Hero Headline */
+.hero-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  margin-bottom: 1.5rem;
+}
+
+.hero-title-accent {
+  background: linear-gradient(135deg, #F3E5AB 0%, #B58A4E 50%, #D4AF37 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-style: italic;
+}
+
+/* 4. Subtitle Paragraph */
+.hero-subtitle {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: clamp(1rem, 2vw, 1.25rem);
+  color: var(--text-muted);
+  max-width: 48rem;
+  margin: 0 auto 2.5rem auto;
+  line-height: 1.7;
+}
+
+/* 5. Primary Gold CTA Button */
+.btn-gold-primary {
+  background-color: var(--gold-primary);
+  color: #111114;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 800;
+  font-size: 0.95rem;
+  padding: 1rem 2.25rem;
+  border-radius: 9999px;
+  border: none;
+  box-shadow: 0 12px 24px -6px var(--gold-glow);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+}
+
+.btn-gold-primary:hover {
+  background-color: var(--gold-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 18px 32px -6px rgba(212, 175, 55, 0.4);
+}
+
+/* 6. Secondary Dark Border Button */
+.btn-dark-bordered {
+  background: rgba(17, 17, 20, 0.6);
+  color: var(--text-primary);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: 1rem 2.25rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(8px);
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+}
+
+.btn-dark-bordered:hover {
+  border-color: var(--gold-primary);
+  color: var(--gold-primary);
+  background: rgba(28, 31, 43, 0.9);
+}
+
+/* 7. Bottom Feature Badges Bar */
+.hero-features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-top: 4rem;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.feature-pill {
+  background: rgba(28, 31, 43, 0.5);
+  border: 1px solid var(--gold-border);
+  padding: 0.875rem 1.25rem;
+  border-radius: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  text-align: left;
+}
+
+.feature-icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.75rem;
+  background: var(--gold-glow);
+  color: var(--gold-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+}

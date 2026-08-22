@@ -1,0 +1,132 @@
+{
+  "business_info": {
+    "name_english": "Shortcuts Unisex Salon & Academy",
+    "name_marathi": "शॉर्टकट्स यूनिसेक्स सैलून & एकेडमी इन नाशिक देवलाली",
+    "short_name": "Shortcuts Unisex Salon",
+    "category": "Hairdresser / Unisex Salon & Hair Academy",
+    "rating": 4.9,
+    "review_count": 437,
+    "rating_breakdown": {
+      "5_star": "Majority (~95%)",
+      "4_star": "Minority",
+      "3_star": "Rare",
+      "2_star": "Rare",
+      "1_star": "Rare"
+    },
+    "lgbtq_friendly": true,
+    "kid_friendly": true,
+    "wheelchair_accessible": true,
+    "gender_neutral_restrooms": true
+  },
+  "contact": {
+    "phone": "+91 95798 50368",
+    "phone_alternate": "095798 50368",
+    "instagram": "@shortcut_unisexsalon",
+    "instagram_url": "https://www.instagram.com/shortcut_unisexsalon/",
+    "google_kgmid": "/g/11w1lm1fyn",
+    "plus_code": "WRFM+QH Belatgavhan, Maharashtra",
+    "google_maps_location": "SHOP NO 5, HARI ANANDVAN, LAMROAD NEAR S.V.K.T. COLLEGE, (BHATIA) LAMROAD, DEVLALI CAMP, Maharashtra 422501"
+  },
+  "address": {
+    "shop_number": "Shop No 5",
+    "building": "Hari Anandvan",
+    "street": "Lam Road (Bhatia Lamroad)",
+    "landmark": "Near S.V.K.T. College",
+    "locality": "Devlali Camp / Deolali Camp",
+    "neighborhood": "Kahan Nagar Society / Belatgavhan",
+    "city": "Nashik",
+    "state": "Maharashtra",
+    "pincode": "422501",
+    "country": "India"
+  },
+  "operating_hours": {
+    "monday_to_sunday": "10:00 AM - 10:00 PM",
+    "status": "Open daily",
+    "closing_time": "10:00 PM",
+    "peak_times": "Saturdays (afternoon & evening)"
+  },
+  "about_from_owner": "Looking for a fresh new look or a moment to unwind? Join us at Shortcuts Unisex Salon for an exclusive hair care event. Discover our luxurious hair spa and oil massage treatments—perfect for relaxing and revitalizing your scalp and hair. Thinking of adding a splash of color or a stylish cut? We’ve got you covered with customized hair coloring options and expert styling. This is your chance to indulge in top-tier grooming, all in a friendly, welcoming environment. Whether you want to boost your confidence or just treat yourself, come see why we’re Nashik’s favorite salon. Book your spot now and let us help you look and feel your best.",
+  "services": [
+    {
+      "category": "Hair Care & Styling",
+      "items": [
+        "Customized Haircuts",
+        "Fade Cut & Precision Styling",
+        "Hair Coloring (Full Head, Highlights, Lowlights, Root Touch-ups)",
+        "Custom Hair Dye",
+        "Hair Straightening & Smoothing Treatments",
+        "Scalp Revitalization"
+      ]
+    },
+    {
+      "category": "Spa & Massage",
+      "items": [
+        "Luxurious Hair Spa",
+        "Relaxing Scalp Oil Massage",
+        "Revitalizing Head Massage"
+      ]
+    },
+    {
+      "category": "Grooming & Beard Care",
+      "items": [
+        "Beard Trim & Shaping",
+        "Beard Styling",
+        "Men's Professional Grooming"
+      ]
+    },
+    {
+      "category": "Academy & Training",
+      "items": [
+        "Hairdressing & Styling Professional Training",
+        "Unisex Grooming Courses"
+      ]
+    }
+  ],
+  "review_highlights": [
+    {
+      "keyword": "polite staff",
+      "count": 16
+    },
+    {
+      "keyword": "hair colour",
+      "count": 4
+    },
+    {
+      "keyword": "head massage",
+      "count": 3
+    },
+    {
+      "keyword": "beard trim",
+      "count": 2
+    }
+  ],
+  "featured_reviews": [
+    {
+      "author": "Inder Mohan Singh",
+      "rating": 5,
+      "date": "2 months ago",
+      "review": "I had an excellent experience at Shortcut Salon. The salon ambiance is outstanding, creating a very comfortable and welcoming atmosphere. The music selection is wonderful and adds to the overall experience.",
+      "owner_response": "Dear Inder Mohan Singh, Thank you so much for your wonderful feedback. We are delighted that you enjoyed our ambiance, music, and professional grooming services in Nashik."
+    },
+    {
+      "author": "Aayush Gaikar",
+      "rating": 5,
+      "date": "4 months ago",
+      "review": "Absolutely amazing experience! The staff was super friendly and professional, and the salon had a very clean and relaxing vibe. The haircut and styling were perfect, and the products they used felt really high quality. Definitely one of the best salon visited..",
+      "owner_response": "Hi Aayush, We're delighted to hear that you had an absolutely amazing experience at our..."
+    },
+    {
+      "author": "Suyash Porje",
+      "rating": 5,
+      "date": "2 months ago",
+      "review": "Absolutely amazing haircut experience! The barber was very professional, friendly, and understood exactly the style I wanted. The fade and finishing were perfect, and the attention to detail was impressive. The salon was clean, comfortable...",
+      "owner_response": "Hello Suyash Porje, Thank you for sharing your wonderful feedback! We’re glad you enjoyed our professional grooming services, attention to detail, and the clean, comfortable..."
+    }
+  ],
+  "nearby_competitors": [
+    {"name": "Thakur Unisex Salon", "rating": 5.0, "reviews": 6, "category": "Hair salon"},
+    {"name": "Razor Cutz Men's Salon", "rating": 4.8, "reviews": 6, "category": "Barber shop"},
+    {"name": "Roshani Hair And Beauty Salon", "rating": 5.0, "reviews": 1, "category": "Hair salon"},
+    {"name": "Khushbu Hair Dressers", "rating": 5.0, "reviews": 1, "category": "Hair salon"}
+  ]
+}
