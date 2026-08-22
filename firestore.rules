@@ -1,32 +1,8 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // Live Operational Queue Tickets
-    match /tickets/{ticketId} {
-      allow read, create, update, delete: if true;
-    }
-
-    // Permanent Client Profiles
-    match /clients/{clientId} {
-      allow read, create, update: if true;
-      allow delete: if false; // Disallow destructive hard deletion; enforce soft archiving
-    }
-
-    // Permanent Immutable Visit Records
-    match /visits/{visitId} {
-      allow read, create, update: if true;
-      allow delete: if false; // Disallow deletion of historical financial & service records
-    }
-
-    // Stylists & Staff
-    match /stylists/{stylistId} {
-      allow read, create, update, delete: if true;
-    }
-
-    // Expense Tracking
-    match /expenses/{expenseId} {
-      allow read, create, update, delete: if true;
+    match /{document=**} {
+      allow read, write: if true;
     }
   }
 }
