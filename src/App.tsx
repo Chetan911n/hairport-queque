@@ -1225,7 +1225,7 @@ const App: React.FC = () => {
                       : isDarkView ? "text-gray-500 hover:text-gray-300" : "text-gray-500 hover:text-gray-800"
                   }`}
                 >
-                  <Monitor className="w-3.5 h-3.5" />
+                  <Shield className="w-3.5 h-3.5" />
                   <span className="hidden xs:inline">OWNER</span>
                 </button>
               )}
@@ -1270,30 +1270,6 @@ const App: React.FC = () => {
                   <span className="hidden xs:inline">QUEUE</span>
                 </button>
               )}
-              {(user?.role === "stylist" || user?.role === "owner_stylist") && (
-                <button
-                  onClick={() => setView("staff")}
-                  className={`flex items-center justify-center gap-1.5 px-3 sm:px-6 py-2.5 rounded-sm text-xs sm:text-sm font-medium transition-all duration-300 cursor-pointer flex-1 lg:flex-none ${
-                    view === "staff" 
-                      ? "bg-[#2A2A2A] text-[#D4AF37] shadow-[0_2px_10px_rgba(0,0,0,0.5)] border-b border-[#D4AF37]/50" 
-                      : isDarkView ? "text-gray-500 hover:text-gray-300" : "text-gray-500 hover:text-gray-800"
-                  }`}
-                >
-                  <Clock className="w-3.5 h-3.5" />
-                  <span className="hidden xs:inline">STAFF</span>
-                </button>
-              )}
-              <button
-                onClick={() => setView("tv")}
-                className={`flex items-center justify-center gap-1.5 px-3 sm:px-6 py-2.5 rounded-sm text-xs sm:text-sm font-medium transition-all duration-300 cursor-pointer flex-1 lg:flex-none ${
-                  view === "tv" 
-                    ? "bg-[#2A2A2A] text-[#D4AF37] shadow-[0_2px_10px_rgba(0,0,0,0.5)] border-b border-[#D4AF37]/50" 
-                    : isDarkView ? "text-gray-500 hover:text-gray-300" : "text-gray-500 hover:text-gray-800"
-                }`}
-              >
-                <Monitor className="w-3.5 h-3.5" />
-                <span className="hidden xs:inline">TV</span>
-              </button>
             </div>
             
             {/* Desktop Sign Out */}
