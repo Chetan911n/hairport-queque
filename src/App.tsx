@@ -217,11 +217,6 @@ const Login: React.FC<{ onLogin: (user: User) => void }> = ({ onLogin }) => {
     const lowerInput = cleanInput.toLowerCase();
 
     // Built-in instant login accounts (avoids network delays & Firestore security rule blocks)
-    if (lowerInput === "tv") {
-      onLogin({ username: "tv", role: "tv", name: "TV Display" });
-      return;
-    }
-
     if (lowerInput === "chetan" || lowerInput === "dev" || lowerInput === "developer") {
       onLogin({ username: lowerInput, role: "developer", name: "Chetan (Developer)" });
       return;
@@ -1317,18 +1312,9 @@ const App: React.FC = () => {
 
       {/* Main Content Area */}
       <main className={`relative z-10 flex-1 flex flex-col ${view === 'tv' ? '' : 'p-6 md:p-10'}`}>
-        {!user && view !== 'tv' ? (
+        {!user ? (
           <div className="flex-1 flex flex-col relative">
             <Login onLogin={setUser} />
-            <div className="absolute top-0 right-4 z-30">
-              <button 
-                onClick={() => setView('tv')}
-                className="flex items-center gap-2 px-4 py-2 rounded-sm text-xs font-sans tracking-widest uppercase text-gray-400 hover:text-[#D4AF37] transition-colors cursor-pointer"
-              >
-                <Monitor className="w-4 h-4" />
-                Launch TV Display
-              </button>
-            </div>
           </div>
         ) : loading ? (
           <div className="flex flex-col items-center justify-center flex-1 gap-4">
@@ -1348,14 +1334,6 @@ const App: React.FC = () => {
             )}
             {view === "staff" && user && (
               <StaffLineView key="staff" tickets={tickets} user={user} onCompleteTicket={setCompletingTicket} />
-            )}
-            {view === "tv" && (
-              <TVDisplay 
-                key="tv" 
-                tickets={tickets} 
-                onExit={user?.role === 'tv' ? undefined : () => setView(user ? ((user.role === 'owner' || user.role === 'owner_stylist') ? 'owner' : (user.role === 'stylist' ? 'staff' : 'reception')) : 'reception')} 
-                onSignOut={user?.role === 'tv' ? () => setUser(null) : undefined}
-              />
             )}
           </AnimatePresence>
         )}
@@ -1614,84 +1592,6 @@ const RevenueAnalyticsView: React.FC<RevenueAnalyticsViewProps> = ({ tickets }) 
             </span>
           </div>
         </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-        
-        <div className="bg-black/60 border border-[#D4AF37]/30 p-8 rounded-sm shadow-2xl flex flex-col gap-6 backdrop-blur-md">
-          <div>
-            <h3 className="text-xl font-serif uppercase tracking-wider text-[#D4AF37] mb-1">
-              Daily Income Overview
-            </h3>
-            <p className="text-xs text-gray-400 font-sans uppercase tracking-widest">Last 7 Days of Business Operations</p>
-          </div>
-
-          <div className="flex items-end justify-between h-64 pt-8 pb-2 px-4 bg-[#1A1A1A] border border-[#2A2A2A] rounded-sm relative">
-            <div className="absolute inset-y-8 left-0 right-0 flex flex-col justify-between pointer-events-none">
-              <div className="border-b border-[#2A2A2A] w-full"></div>
-              <div className="border-b border-[#2A2A2A] w-full"></div>
-              <div className="border-b border-[#2A2A2A] w-full"></div>
-            </div>
-
-            {dailyChartData.map((item, idx) => {
-              const pct = (item.value / maxDaily) * 100;
-              return (
-                <div key={idx} className="flex flex-col items-center flex-1 group relative z-10 font-sans">
-                  <div className="absolute bottom-full mb-2 opacity-0 group-hover:opacity-100 transition-opacity bg-black border border-[#D4AF37]/50 text-white text-xs px-2.5 py-1.5 rounded-sm shadow-md font-mono z-30 pointer-events-none">
-                    ₹{item.value.toFixed(2)}
-                  </div>
-                  <div 
-                    style={{ height: `${Math.min(100, Math.max(4, pct))}%` }}
-                    className={`w-8 sm:w-10 transition-all duration-500 rounded-t-sm ${
-                      item.value > 0 ? 'bg-gradient-to-t from-[#C5A059] to-[#D4AF37] hover:brightness-110 shadow-sm' : 'bg-gray-800'
-                    }`}
-                  ></div>
-                  <span className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold mt-2.5 font-sans">
-                    {item.label}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        <div className="bg-black/60 border border-[#D4AF37]/30 p-8 rounded-sm shadow-2xl flex flex-col gap-6 backdrop-blur-md">
-          <div>
-            <h3 className="text-xl font-serif uppercase tracking-wider text-[#D4AF37] mb-1">
-              Monthly Trend Comparison
-            </h3>
-            <p className="text-xs text-gray-400 font-sans uppercase tracking-widest">Last 6 Months of Revenue Flow</p>
-          </div>
-
-          <div className="flex items-end justify-between h-64 pt-8 pb-2 px-4 bg-[#1A1A1A] border border-[#2A2A2A] rounded-sm relative">
-            <div className="absolute inset-y-8 left-0 right-0 flex flex-col justify-between pointer-events-none">
-              <div className="border-b border-[#2A2A2A] w-full"></div>
-              <div className="border-b border-[#2A2A2A] w-full"></div>
-              <div className="border-b border-[#2A2A2A] w-full"></div>
-            </div>
-
-            {monthlyChartData.map((item, idx) => {
-              const pct = (item.value / maxMonthly) * 100;
-              return (
-                <div key={idx} className="flex flex-col items-center flex-1 group relative z-10 font-sans">
-                  <div className="absolute bottom-full mb-2 opacity-0 group-hover:opacity-100 transition-opacity bg-[#111111] text-white text-xs px-2.5 py-1.5 rounded-sm shadow-md font-mono z-30 pointer-events-none">
-                    ₹{item.value.toFixed(2)}
-                  </div>
-                  <div 
-                    style={{ height: `${Math.min(100, Math.max(4, pct))}%` }}
-                    className={`w-10 sm:w-12 transition-all duration-500 rounded-t-sm ${
-                      item.value > 0 ? 'bg-gradient-to-t from-[#C5A059] to-[#D4AF37] hover:brightness-110 shadow-sm' : 'bg-gray-200'
-                    }`}
-                  ></div>
-                  <span className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold mt-2.5 font-sans">
-                    {item.label}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
       </div>
     </div>
   );
