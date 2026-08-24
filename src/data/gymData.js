@@ -89,13 +89,16 @@ export const reviewsList = [
 ];
 
 export const galleryPhotos = [
-  { url: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=800&q=80", category: "Strength" },
-  { url: "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&w=800&q=80", category: "Strength" },
-  { url: "https://images.unsplash.com/photo-1538805060514-97d9cc17730c?auto=format&fit=crop&w=800&q=80", category: "Cardio" },
-  { url: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=800&q=80", category: "Coaching" },
-  { url: "https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=800&q=80", category: "Zumba" },
-  { url: "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80", category: "Steam Spa" },
-  { url: "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=800&q=80", category: "Strength" },
-  { url: "https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?auto=format&fit=crop&w=800&q=80", category: "Cardio" },
-  { url: "https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?auto=format&fit=crop&w=800&q=80", category: "Coaching" }
+  { url: "/photos/gym_photo_1.jpg", category: "Strength" },
+  { url: "/photos/gym_photo_2.jpg", category: "Strength" },
+  { url: "/photos/gym_photo_3.jpg", category: "Cardio" },
+  { url: "/photos/gym_photo_4.jpg", category: "Coaching" },
+  { url: "/photos/gym_photo_5.jpg", category: "Zumba" },
+  { url: "/photos/gym_photo_6.jpg", category: "Steam Spa" },
+  { url: "/photos/gym_photo_7.jpg", category: "Strength" },
+  { url: "/photos/gym_photo_8.jpg", category: "Cardio" },
+  { url: "/photos/gym_photo_9.jpg", category: "Coaching" },
+  { url: "/photos/gym_photo_10.jpg", category: "Strength" },
+  { url: "/photos/gym_photo_11.jpg", category: "Cardio" },
+  { url: "/photos/gym_photo_12.jpg", category: "Steam Spa" }
 ];
