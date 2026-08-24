@@ -10,6 +10,7 @@ import Reviews from './components/Reviews';
 import ContactMap from './components/ContactMap';
 import Footer from './components/Footer';
 import BookingModal from './components/BookingModal';
+import Equipment from './components/Equipment';
 
 export default function App() {
   const [trialModalOpen, setTrialModalOpen] = useState(false);
@@ -22,6 +23,7 @@ export default function App() {
         <Hero onOpenTrialModal={() => setTrialModalOpen(true)} />
         <About />
         <Programs onOpenTrialModal={() => setTrialModalOpen(true)} />
+        <Equipment />
         <ShuttleBanner />
         <Gallery />
         <Reviews />

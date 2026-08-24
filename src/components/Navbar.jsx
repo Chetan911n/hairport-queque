@@ -16,6 +16,7 @@ export default function Navbar({ onOpenTrialModal }) {
 
   const navLinks = [
     { name: 'Programs', href: '#programs' },
+    { name: 'Equipment', href: '#equipment' },
     { name: 'Free Shuttle', href: '#shuttle' },
     { name: 'Gallery', href: '#gallery' },
     { name: 'About', href: '#about' },
