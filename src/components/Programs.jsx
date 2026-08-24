@@ -55,7 +55,7 @@ export default function Programs({ onOpenTrialModal }) {
                   onClick={onOpenTrialModal}
                   className="w-full py-3.5 rounded-lg border border-[#d4af37]/40 hover:bg-[#d4af37] hover:text-[#0d0e12] text-[#f3d266] font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2"
                 >
-                  Claim Free Trial Pass
+                  Enquire Membership Rate
                   <ArrowRight className="w-4 h-4" />
                 </button>
               </div>
