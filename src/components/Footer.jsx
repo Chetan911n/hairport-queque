@@ -10,14 +10,16 @@ export default function Footer() {
           {/* Brand */}
           <div className="md:col-span-1 space-y-3">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full border-2 border-[#d4af37] bg-[#d4af37]/10 flex items-center justify-center font-extrabold text-[#f3d266] text-sm">
-                M²
-              </div>
+              <img
+                src="/logo.png"
+                alt="M Square Fitness Logo"
+                className="h-10 w-auto object-contain drop-shadow-[0_0_10px_rgba(255,85,0,0.5)]"
+              />
               <div>
                 <strong className="block text-white text-sm tracking-widest font-extrabold">
                   M SQUARE
                 </strong>
-                <small className="block text-[#d4af37] text-[8px] tracking-wider uppercase font-semibold">
+                <small className="block text-[#ff5500] text-[8px] tracking-wider uppercase font-bold">
                   Fitness & Wellness Club
                 </small>
               </div>

@@ -2,16 +2,16 @@
 
 @layer base {
   :root {
-    --ink: #0d0e12;
-    --gold: #d4af37;
-    --gold-glow: #f3d266;
-    --dark-surface: #14161f;
+    --ink: #0b0c10;
+    --brand-orange: #ff5500;
+    --brand-orange-glow: #ff7722;
+    --dark-surface: #141620;
   }
   
   html {
     scroll-behavior: smooth;
     font-family: 'DM Sans', system-ui, sans-serif;
-    background-color: #0d0e12;
+    background-color: #0b0c10;
     color: #f4f2eb;
   }
 
@@ -21,37 +21,41 @@
   }
 }
 
-/* Custom Glassmorphism & Gold Metallic Effects */
+/* Custom Glassmorphism & Electric Orange Brand Accents */
 .glass-card {
-  background: linear-gradient(135deg, rgba(20, 22, 31, 0.85), rgba(13, 14, 18, 0.95));
+  background: linear-gradient(135deg, rgba(20, 22, 32, 0.9), rgba(11, 12, 16, 0.95));
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(212, 175, 55, 0.25);
-  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 85, 0, 0.3);
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.7);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .glass-card:hover {
   transform: translateY(-4px);
-  border-color: rgba(212, 175, 55, 0.7);
-  box-shadow: 0 14px 35px -5px rgba(212, 175, 55, 0.25);
+  border-color: rgba(255, 85, 0, 0.8);
+  box-shadow: 0 14px 35px -5px rgba(255, 85, 0, 0.35);
+}
+
+.text-[#d4af37], .text-[#f3d266] {
+  color: #ff5500 !important;
 }
 
 .text-gold-gradient {
-  background: linear-gradient(135deg, #fff 0%, #f3d266 50%, #d4af37 100%);
+  background: linear-gradient(135deg, #fff 0%, #ff7722 50%, #ff5500 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .gold-glow-btn {
-  background: linear-gradient(135deg, #d4af37 0%, #b89628 100%);
-  color: #0d0e12;
-  font-weight: 700;
-  box-shadow: 0 4px 20px rgba(212, 175, 55, 0.35);
+  background: linear-gradient(135deg, #ff5500 0%, #e04400 100%);
+  color: #ffffff;
+  font-weight: 800;
+  box-shadow: 0 4px 22px rgba(255, 85, 0, 0.45);
   transition: all 0.3s ease;
 }
 
 .gold-glow-btn:hover {
-  background: linear-gradient(135deg, #f3d266 0%, #d4af37 100%);
-  box-shadow: 0 6px 28px rgba(212, 175, 55, 0.55);
+  background: linear-gradient(135deg, #ff7722 0%, #ff5500 100%);
+  box-shadow: 0 6px 30px rgba(255, 85, 0, 0.65);
   transform: translateY(-2px);
 }

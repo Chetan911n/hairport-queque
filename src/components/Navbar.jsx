@@ -35,14 +35,16 @@ export default function Navbar({ onOpenTrialModal }) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
         {/* Brand Logo */}
         <a href="#top" className="flex items-center gap-3 group">
-          <div className="w-10 h-10 rounded-full border-2 border-[#d4af37] bg-[#d4af37]/10 flex items-center justify-center font-extrabold text-[#f3d266] text-base group-hover:scale-105 transition-transform">
-            M²
-          </div>
+          <img
+            src="/logo.png"
+            alt="M Square Fitness Logo"
+            className="h-11 w-auto object-contain group-hover:scale-105 transition-transform drop-shadow-[0_0_12px_rgba(255,85,0,0.5)]"
+          />
           <div>
             <strong className="block text-white text-base tracking-widest font-extrabold">
               M SQUARE
             </strong>
-            <small className="block text-[#d4af37] text-[9px] tracking-wider uppercase font-semibold">
+            <small className="block text-[#ff5500] text-[9px] tracking-wider uppercase font-bold">
               Fitness & Wellness Club
             </small>
           </div>
