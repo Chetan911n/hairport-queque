@@ -20,7 +20,6 @@ export default function App() {
       
       <main id="top">
         <Hero onOpenTrialModal={() => setTrialModalOpen(true)} />
-        <TrustStrip />
         <About />
         <Programs onOpenTrialModal={() => setTrialModalOpen(true)} />
         <ShuttleBanner />

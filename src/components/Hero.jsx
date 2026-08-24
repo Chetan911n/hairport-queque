@@ -50,18 +50,6 @@ export default function Hero({ onOpenTrialModal }) {
               Explore Programs
             </a>
           </div>
-
-          {/* Rating Badge */}
-          <div className="flex items-center gap-4 text-sm text-gray-300">
-            <div className="flex items-center gap-1 text-[#f3d266] font-bold">
-              <Star className="w-5 h-5 fill-[#f3d266]" />
-              <span>{gymDetails.googleRating}</span>
-            </div>
-            <span className="w-1 h-1 rounded-full bg-gray-500" />
-            <span className="text-gray-300">
-              <strong className="text-white">{gymDetails.reviewCount}+</strong> Verified Google Reviews
-            </span>
-          </div>
         </div>
       </div>
     </section>
