@@ -40,7 +40,7 @@ export default function Hero({ onOpenTrialModal }) {
               onClick={onOpenTrialModal}
               className="gold-glow-btn px-7 py-4 rounded-md font-bold uppercase tracking-wider text-xs flex items-center gap-2"
             >
-              Claim Free Trial Pass
+              Enquire Now
               <ChevronRight className="w-4 h-4" />
             </button>
             <a

@@ -78,7 +78,7 @@ export default function Navbar({ onOpenTrialModal }) {
             onClick={onOpenTrialModal}
             className="gold-glow-btn text-xs px-5 py-2.5 rounded-md font-bold uppercase tracking-wider"
           >
-            Free Trial Pass
+            Enquire Now
           </button>
         </div>
 
