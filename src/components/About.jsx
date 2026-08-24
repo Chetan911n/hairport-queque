@@ -1,7 +1,9 @@
 import React from 'react';
-import { CheckCircle2, Zap, ArrowRight } from 'lucide-react';
+import { CheckCircle2, Zap, ArrowRight, Play } from 'lucide-react';
 
 export default function About() {
+  const officialVideoUrl = "https://www.google.com/search?q=M+Square+fitness+-+Premium+Fitness+Centre+in+Nashik#sv=CAESzQEKuQEStgEKd0FKaVQ0dEtMeDFiVzlpN0xRVFFmT0MxZ0cyc09FNjRMdlNHRU9idFMxZzdfd3hZdmV2SFA3bEwyNmRGNzFYMC00dlVhSjVOdWdPaFcycFpkckF5S1d3MWNGSzhuQ3JnSEhRYjV3S3gxUGFWRGZWX2lQUThRRzU4EhdfR2VNYXNfQk52eVJzZU1QaDdPSi1RdxoiQURzcjlmVFJOZnlwdWFqR21oVGpGTTd1cVp4OTVOQS16URIEODEwNRoBMyoAMAA4AUAAGAAgn-_AugE6AEoCEAI&lpg=cid:CgIgARICCAQ%3D,ik:CAoSF0NJSE0wb2dLRUlDQWdJRFpvcW5YeXdF";
+
   return (
     <section id="about" className="py-20 bg-[#0b0c10] text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -62,13 +64,24 @@ export default function About() {
               ))}
             </div>
 
-            <a
-              href="#plans"
-              className="gold-glow-btn px-7 py-4 rounded-lg font-bold text-xs uppercase tracking-wider inline-flex items-center gap-2"
-            >
-              Explore Membership Packages
-              <ArrowRight className="w-4 h-4" />
-            </a>
+            <div className="flex flex-wrap items-center gap-4">
+              <a
+                href="#plans"
+                className="gold-glow-btn px-7 py-4 rounded-lg font-bold text-xs uppercase tracking-wider inline-flex items-center gap-2"
+              >
+                Explore Membership Packages
+                <ArrowRight className="w-4 h-4" />
+              </a>
+              <a
+                href={officialVideoUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-6 py-4 rounded-lg border border-[#ff5500]/50 text-white hover:bg-[#ff5500] hover:text-white transition-all font-bold uppercase tracking-wider text-xs inline-flex items-center gap-2"
+              >
+                <Play className="w-4 h-4 fill-white" />
+                Watch Official Gym Video
+              </a>
+            </div>
           </div>
         </div>
       </div>
