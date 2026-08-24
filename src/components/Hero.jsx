@@ -8,9 +8,9 @@ export default function Hero({ onOpenTrialModal }) {
       {/* Background Image with Dark Gradient Overlay */}
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat z-0"
-        style={{ backgroundImage: `url('https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=2200&q=85')` }}
+        style={{ backgroundImage: `url('/hero_bg.jpg')` }}
       >
-        <div className="absolute inset-0 bg-gradient-to-r from-[#0d0e12] via-[#0d0e12]/80 to-[#0d0e12]/60 z-10" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#0b0c10] via-[#0b0c10]/80 to-[#0b0c10]/50 z-10" />
       </div>
 
       <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
