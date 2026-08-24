@@ -1,7 +1,7 @@
 export const gymDetails = {
   name: "M Square Fitness & Wellness Club",
   brandTitle: "Msquare Fitness & Wellness Club®️",
-  tagline: "Nashik's Premier Fitness Centre & Wellness Club",
+  tagline: "Elite Performance Meets High-End Recovery",
   googleRating: 4.4,
   reviewCount: 52,
   phone: "+91 77750 77653",
@@ -15,6 +15,126 @@ export const gymDetails = {
   instagram: "https://www.instagram.com/msquarefitnessclub/",
   facebook: "https://www.facebook.com/100091178355488"
 };
+
+export const trustBadges = [
+  {
+    icon: "Star",
+    val: "4.4",
+    title: "Google Rating",
+    sub: "★★★★★ (52 Verified Reviews)"
+  },
+  {
+    icon: "Bus",
+    val: "FREE",
+    title: "Pickup & Drop",
+    sub: "1st Gym in Nashik"
+  },
+  {
+    icon: "Sparkles",
+    val: "Sauna",
+    title: "& Steam Spa",
+    sub: "Muscle Recovery Therapy"
+  },
+  {
+    icon: "MapPin",
+    val: "Devlali",
+    title: "Camp, Nashik",
+    sub: "Mande's Mango Tree"
+  }
+];
+
+export const membershipPlans = [
+  {
+    id: "monthly",
+    title: "1 Month Starter",
+    duration: "1 Month",
+    popular: false,
+    features: [
+      "Full Gym Strength & Free Weights Access",
+      "Commercial Cardio Suite Access",
+      "Locker & Shower Facility",
+      "1-on-1 Fitness Assessment"
+    ],
+    cta: "Enquire Plan"
+  },
+  {
+    id: "quarterly",
+    title: "3 Month Transformation",
+    duration: "3 Months",
+    popular: true,
+    features: [
+      "Full Gym & Cardio Suite Access",
+      "Sauna & Hot Steam Spa Sessions",
+      "FREE Pickup & Drop Shuttle Service",
+      "Personal Workout & Diet Blueprint",
+      "Zumba & Group Fitness Classes"
+    ],
+    cta: "Most Popular — Enquire"
+  },
+  {
+    id: "half-yearly",
+    title: "6 Month Athletic",
+    duration: "6 Months",
+    popular: false,
+    features: [
+      "All 3-Month Features Included",
+      "Unlimited Sauna & Steam Spa Therapy",
+      "Priority Pickup & Drop Shuttle Pass",
+      "Monthly Body Composition Tracking",
+      "1-on-1 Personal Trainer Consultation"
+    ],
+    cta: "Enquire Plan"
+  },
+  {
+    id: "annual",
+    title: "1 Year All-Access VIP",
+    duration: "12 Months",
+    popular: false,
+    features: [
+      "Unlimited Gym, Cardio & Steam Spa",
+      "VIP Shuttle Service Across Devlali",
+      "Custom Diet & Nutrition Planning",
+      "Guest Passes for Family Members",
+      "Exclusive Gym Merch & Towel Service"
+    ],
+    cta: "VIP Membership — Enquire"
+  }
+];
+
+export const exerciseGuides = [
+  {
+    title: "Barbell Back Squat",
+    category: "Lower Body",
+    target: "Quadriceps & Glutes",
+    tip: "Keep chest proud, break at hips, and drive up through heels with core engaged.",
+    image: "/photos/m_square_photo_1.jpg",
+    fallback: "https://images.unsplash.com/photo-1574680096145-d05b474e2155?auto=format&fit=crop&w=800&q=80"
+  },
+  {
+    title: "Heavy Cable Lat Pulldown",
+    category: "Upper Body",
+    target: "Lats & Upper Back",
+    tip: "Drive elbows down to side ribs, squeeze shoulder blades, and control the negative.",
+    image: "/photos/m_square_photo_2.jpg",
+    fallback: "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&w=800&q=80"
+  },
+  {
+    title: "Dumbbell Incline Bench Press",
+    category: "Chest & Shoulders",
+    target: "Upper Pectorals & Triceps",
+    tip: "Set incline to 30 degrees, lower dumbbells steadily to chest level, and press upward.",
+    image: "/photos/m_square_photo_4.jpg",
+    fallback: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=800&q=80"
+  },
+  {
+    title: "High-Intensity Treadmill Sprints",
+    category: "Cardio & Stamina",
+    target: "Cardiovascular Endurance",
+    tip: "Maintain upright posture, land midfoot, and alternate 30s sprint with 60s recovery walk.",
+    image: "/photos/m_square_photo_3.jpg",
+    fallback: "https://images.unsplash.com/photo-1538805060514-97d9cc17730c?auto=format&fit=crop&w=800&q=80"
+  }
+];
 
 export const verifiedRates = [
   {

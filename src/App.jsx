@@ -11,19 +11,23 @@ import ContactMap from './components/ContactMap';
 import Footer from './components/Footer';
 import BookingModal from './components/BookingModal';
 import Equipment from './components/Equipment';
+import MembershipPlans from './components/MembershipPlans';
+import ExerciseGuide from './components/ExerciseGuide';
 
 export default function App() {
   const [trialModalOpen, setTrialModalOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#0d0e12] text-white selection:bg-[#d4af37] selection:text-[#0d0e12]">
+    <div className="min-h-screen bg-[#0b0c10] text-white selection:bg-[#ff5500] selection:text-[#0b0c10]">
       <Navbar onOpenTrialModal={() => setTrialModalOpen(true)} />
       
       <main id="top">
         <Hero onOpenTrialModal={() => setTrialModalOpen(true)} />
         <About />
         <Programs onOpenTrialModal={() => setTrialModalOpen(true)} />
+        <MembershipPlans onOpenTrialModal={() => setTrialModalOpen(true)} />
         <Equipment />
+        <ExerciseGuide />
         <ShuttleBanner />
         <Gallery />
         <Reviews />
