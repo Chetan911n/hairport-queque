@@ -13,6 +13,7 @@ import BookingModal from './components/BookingModal';
 import Equipment from './components/Equipment';
 import MembershipPlans from './components/MembershipPlans';
 import ExerciseGuide from './components/ExerciseGuide';
+import QuotesBanner from './components/QuotesBanner';
 
 export default function App() {
   const [trialModalOpen, setTrialModalOpen] = useState(false);
@@ -24,6 +25,7 @@ export default function App() {
       <main id="top">
         <Hero onOpenTrialModal={() => setTrialModalOpen(true)} />
         <About />
+        <QuotesBanner />
         <Programs onOpenTrialModal={() => setTrialModalOpen(true)} />
         <MembershipPlans onOpenTrialModal={() => setTrialModalOpen(true)} />
         <Equipment />
