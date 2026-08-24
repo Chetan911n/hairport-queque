@@ -11,6 +11,7 @@ export const gymDetails = {
   address: "Mandes mangotree, Kothule Mala, Devlali, Maharashtra 422501",
   landmark: "Near Mande's Mango Tree & Mahalaxmi Mandir Road Naka No. 6",
   hours: "Open Daily 6:00 AM — 10:00 PM",
+  peakHours: "5:00 PM – 10:00 PM",
   instagram: "https://www.instagram.com/msquarefitnessclub/",
   facebook: "https://www.facebook.com/100091178355488"
 };
@@ -42,54 +43,60 @@ export const trustBadges = [
   }
 ];
 
-export const programsList = [
+export const verifiedRates = [
   {
-    id: "strength",
-    category: "Strength & Conditioning",
-    title: "Heavy Gym Training",
-    desc: "Plate-loaded machinery, dumbbell racks, squat stations, and precision strength equipment.",
+    id: "gym-membership",
+    category: "Full Gym Access",
+    title: "Classic Gym Membership",
+    price: "₹1,500 / mo",
+    desc: "Full access to heavy strength machinery, plate-loaded equipment, dumbbell racks & cardio zone.",
     image: "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&w=900&q=80",
     tag: "Popular"
   },
   {
-    id: "cardio",
-    category: "Cardio & Endurance",
-    title: "Cardio Zone",
-    desc: "Motorized treadmills, cross trainers, spin bikes, and fat-burn stamina sessions.",
-    image: "https://images.unsplash.com/photo-1538805060514-97d9cc17730c?auto=format&fit=crop&w=900&q=80",
-    tag: "High Energy"
-  },
-  {
-    id: "coaching",
+    id: "personal-training",
     category: "1-on-1 Coaching",
-    title: "Personal Training",
-    desc: "Certified trainers creating custom workout blueprints & nutrition counseling for rapid results.",
+    title: "Personal Training Blueprint",
+    price: "₹3,500 / mo",
+    desc: "Dedicated certified trainer, 1-on-1 workout supervision, body composition tracking & custom diet plan.",
     image: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=900&q=80",
-    tag: "Results Guaranteed"
+    tag: "Best Results"
   },
   {
-    id: "zumba",
-    category: "Group Fitness",
-    title: "Zumba & Aerobics",
-    desc: "High-energy group dance workouts, endurance drills, and fun fat-loss classes.",
-    image: "https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=900&q=80",
-    tag: "Group Fun"
-  },
-  {
-    id: "sauna",
-    category: "Recovery & Spa",
-    title: "Sauna & Steam Bath",
-    desc: "Rejuvenating hot steam therapy to soothe sore muscles, detoxify, and accelerate recovery.",
+    id: "steam-sauna",
+    category: "Recovery Therapy",
+    title: "Sauna & Steam Bath Pass",
+    price: "₹500 / mo",
+    desc: "Rejuvenating hot steam therapy sessions to soothe sore muscles, detoxify & accelerate muscle recovery.",
     image: "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=900&q=80",
-    tag: "Exclusive Perk"
+    tag: "Wellness"
   },
   {
-    id: "yoga",
+    id: "zumba-aerobics",
+    category: "Group Fitness",
+    title: "Zumba & Dance Aerobics",
+    price: "₹1,200 / mo",
+    desc: "High-energy group dance workouts, stamina drills, and fun fat-loss group classes.",
+    image: "https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=900&q=80",
+    tag: "Group Energy"
+  },
+  {
+    id: "yoga-wellness",
     category: "Mind & Body",
-    title: "Yoga & Meditation",
-    desc: "Flexibility training, core stability, stress reduction, and holistic wellness sessions.",
+    title: "Yoga & Meditation Pass",
+    price: "₹1,000 / mo",
+    desc: "Flexibility training, core stability, pranayam breathing, and stress reduction sessions.",
     image: "https://images.unsplash.com/photo-1545205597-3d9d02c29597?auto=format&fit=crop&w=900&q=80",
     tag: "Holistic"
+  },
+  {
+    id: "free-shuttle",
+    category: "Exclusive Perk",
+    title: "FREE Pickup & Drop Shuttle",
+    price: "Included FREE",
+    desc: "Complimentary shuttle service across Devlali Camp & Nashik Road routes for all active gym members.",
+    image: "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=900&q=80",
+    tag: "Nashik #1"
   }
 ];
 
