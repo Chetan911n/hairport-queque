@@ -1,0 +1,60 @@
+{
+  "business_info": {
+    "name": "M Square Fitness Club (M Square Gym)",
+    "instagram_handle": "@msquarefitnessclub",
+    "instagram_url": "https://www.instagram.com/msquarefitnessclub/",
+    "category": "Gym / Fitness Center / Personal Training Studio",
+    "locality": "Deolali Camp (Devlali)",
+    "city": "Nashik",
+    "state": "Maharashtra",
+    "pincode": "422001"
+  },
+  "address": {
+    "primary_address": "Opposite Naka No. 6, Mahalaxmi Road, Deolali Camp, Nashik, Maharashtra 422001",
+    "alternate_landmark": "Kothule Mala, Deolali Camp"
+  },
+  "offerings_and_facilities": [
+    {
+      "category": "Gym & Strength Training",
+      "features": [
+        "Heavy Strength & Bodybuilding Machines",
+        "Free Weights & Dumbbell Rack",
+        "Squat Racks, Bench Press & Cable Crossover",
+        "Functional Fitness & Crossfit Area"
+      ]
+    },
+    {
+      "category": "Cardio & Fitness Zone",
+      "features": [
+        "Motorized Treadmills",
+        "Elliptical Cross Trainers",
+        "Spinning Bikes",
+        "Stamina & Endurance Workouts"
+      ]
+    },
+    {
+      "category": "Group Fitness Classes",
+      "features": [
+        "Zumba & Aerobics Dance Classes",
+        "Yoga & Meditation Sessions",
+        "Pranayam & Flexibility Training"
+      ]
+    },
+    {
+      "category": "Personal Training & Diet",
+      "features": [
+        "1-on-1 Certified Personal Training",
+        "Custom Weight Loss & Muscle Gain Programs",
+        "Personalized Meal & Nutrition Diet Plans"
+      ]
+    }
+  ],
+  "amenities": [
+    "Changing Rooms",
+    "Personal Lockers",
+    "High-energy Sound System",
+    "Clean & Sanitized Workout Floor",
+    "Drinking Water Facility",
+    "Two-wheeler Parking"
+  ]
+}
