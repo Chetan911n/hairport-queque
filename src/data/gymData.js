@@ -22,7 +22,8 @@ export const verifiedRates = [
     category: "Full Gym Access",
     title: "Classic Gym Training",
     desc: "Full access to heavy strength machinery, plate-loaded equipment, dumbbell racks & cardio zone.",
-    image: "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&w=900&q=80",
+    image: "/photos/m_square_photo_1.jpg",
+    fallbackImage: "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&w=900&q=80",
     tag: "Heavy Strength"
   },
   {
@@ -30,7 +31,8 @@ export const verifiedRates = [
     category: "1-on-1 Coaching",
     title: "Personal Training Blueprint",
     desc: "Dedicated certified trainer, 1-on-1 workout supervision, body composition tracking & custom diet plan.",
-    image: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=900&q=80",
+    image: "/photos/m_square_photo_4.jpg",
+    fallbackImage: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=900&q=80",
     tag: "Best Results"
   },
   {
@@ -38,7 +40,8 @@ export const verifiedRates = [
     category: "Recovery Therapy",
     title: "Sauna & Steam Bath Recovery",
     desc: "Rejuvenating hot steam therapy sessions to soothe sore muscles, detoxify & accelerate muscle recovery.",
-    image: "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=900&q=80",
+    image: "/photos/m_square_photo_6.jpg",
+    fallbackImage: "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=900&q=80",
     tag: "Wellness Spa"
   },
   {
@@ -46,7 +49,8 @@ export const verifiedRates = [
     category: "Group Fitness",
     title: "Zumba & Dance Aerobics",
     desc: "High-energy group dance workouts, stamina drills, and fun fat-loss group classes.",
-    image: "https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=900&q=80",
+    image: "/photos/m_square_photo_5.jpg",
+    fallbackImage: "https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=900&q=80",
     tag: "Group Energy"
   },
   {
@@ -54,7 +58,8 @@ export const verifiedRates = [
     category: "Mind & Body",
     title: "Yoga & Meditation Wellness",
     desc: "Flexibility training, core stability, pranayam breathing, and stress reduction sessions.",
-    image: "https://images.unsplash.com/photo-1545205597-3d9d02c29597?auto=format&fit=crop&w=900&q=80",
+    image: "/photos/m_square_photo_8.jpg",
+    fallbackImage: "https://images.unsplash.com/photo-1545205597-3d9d02c29597?auto=format&fit=crop&w=900&q=80",
     tag: "Holistic"
   },
   {
@@ -62,7 +67,8 @@ export const verifiedRates = [
     category: "Exclusive Perk",
     title: "FREE Pickup & Drop Shuttle",
     desc: "Complimentary shuttle service across Devlali Camp & Nashik Road routes for all active gym members.",
-    image: "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=900&q=80",
+    image: "/photos/m_square_photo_7.jpg",
+    fallbackImage: "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=900&q=80",
     tag: "Nashik #1"
   }
 ];
@@ -89,16 +95,14 @@ export const reviewsList = [
 ];
 
 export const galleryPhotos = [
-  { url: "/photos/gym_photo_1.jpg", category: "Strength" },
-  { url: "/photos/gym_photo_2.jpg", category: "Strength" },
-  { url: "/photos/gym_photo_3.jpg", category: "Cardio" },
-  { url: "/photos/gym_photo_4.jpg", category: "Coaching" },
-  { url: "/photos/gym_photo_5.jpg", category: "Zumba" },
-  { url: "/photos/gym_photo_6.jpg", category: "Steam Spa" },
-  { url: "/photos/gym_photo_7.jpg", category: "Strength" },
-  { url: "/photos/gym_photo_8.jpg", category: "Cardio" },
-  { url: "/photos/gym_photo_9.jpg", category: "Coaching" },
-  { url: "/photos/gym_photo_10.jpg", category: "Strength" },
-  { url: "/photos/gym_photo_11.jpg", category: "Cardio" },
-  { url: "/photos/gym_photo_12.jpg", category: "Steam Spa" }
+  { url: "/photos/official_gmaps_photo_1.jpg", fallback: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=800&q=80", category: "Strength" },
+  { url: "/photos/m_square_photo_1.jpg", fallback: "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&w=800&q=80", category: "Strength" },
+  { url: "/photos/m_square_photo_2.jpg", fallback: "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=800&q=80", category: "Strength" },
+  { url: "/photos/m_square_photo_3.jpg", fallback: "https://images.unsplash.com/photo-1538805060514-97d9cc17730c?auto=format&fit=crop&w=800&q=80", category: "Cardio" },
+  { url: "/photos/m_square_photo_4.jpg", fallback: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=800&q=80", category: "Coaching" },
+  { url: "/photos/m_square_photo_5.jpg", fallback: "https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=800&q=80", category: "Zumba" },
+  { url: "/photos/m_square_photo_6.jpg", fallback: "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80", category: "Steam Spa" },
+  { url: "/photos/m_square_photo_7.jpg", fallback: "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=800&q=80", category: "Strength" },
+  { url: "/photos/m_square_photo_8.jpg", fallback: "https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?auto=format&fit=crop&w=800&q=80", category: "Cardio" },
+  { url: "/photos/m_square_photo_9.jpg", fallback: "https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?auto=format&fit=crop&w=800&q=80", category: "Coaching" }
 ];

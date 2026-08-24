@@ -29,6 +29,7 @@ export default function Programs({ onOpenTrialModal }) {
                   <img
                     src={item.image}
                     alt={item.title}
+                    onError={(e) => { if (item.fallbackImage) e.target.src = item.fallbackImage; }}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                   />
                   <div className="absolute top-4 right-4 bg-[#0d0e12]/90 backdrop-blur-md px-3 py-1 rounded-full border border-[#d4af37]/40 text-[10px] font-bold uppercase tracking-wider text-[#f3d266]">

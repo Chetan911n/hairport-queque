@@ -8,42 +8,48 @@ export default function Equipment() {
       title: "Heavy Plate-Loaded Machines",
       desc: "Commercial pin-selected lat pulldowns, chest press, leg press, hack squats & cable crossover stations.",
       tag: "Biomechanic Precision",
-      image: "/photos/gym_photo_2.jpg"
+      image: "/photos/m_square_photo_1.jpg",
+      fallbackImage: "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&w=900&q=80"
     },
     {
       icon: ShieldCheck,
       title: "Olympic Free Weights & Dumbbells",
       desc: "Full dumbbell racks (2kg to 40kg+), Olympic barbells, bumper plates, and adjustable bench stations.",
       tag: "Heavy Strength",
-      image: "/photos/gym_photo_14.jpg"
+      image: "/photos/m_square_photo_2.jpg",
+      fallbackImage: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=900&q=80"
     },
     {
       icon: HeartPulse,
       title: "Commercial Cardio Suite",
       desc: "Motorized treadmills with heart-rate monitoring, elliptical cross-trainers, and spinning bikes.",
       tag: "High Stamina",
-      image: "/photos/gym_photo_125.jpg"
+      image: "/photos/m_square_photo_3.jpg",
+      fallbackImage: "https://images.unsplash.com/photo-1538805060514-97d9cc17730c?auto=format&fit=crop&w=900&q=80"
     },
     {
       icon: Flame,
       title: "Powerlifting & Functional Rig",
       desc: "Heavy-duty power cages, smith machines, pull-up bars, battle ropes, and kettlebells.",
       tag: "Core & Athletic",
-      image: "/photos/gym_photo_133.jpg"
+      image: "/photos/m_square_photo_7.jpg",
+      fallbackImage: "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=900&q=80"
     },
     {
       icon: Sparkles,
       title: "Sauna & Steam Recovery Suite",
       desc: "Hot steam spa room designed for post-workout muscle relaxation and body detoxification.",
       tag: "Spa Recovery",
-      image: "/photos/gym_photo_6.jpg"
+      image: "/photos/m_square_photo_6.jpg",
+      fallbackImage: "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=900&q=80"
     },
     {
       icon: CheckCircle2,
       title: "Sanitized & Rubber Floored",
       desc: "Daily sanitized equipment, non-slip shock-absorbing rubber flooring, and spacious workout layout.",
       tag: "Hygiene Standard",
-      image: "/photos/gym_photo_110.jpg"
+      image: "/photos/m_square_photo_9.jpg",
+      fallbackImage: "https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?auto=format&fit=crop&w=900&q=80"
     }
   ];
 
@@ -76,6 +82,7 @@ export default function Equipment() {
                     <img
                       src={item.image}
                       alt={item.title}
+                      onError={(e) => { if (item.fallbackImage) e.target.src = item.fallbackImage; }}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                     />
                     <div className="absolute top-4 right-4 bg-[#0d0e12]/90 backdrop-blur-md px-3 py-1 rounded-full border border-[#ff5500]/40 text-[10px] font-bold uppercase tracking-wider text-[#ff5500]">
