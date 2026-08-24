@@ -25,4 +25,4 @@ Official responsive website for **M Square Fitness & Wellness Club** in Devlali 
 
 ## 🚀 Live Website & Deployment
 - **Live Vercel Site:** [https://shortcut-salon.vercel.app/](https://shortcut-salon.vercel.app/)
-- **GitHub Repository:** [https://github.com/Chetan911n/Shortcut-Salon](https://github.com/Chetan911n/Shortcut-Salon)
+- **GitHub Repository:** [https://github.com/Chetan911n/M-Square](https://github.com/Chetan911n/M-Square)
