@@ -1,24 +1,28 @@
-# Shortcuts Unisex Salon & Academy — Frontend Concept
+# 🏋️ M Square Fitness & Wellness Club — Website Codebase
 
-A responsive, production-oriented frontend shell inspired by the supplied vintage luxury salon reference, but redesigned as an original Shortcuts website.
+Official responsive website for **M Square Fitness & Wellness Club** in Devlali Camp, Nashik, Maharashtra.
 
-## Included
-- Responsive homepage (`index.html`)
-- Sticky navigation & brand identity
-- Hero / Trust strip / About / Services / Quote banner / Gallery / Academy / Reviews / Booking form / Contact & Map / Footer
-- Booking form frontend state and toast notifications (`script.js`)
-- Mobile responsive layouts & design system (`styles.css`)
-- Backend-ready placeholders for live booking, reviews, maps, CMS and customer data
+## 🌟 Key Features
+- **4.4★ Rated Google Business Intelligence**
+- **Nashik's 1st Gym with FREE Pickup & Drop Shuttle Service**
+- **Sauna & Steam Bath Recovery Therapy**
+- **Heavy Gym Strength Floor, Cardio Zone, Zumba & Yoga**
+- **Direct WhatsApp Booking Integration (+91 77750 77653)**
+- **Supabase Real-Time Appointment Database Integration**
 
-## Run
-Open `index.html` in a browser, or serve the folder with any static web server.
+## 📂 Project Architecture
+```
+├── index.html               # Main website application
+├── styles.css               # Luxury athletic design system & multi-device responsive CSS
+├── script.js                # Form submission, toast notifications, WhatsApp & Supabase sync
+├── lib/
+│   └── supabase.js          # Supabase client SDK integration
+├── supabase/
+│   └── schema.sql           # PostgreSQL DDL database schema
+├── m_square_gym_data.json   # Structured business intelligence dataset
+└── m_square_gym_data.md     # Verified business report & Google reviews
+```
 
-## Replace later
-- Real Shortcuts photography
-- Google Maps embed / API
-- Live Google reviews
-- Booking backend + availability
-- Database / CRM
-- Real service pricing
-- Academy course data
-- WhatsApp and analytics integrations
+## 🚀 Live Website & Deployment
+- **Live Vercel Site:** [https://shortcut-salon.vercel.app/](https://shortcut-salon.vercel.app/)
+- **GitHub Repository:** [https://github.com/Chetan911n/Shortcut-Salon](https://github.com/Chetan911n/Shortcut-Salon)
