@@ -4,7 +4,7 @@ import { gymDetails } from '../data/gymData';
 
 export default function Hero({ onOpenTrialModal }) {
   return (
-    <section className="relative min-h-[85vh] flex items-center justify-center pt-24 pb-16 overflow-hidden">
+    <section className="relative h-screen min-h-screen flex items-center justify-center pt-20 pb-12 overflow-hidden">
       {/* Background Image with Dark Gradient Overlay */}
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat z-0"
@@ -35,7 +35,7 @@ export default function Hero({ onOpenTrialModal }) {
           </p>
 
           {/* Action Buttons */}
-          <div className="flex flex-wrap items-center gap-4 mb-12">
+          <div className="flex flex-wrap items-center gap-4">
             <button
               onClick={onOpenTrialModal}
               className="gold-glow-btn px-7 py-4 rounded-md font-bold uppercase tracking-wider text-xs flex items-center gap-2"
@@ -52,6 +52,15 @@ export default function Hero({ onOpenTrialModal }) {
           </div>
         </div>
       </div>
+
+      {/* Scroll Down Indicator */}
+      <a
+        href="#about"
+        className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 text-[10px] uppercase font-bold tracking-widest text-gray-400 hover:text-[#f3d266] transition-colors flex flex-col items-center gap-1 animate-bounce"
+      >
+        <span>SCROLL TO EXPLORE</span>
+        <span className="text-base">↓</span>
+      </a>
     </section>
   );
 }
