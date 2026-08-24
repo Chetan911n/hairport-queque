@@ -107,7 +107,7 @@ export const exerciseGuides = [
     category: "Lower Body",
     target: "Quadriceps & Glutes",
     tip: "Keep chest proud, break at hips, and drive up through heels with core engaged.",
-    image: "/photos/m_square_photo_1.jpg",
+    image: "/pexels_photos/pexels_strength_1.jpg",
     fallback: "https://images.unsplash.com/photo-1574680096145-d05b474e2155?auto=format&fit=crop&w=800&q=80"
   },
   {
@@ -115,7 +115,7 @@ export const exerciseGuides = [
     category: "Upper Body",
     target: "Lats & Upper Back",
     tip: "Drive elbows down to side ribs, squeeze shoulder blades, and control the negative.",
-    image: "/photos/m_square_photo_2.jpg",
+    image: "/pexels_photos/pexels_bodybuilding_1.jpg",
     fallback: "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&w=800&q=80"
   },
   {
@@ -123,7 +123,7 @@ export const exerciseGuides = [
     category: "Chest & Shoulders",
     target: "Upper Pectorals & Triceps",
     tip: "Set incline to 30 degrees, lower dumbbells steadily to chest level, and press upward.",
-    image: "/photos/m_square_photo_4.jpg",
+    image: "/pexels_photos/pexels_strength_3.jpg",
     fallback: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=800&q=80"
   },
   {
@@ -131,7 +131,7 @@ export const exerciseGuides = [
     category: "Cardio & Stamina",
     target: "Cardiovascular Endurance",
     tip: "Maintain upright posture, land midfoot, and alternate 30s sprint with 60s recovery walk.",
-    image: "/photos/m_square_photo_3.jpg",
+    image: "/pexels_photos/pexels_cardio_1.jpg",
     fallback: "https://images.unsplash.com/photo-1538805060514-97d9cc17730c?auto=format&fit=crop&w=800&q=80"
   }
 ];
@@ -142,7 +142,7 @@ export const verifiedRates = [
     category: "Full Gym Access",
     title: "Classic Gym Training",
     desc: "Full access to heavy strength machinery, plate-loaded equipment, dumbbell racks & cardio zone.",
-    image: "/photos/m_square_photo_1.jpg",
+    image: "/pexels_photos/pexels_strength_2.jpg",
     fallbackImage: "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&w=900&q=80",
     tag: "Heavy Strength"
   },
@@ -151,7 +151,7 @@ export const verifiedRates = [
     category: "1-on-1 Coaching",
     title: "Personal Training Blueprint",
     desc: "Dedicated certified trainer, 1-on-1 workout supervision, body composition tracking & custom diet plan.",
-    image: "/photos/m_square_photo_4.jpg",
+    image: "/pexels_photos/pexels_coaching_1.jpg",
     fallbackImage: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=900&q=80",
     tag: "Best Results"
   },
@@ -160,7 +160,7 @@ export const verifiedRates = [
     category: "Recovery Therapy",
     title: "Sauna & Steam Bath Recovery",
     desc: "Rejuvenating hot steam therapy sessions to soothe sore muscles, detoxify & accelerate muscle recovery.",
-    image: "/photos/m_square_photo_6.jpg",
+    image: "/pexels_photos/pexels_sauna_1.jpg",
     fallbackImage: "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=900&q=80",
     tag: "Wellness Spa"
   },
@@ -169,7 +169,7 @@ export const verifiedRates = [
     category: "Group Fitness",
     title: "Zumba & Dance Aerobics",
     desc: "High-energy group dance workouts, stamina drills, and fun fat-loss group classes.",
-    image: "/photos/m_square_photo_5.jpg",
+    image: "/pexels_photos/pexels_zumba_1.jpg",
     fallbackImage: "https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=900&q=80",
     tag: "Group Energy"
   },
@@ -178,7 +178,7 @@ export const verifiedRates = [
     category: "Mind & Body",
     title: "Yoga & Meditation Wellness",
     desc: "Flexibility training, core stability, pranayam breathing, and stress reduction sessions.",
-    image: "/photos/m_square_photo_8.jpg",
+    image: "/pexels_photos/pexels_zumba_2.jpg",
     fallbackImage: "https://images.unsplash.com/photo-1545205597-3d9d02c29597?auto=format&fit=crop&w=900&q=80",
     tag: "Holistic"
   },
@@ -187,7 +187,7 @@ export const verifiedRates = [
     category: "Exclusive Perk",
     title: "FREE Pickup & Drop Shuttle",
     desc: "Complimentary shuttle service across Devlali Camp & Nashik Road routes for all active gym members.",
-    image: "/photos/m_square_photo_7.jpg",
+    image: "/pexels_photos/pexels_cardio_2.jpg",
     fallbackImage: "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=900&q=80",
     tag: "Nashik #1"
   }
@@ -216,13 +216,15 @@ export const reviewsList = [
 
 export const galleryPhotos = [
   { url: "/photos/official_gmaps_photo_1.jpg", fallback: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=800&q=80", category: "Strength" },
-  { url: "/photos/m_square_photo_1.jpg", fallback: "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&w=800&q=80", category: "Strength" },
-  { url: "/photos/m_square_photo_2.jpg", fallback: "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=800&q=80", category: "Strength" },
-  { url: "/photos/m_square_photo_3.jpg", fallback: "https://images.unsplash.com/photo-1538805060514-97d9cc17730c?auto=format&fit=crop&w=800&q=80", category: "Cardio" },
-  { url: "/photos/m_square_photo_4.jpg", fallback: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=800&q=80", category: "Coaching" },
-  { url: "/photos/m_square_photo_5.jpg", fallback: "https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=800&q=80", category: "Zumba" },
-  { url: "/photos/m_square_photo_6.jpg", fallback: "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80", category: "Steam Spa" },
-  { url: "/photos/m_square_photo_7.jpg", fallback: "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=800&q=80", category: "Strength" },
-  { url: "/photos/m_square_photo_8.jpg", fallback: "https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?auto=format&fit=crop&w=800&q=80", category: "Cardio" },
-  { url: "/photos/m_square_photo_9.jpg", fallback: "https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?auto=format&fit=crop&w=800&q=80", category: "Coaching" }
+  { url: "/pexels_photos/pexels_strength_1.jpg", fallback: "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&w=800&q=80", category: "Strength" },
+  { url: "/pexels_photos/pexels_bodybuilding_1.jpg", fallback: "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=800&q=80", category: "Strength" },
+  { url: "/pexels_photos/pexels_cardio_1.jpg", fallback: "https://images.unsplash.com/photo-1538805060514-97d9cc17730c?auto=format&fit=crop&w=800&q=80", category: "Cardio" },
+  { url: "/pexels_photos/pexels_coaching_1.jpg", fallback: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=800&q=80", category: "Coaching" },
+  { url: "/pexels_photos/pexels_zumba_1.jpg", fallback: "https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=800&q=80", category: "Zumba" },
+  { url: "/pexels_photos/pexels_sauna_1.jpg", fallback: "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80", category: "Steam Spa" },
+  { url: "/pexels_photos/pexels_strength_3.jpg", fallback: "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=800&q=80", category: "Strength" },
+  { url: "/pexels_photos/pexels_cardio_3.jpg", fallback: "https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?auto=format&fit=crop&w=800&q=80", category: "Cardio" },
+  { url: "/pexels_photos/pexels_coaching_3.jpg", fallback: "https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?auto=format&fit=crop&w=800&q=80", category: "Coaching" },
+  { url: "/pexels_photos/pexels_sauna_2.jpg", fallback: "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80", category: "Steam Spa" },
+  { url: "/pexels_photos/pexels_zumba_3.jpg", fallback: "https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=800&q=80", category: "Zumba" }
 ];
