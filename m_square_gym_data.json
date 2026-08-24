@@ -1,60 +1,67 @@
 {
   "business_info": {
-    "name": "M Square Fitness Club (M Square Gym)",
+    "name": "M Square fitness - Premium Fitness Centre in Nashik",
+    "brand_title": "Msquare Fitness & Wellness Club®️",
+    "google_rating": 4.4,
+    "google_reviews_count": 52,
     "instagram_handle": "@msquarefitnessclub",
     "instagram_url": "https://www.instagram.com/msquarefitnessclub/",
-    "category": "Gym / Fitness Center / Personal Training Studio",
-    "locality": "Deolali Camp (Devlali)",
+    "facebook_profile": "https://www.facebook.com/100091178355488",
+    "category": "Gym & Wellness Club / Family Unisex Gym",
+    "locality": "Devlali (Deolali Camp)",
     "city": "Nashik",
     "state": "Maharashtra",
-    "pincode": "422001"
+    "pincode": "422501"
   },
-  "address": {
-    "primary_address": "Opposite Naka No. 6, Mahalaxmi Road, Deolali Camp, Nashik, Maharashtra 422001",
-    "alternate_landmark": "Kothule Mala, Deolali Camp"
+  "contact": {
+    "primary_phone": "+91 77750 77653",
+    "alternate_phones": [
+      "+91 91725 30292",
+      "+91 91750 25828",
+      "+91 81494 78280"
+    ],
+    "email": "square828@gmail.com",
+    "address": "Mandes mangotree, Kothule Mala, Devlali, Maharashtra 422501",
+    "landmark": "Near Mande's Mango Tree & Mahalaxmi Mandir Road Naka No. 6"
   },
+  "operating_hours": {
+    "daily_schedule": "Open daily · Closes 10:00 PM",
+    "peak_hours": "5:00 PM – 10:00 PM (1-2 hours average visit)"
+  },
+  "unique_selling_features": [
+    "Nashik's First Gym with FREE Pickup & Drop Service!",
+    "Sauna & Steam Bath Recovery Therapy",
+    "Family-Friendly Unisex Workout Environment",
+    "Certified 1-on-1 Personal Training & Nutrition Counseling"
+  ],
   "offerings_and_facilities": [
     {
       "category": "Gym & Strength Training",
       "features": [
-        "Heavy Strength & Bodybuilding Machines",
-        "Free Weights & Dumbbell Rack",
-        "Squat Racks, Bench Press & Cable Crossover",
-        "Functional Fitness & Crossfit Area"
+        "Quality & Variety of Cardio, Weight & Free Weight Machines",
+        "Body Building & Powerlifting Equipment",
+        "Functional Training & Crossfit Arena"
       ]
     },
     {
-      "category": "Cardio & Fitness Zone",
-      "features": [
-        "Motorized Treadmills",
-        "Elliptical Cross Trainers",
-        "Spinning Bikes",
-        "Stamina & Endurance Workouts"
-      ]
-    },
-    {
-      "category": "Group Fitness Classes",
+      "category": "Group Fitness & Wellness",
       "features": [
         "Zumba & Aerobics Dance Classes",
         "Yoga & Meditation Sessions",
-        "Pranayam & Flexibility Training"
+        "Pranayam & Recovery Therapies"
       ]
     },
     {
-      "category": "Personal Training & Diet",
+      "category": "Personalized Programs",
       "features": [
-        "1-on-1 Certified Personal Training",
-        "Custom Weight Loss & Muscle Gain Programs",
-        "Personalized Meal & Nutrition Diet Plans"
+        "Personalized Weight Loss & Muscle Gain Programs",
+        "Custom Nutrition & Meal Counseling",
+        "Senior & Beginner Fitness Guidance"
       ]
     }
   ],
-  "amenities": [
-    "Changing Rooms",
-    "Personal Lockers",
-    "High-energy Sound System",
-    "Clean & Sanitized Workout Floor",
-    "Drinking Water Facility",
-    "Two-wheeler Parking"
+  "review_highlights": [
+    "Quality and variety of machines (cardio, weight, free weights)",
+    "Good atmosphere family friendly gym and steam bath"
   ]
 }
