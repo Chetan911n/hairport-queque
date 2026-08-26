@@ -4,7 +4,6 @@ import Hero from './components/Hero';
 import TrustStrip from './components/TrustStrip';
 import About from './components/About';
 import Programs from './components/Programs';
-import ShuttleBanner from './components/ShuttleBanner';
 import Gallery from './components/Gallery';
 import Reviews from './components/Reviews';
 import ContactMap from './components/ContactMap';
@@ -30,7 +29,6 @@ export default function App() {
         <MembershipPlans onOpenTrialModal={() => setTrialModalOpen(true)} />
         <Equipment />
         <ExerciseGuide />
-        <ShuttleBanner />
         <Gallery />
         <Reviews />
         <ContactMap />

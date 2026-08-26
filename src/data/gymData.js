@@ -1,14 +1,15 @@
 export const gymDetails = {
   name: "M Square Fitness & Wellness Club",
-  brandTitle: "Msquare Fitness & Wellness Club®️",
-  tagline: "Elite Performance Meets High-End Recovery",
+  brandTitle: "MSquare Fitness & Wellness Club®️",
+  tagline: "Premier Gym & Wellness Centre in Devlali Camp",
+  managerName: "Akshay Shelke",
   googleRating: 4.4,
   reviewCount: 52,
   phone: "+91 77750 77653",
-  alternatePhones: ["+91 91725 30292", "+91 91750 25828", "+91 81494 78280"],
+  alternatePhones: ["+91 91725 30292", "+91 70282 14514"],
   whatsapp: "917775077653",
   email: "square828@gmail.com",
-  address: "Mandes mangotree, Kothule Mala, Devlali, Maharashtra 422501",
+  address: "Ground Floor, Mande's Mango Tree, Naka No.06, Mahalaxmi Road, Lam Road, Deolali Camp, Nashik, Maharashtra 422501",
   landmark: "Near Mande's Mango Tree & Mahalaxmi Mandir Road Naka No. 6",
   hours: "Open Daily 6:00 AM — 10:00 PM",
   peakHours: "5:00 PM – 10:00 PM",
@@ -24,80 +25,158 @@ export const trustBadges = [
     sub: "★★★★★ (52 Verified Reviews)"
   },
   {
-    icon: "Bus",
-    val: "FREE",
-    title: "Pickup & Drop",
-    sub: "1st Gym in Nashik"
+    icon: "Flame",
+    val: "Steam Bath",
+    title: "Muscle Recovery",
+    sub: "Weekend & Unlimited Options"
   },
   {
-    icon: "Sparkles",
-    val: "Sauna",
-    title: "& Steam Spa",
-    sub: "Muscle Recovery Therapy"
+    icon: "Dumbbell",
+    val: "Crossfit",
+    title: "& Heavy Strength",
+    sub: "Modern Machine Suite"
   },
   {
     icon: "MapPin",
     val: "Devlali",
     title: "Camp, Nashik",
-    sub: "Mande's Mango Tree"
+    sub: "Mahalaxmi Road, Naka No. 6"
+  }
+];
+
+export const megaOffers = [
+  {
+    title: "12 Months Membership",
+    price: "₹12,000/- Only",
+    badge: "MEGA SAVER OFFER",
+    note: "Installment Option Available"
+  },
+  {
+    title: "16 Months Membership",
+    price: "₹15,000/- Only",
+    badge: "MAX VALUE OFFER",
+    note: "4 Extra Months Free + Installment"
   }
 ];
 
 export const membershipPlans = [
   {
-    id: "monthly",
+    id: "1-month",
     title: "1 Month Starter",
     duration: "1 Month",
+    price: "₹3,000",
+    period: "/ 1 Month",
     popular: false,
+    badge: "Basic Plan",
     features: [
-      "Full Gym Strength & Free Weights Access",
-      "Commercial Cardio Suite Access",
-      "Locker & Shower Facility",
-      "1-on-1 Fitness Assessment"
+      "Cardio Suite Access",
+      "Heavy Strength & Weight Training",
+      "Cross-Fit Functional Zone",
+      "General Gym Supervision"
     ],
-    cta: "Enquire Plan"
+    cta: "Enquire 1 Month Plan"
   },
   {
-    id: "quarterly",
-    title: "3 Month Transformation",
+    id: "3-months",
+    title: "3 Months Transformation",
     duration: "3 Months",
-    popular: true,
+    price: "₹6,000",
+    period: "/ 3 Months",
+    popular: false,
+    badge: "Popular Plan",
     features: [
-      "Full Gym & Cardio Suite Access",
-      "Sauna & Hot Steam Spa Sessions",
-      "FREE Pickup & Drop Shuttle Service",
-      "Personal Workout & Diet Blueprint",
-      "Zumba & Group Fitness Classes"
+      "Cardio + Strength + Cross-Fit Access",
+      "Diet Orientation & Nutrition Guidance",
+      "Progress Tracking & Assessment",
+      "Locker & Shower Facility"
     ],
-    cta: "Most Popular — Enquire"
+    cta: "Enquire 3 Month Plan"
   },
   {
-    id: "half-yearly",
-    title: "6 Month Athletic",
+    id: "6-months",
+    title: "Crown Club Membership",
     duration: "6 Months",
-    popular: false,
+    price: "₹10,000",
+    period: "/ 6 Months",
+    popular: true,
+    badge: "CROWN CLUB",
     features: [
-      "All 3-Month Features Included",
-      "Unlimited Sauna & Steam Spa Therapy",
-      "Priority Pickup & Drop Shuttle Pass",
-      "Monthly Body Composition Tracking",
-      "1-on-1 Personal Trainer Consultation"
+      "Cardio + Strength + Cross-Fit Access",
+      "Diet Orientation & Nutrition Plan",
+      "Steam-Bath Recovery (Weekends Only)",
+      "Temporary Locker Access",
+      "Installment Facility Available"
     ],
-    cta: "Enquire Plan"
+    cta: "Enquire Crown Club — ₹10,000"
   },
   {
-    id: "annual",
-    title: "1 Year All-Access VIP",
+    id: "12-months",
+    title: "Elite Club Membership",
     duration: "12 Months",
-    popular: false,
+    price: "₹15,000",
+    period: "/ 12 Months",
+    popular: true,
+    badge: "ELITE VIP CLUB",
     features: [
-      "Unlimited Gym, Cardio & Steam Spa",
-      "VIP Shuttle Service Across Devlali",
-      "Custom Diet & Nutrition Planning",
-      "Guest Passes for Family Members",
-      "Exclusive Gym Merch & Towel Service"
+      "Unlimited Cardio, Strength & Cross-Fit",
+      "Diet Orientation & Custom Meal Plan",
+      "Unlimited Steam-Bath Access",
+      "Zumba Sessions (Twice a Week)",
+      "FREE 3 Personal Training Sessions",
+      "Temporary Lockers + Installment Facility"
     ],
-    cta: "VIP Membership — Enquire"
+    cta: "Enquire Elite VIP — ₹15,000"
+  }
+];
+
+export const officialServices = [
+  {
+    id: "cardio",
+    title: "Cardio Suite",
+    desc: "Motorized treadmills, elliptical cross-trainers, and spinning bikes for maximum cardiovascular endurance and calorie burn.",
+    image: "/pexels_photos/pexels_cardio_1.jpg",
+    fallback: "https://images.unsplash.com/photo-1538805060514-97d9cc17730c?auto=format&fit=crop&w=800&q=80",
+    tag: "Stamina & Fat Loss"
+  },
+  {
+    id: "crossfit",
+    title: "Crossfit & Functional Training",
+    desc: "High-intensity functional movement rigs, battle ropes, kettlebells, and agility zones to build athletic speed and core power.",
+    image: "/pexels_photos/pexels_bodybuilding_1.jpg",
+    fallback: "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=800&q=80",
+    tag: "Athletic Power"
+  },
+  {
+    id: "weight-training",
+    title: "Weight Training & Free Weights",
+    desc: "Heavy plate-loaded machines, Olympic barbells, Smith machines, squat racks, and full dumbbell sets (2kg to 40kg+).",
+    image: "/pexels_photos/pexels_strength_1.jpg",
+    fallback: "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&w=800&q=80",
+    tag: "Muscle Building"
+  },
+  {
+    id: "personal-training",
+    title: "Personal Training (1-on-1)",
+    desc: "Dedicated certified personal trainers providing customized workout programs, 1-on-1 form supervision, and maximum results.",
+    image: "/pexels_photos/pexels_coaching_1.jpg",
+    fallback: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=800&q=80",
+    tag: "Dedicated Coach"
+  },
+  {
+    id: "diet-orientation",
+    title: "Diet Orientation & Nutrition",
+    desc: "Personalized nutrition consultation and diet orientation to complement your workout regime for optimal muscle growth and weight loss.",
+    image: "/pexels_photos/pexels_coaching_3.jpg",
+    fallback: "https://images.unsplash.com/photo-1545205597-3d9d02c29597?auto=format&fit=crop&w=800&q=80",
+    tag: "Custom Nutrition"
+  },
+  {
+    id: "steam-bath",
+    title: "Steam Bath Recovery",
+    desc: "Hot steam bath sessions designed to soothe sore muscles, improve circulation, relieve tension, and accelerate post-workout recovery.",
+    image: "/pexels_photos/pexels_sauna_1.jpg",
+    fallback: "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80",
+    tag: "Muscle Relaxation"
   }
 ];
 
@@ -136,63 +215,6 @@ export const exerciseGuides = [
   }
 ];
 
-export const verifiedRates = [
-  {
-    id: "gym-membership",
-    category: "Full Gym Access",
-    title: "Classic Gym Training",
-    desc: "Full access to heavy strength machinery, plate-loaded equipment, dumbbell racks & cardio zone.",
-    image: "/pexels_photos/pexels_strength_2.jpg",
-    fallbackImage: "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&w=900&q=80",
-    tag: "Heavy Strength"
-  },
-  {
-    id: "personal-training",
-    category: "1-on-1 Coaching",
-    title: "Personal Training Blueprint",
-    desc: "Dedicated certified trainer, 1-on-1 workout supervision, body composition tracking & custom diet plan.",
-    image: "/pexels_photos/pexels_coaching_1.jpg",
-    fallbackImage: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=900&q=80",
-    tag: "Best Results"
-  },
-  {
-    id: "steam-sauna",
-    category: "Recovery Therapy",
-    title: "Sauna & Steam Bath Recovery",
-    desc: "Rejuvenating hot steam therapy sessions to soothe sore muscles, detoxify & accelerate muscle recovery.",
-    image: "/pexels_photos/pexels_sauna_1.jpg",
-    fallbackImage: "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=900&q=80",
-    tag: "Wellness Spa"
-  },
-  {
-    id: "zumba-aerobics",
-    category: "Group Fitness",
-    title: "Zumba & Dance Aerobics",
-    desc: "High-energy group dance workouts, stamina drills, and fun fat-loss group classes.",
-    image: "/pexels_photos/pexels_zumba_1.jpg",
-    fallbackImage: "https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=900&q=80",
-    tag: "Group Energy"
-  },
-  {
-    id: "yoga-wellness",
-    category: "Mind & Body",
-    title: "Yoga & Meditation Wellness",
-    desc: "Flexibility training, core stability, pranayam breathing, and stress reduction sessions.",
-    image: "/pexels_photos/pexels_zumba_2.jpg",
-    fallbackImage: "https://images.unsplash.com/photo-1545205597-3d9d02c29597?auto=format&fit=crop&w=900&q=80",
-    tag: "Holistic"
-  },
-  {
-    id: "free-shuttle",
-    category: "Exclusive Perk",
-    title: "FREE Pickup & Drop Shuttle",
-    desc: "Complimentary shuttle service across Devlali Camp & Nashik Road routes for all active gym members.",
-    image: "/pexels_photos/pexels_cardio_2.jpg",
-    fallbackImage: "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=900&q=80",
-    tag: "Nashik #1"
-  }
-];
-
 export const reviewsList = [
   {
     author: "Rahul V.",
@@ -209,8 +231,8 @@ export const reviewsList = [
   {
     author: "Amit K.",
     rating: 5,
-    title: "Free Shuttle Service Lifesaver",
-    comment: "The free pickup and drop facility is an absolute lifesaver. Outstanding personal trainers and support!"
+    title: "Great Trainers & Environment",
+    comment: "Awesome training facility in Devlali Camp. Outstanding personal trainers, Akshay Shelke sir, and supportive environment!"
   }
 ];
 
@@ -221,10 +243,8 @@ export const galleryPhotos = [
   { url: "/pexels_photos/pexels_cardio_1.jpg", fallback: "https://images.unsplash.com/photo-1538805060514-97d9cc17730c?auto=format&fit=crop&w=800&q=80", category: "Cardio" },
   { url: "/pexels_photos/pexels_coaching_1.jpg", fallback: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=800&q=80", category: "Coaching" },
   { url: "/pexels_photos/pexels_zumba_1.jpg", fallback: "https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=800&q=80", category: "Zumba" },
-  { url: "/pexels_photos/pexels_sauna_1.jpg", fallback: "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80", category: "Steam Spa" },
+  { url: "/pexels_photos/pexels_sauna_1.jpg", fallback: "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80", category: "Steam Bath" },
   { url: "/pexels_photos/pexels_strength_3.jpg", fallback: "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=800&q=80", category: "Strength" },
   { url: "/pexels_photos/pexels_cardio_3.jpg", fallback: "https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?auto=format&fit=crop&w=800&q=80", category: "Cardio" },
-  { url: "/pexels_photos/pexels_coaching_3.jpg", fallback: "https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?auto=format&fit=crop&w=800&q=80", category: "Coaching" },
-  { url: "/pexels_photos/pexels_sauna_2.jpg", fallback: "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80", category: "Steam Spa" },
-  { url: "/pexels_photos/pexels_zumba_3.jpg", fallback: "https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=800&q=80", category: "Zumba" }
+  { url: "/pexels_photos/pexels_coaching_3.jpg", fallback: "https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?auto=format&fit=crop&w=800&q=80", category: "Coaching" }
 ];

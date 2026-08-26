@@ -59,7 +59,7 @@ export default function BookingModal({ isOpen, onClose }) {
             Enquire Membership Rates
           </h2>
           <p className="text-gray-400 text-xs mt-1">
-            Get instant membership rates, personal training packages, and free shuttle schedule.
+            Get instant membership rates, personal training packages, and steam bath schedule.
           </p>
         </div>
 
@@ -84,11 +84,13 @@ export default function BookingModal({ isOpen, onClose }) {
                 onChange={(e) => setFormData({ ...formData, program: e.target.value })}
                 className="w-full bg-[#151722] border border-gray-700 rounded-lg px-4 py-3 text-white text-xs outline-none focus:border-[#ff5500]"
               >
-                <option value="Classic Gym Training">Classic Gym Training</option>
-                <option value="1-on-1 Personal Training">1-on-1 Personal Training</option>
-                <option value="Sauna & Steam Bath Recovery">Sauna & Steam Bath Recovery</option>
-                <option value="Zumba & Dance Aerobics">Zumba & Dance Aerobics</option>
-                <option value="FREE Pickup & Drop Shuttle">FREE Pickup & Drop Shuttle</option>
+                <option value="1 Month Starter Membership (₹3,000)">1 Month Membership (₹3,000)</option>
+                <option value="3 Months Membership (₹6,000)">3 Months Membership (₹6,000)</option>
+                <option value="6 Months Crown Club (₹10,000)">6 Months Crown Club (₹10,000)</option>
+                <option value="12 Months Elite VIP (₹15,000)">12 Months Elite VIP (₹15,000)</option>
+                <option value="16 Months Mega Offer (₹15,000)">16 Months Mega Offer (₹15,000)</option>
+                <option value="Personal Training (1-on-1)">Personal Training (1-on-1)</option>
+                <option value="Steam Bath Recovery">Steam Bath Recovery</option>
               </select>
             </div>
 

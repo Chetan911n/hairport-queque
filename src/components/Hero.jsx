@@ -31,7 +31,7 @@ export default function Hero({ onOpenTrialModal }) {
 
           {/* Copy */}
           <p className="text-gray-300 text-base sm:text-lg max-w-xl leading-relaxed mb-8">
-            Nashik’s premier fitness centre featuring heavy strength machinery, steam & sauna recovery, certified personal coaching, and <strong className="text-[#f3d266]">FREE pickup & drop facility</strong>.
+            Devlali Camp’s premier fitness centre featuring heavy strength machinery, crossfit zone, diet orientation, and <strong className="text-[#ff5500]">relaxing steam bath recovery</strong>.
           </p>
 
           {/* Action Buttons */}

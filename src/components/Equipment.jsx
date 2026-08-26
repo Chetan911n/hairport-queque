@@ -37,9 +37,9 @@ export default function Equipment() {
     },
     {
       icon: Sparkles,
-      title: "Sauna & Steam Recovery Suite",
-      desc: "Hot steam spa room designed for post-workout muscle relaxation and body detoxification.",
-      tag: "Spa Recovery",
+      title: "Steam Bath Recovery Suite",
+      desc: "Hot steam bath room designed for post-workout muscle relaxation, stress relief, and body detoxification.",
+      tag: "Steam Recovery",
       image: "/photos/m_square_photo_6.jpg",
       fallbackImage: "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=900&q=80"
     },
