@@ -67,6 +67,16 @@ export default function Navbar({ onOpenTrialModal }) {
         {/* CTA Actions */}
         <div className="hidden sm:flex items-center gap-3">
           <a
+            href="https://m-square-fitness-app.vercel.app/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-3 py-2 rounded-md border border-gray-700/80 hover:border-[#ff5500] text-gray-300 hover:text-white text-xs font-bold uppercase tracking-wider inline-flex items-center gap-1.5 transition-all bg-[#151722]/60"
+            title="Open Staff Operating System"
+          >
+            <Dumbbell className="w-3.5 h-3.5 text-[#ff5500]" />
+            Staff Portal
+          </a>
+          <a
             href={`tel:${gymDetails.phone}`}
             className="flex items-center gap-2 text-xs text-gray-300 hover:text-white px-3 py-2"
           >

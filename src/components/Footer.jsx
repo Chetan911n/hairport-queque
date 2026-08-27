@@ -89,7 +89,18 @@ export default function Footer() {
 
         <div className="pt-8 mt-12 border-t border-gray-900 flex flex-col sm:flex-row items-center justify-between gap-4 text-gray-600">
           <p>© {new Date().getFullYear()} {gymDetails.name}. All Rights Reserved.</p>
-          <p className="text-[11px]">Mahalaxmi Road, Devlali Camp, Nashik</p>
+          <div className="flex items-center gap-4 text-[11px]">
+            <span>Mahalaxmi Road, Devlali Camp, Nashik</span>
+            <span>•</span>
+            <a 
+              href="https://m-square-fitness-app.vercel.app/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-gray-400 hover:text-[#ff5500] font-semibold transition-colors"
+            >
+              🔒 Staff Suite
+            </a>
+          </div>
         </div>
       </div>
     </footer>
