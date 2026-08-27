@@ -126,9 +126,6 @@ export default function BookingModal({ isOpen, onClose }) {
                 <option value="Steam Bath Recovery Package">
                   🧖 Steam Bath &amp; Sauna Recovery Session
                 </option>
-                <option value="Gym Tour & Free Fitness Assessment">
-                  🔍 Club Tour &amp; Biomechanics Assessment
-                </option>
               </select>
             </div>
 
