@@ -1242,7 +1242,7 @@ const App: React.FC = () => {
                   <span className="hidden xs:inline">ANALYTICS</span>
                 </button>
               )}
-              {(user?.role === "receptionist" || user?.role === "owner" || user?.role === "owner_stylist" || user?.role === "developer") && (
+              {(user?.role === "receptionist" || user?.role === "owner" || user?.role === "owner_stylist" || user?.role === "developer" || ["tejas", "kunal"].includes(user?.username?.toLowerCase() || "") || ["tejas", "kunal"].includes(user?.name?.toLowerCase() || "")) && (
                 <button
                   onClick={() => setView("reception")}
                   className={`flex items-center justify-center gap-1.5 px-3 sm:px-6 py-2.5 rounded-sm text-xs sm:text-sm font-medium transition-all duration-300 cursor-pointer flex-1 lg:flex-none ${
