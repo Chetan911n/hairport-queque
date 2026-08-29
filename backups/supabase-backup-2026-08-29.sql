@@ -1,5 +1,5 @@
 -- Automated Supabase Database Dump
--- Generated at: 2026-08-29T04:20:30.045Z
+-- Generated at: 2026-08-29T04:25:51.933Z
 
 -- Table: public.leads
 TRUNCATE TABLE public.leads CASCADE;
