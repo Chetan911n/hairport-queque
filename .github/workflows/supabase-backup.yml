@@ -1,0 +1,56 @@
+name: Automated Supabase DB Backup
+
+on:
+  schedule:
+    - cron: '0 2 * * *' # Every night at 02:00 AM UTC
+  workflow_dispatch: # Manual trigger option
+
+permissions:
+  contents: write
+
+jobs:
+  backup:
+    name: Backup PostgreSQL Database
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Create Backups Directory
+        run: mkdir -p backups
+
+      - name: Dump Supabase Database
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          if [ -z "$SUPABASE_DB_URL" ]; then
+            echo "ERROR: SUPABASE_DB_URL secret is not set!"
+            exit 1
+          fi
+          BACKUP_DATE=$(date +'%Y-%m-%d')
+          BACKUP_FILE="backups/supabase-backup-${BACKUP_DATE}.sql"
+          echo "Dumping database to ${BACKUP_FILE}..."
+          supabase db dump --db-url "$SUPABASE_DB_URL" --data-only > "$BACKUP_FILE" || supabase db dump --db-url "$SUPABASE_DB_URL" > "$BACKUP_FILE"
+          echo "Backup generated successfully: $(du -h $BACKUP_FILE)"
+
+      - name: Commit and Push Backup
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add backups/
+          if git diff --staged --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "Automated Nightly DB Backup [skip ci]"
+            git push origin HEAD:${{ github.ref_name }}
+          fi
