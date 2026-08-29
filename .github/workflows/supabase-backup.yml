@@ -19,27 +19,43 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup Supabase CLI
-        uses: supabase/setup-cli@v1
-        with:
-          version: latest
+      - name: Install PostgreSQL Client Tools
+        run: |
+          sudo apt-get update -y && sudo apt-get install -y postgresql-client
 
       - name: Create Backups Directory
         run: mkdir -p backups
 
-      - name: Dump Supabase Database
+      - name: Export Supabase Database Dump
         env:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
         run: |
           if [ -z "$SUPABASE_DB_URL" ]; then
-            echo "ERROR: SUPABASE_DB_URL secret is not set!"
+            echo "::error::SUPABASE_DB_URL secret is not set in Repository Settings -> Secrets and variables -> Actions!"
             exit 1
           fi
+
           BACKUP_DATE=$(date +'%Y-%m-%d')
           BACKUP_FILE="backups/supabase-backup-${BACKUP_DATE}.sql"
-          echo "Dumping database to ${BACKUP_FILE}..."
-          supabase db dump --db-url "$SUPABASE_DB_URL" --data-only > "$BACKUP_FILE" || supabase db dump --db-url "$SUPABASE_DB_URL" > "$BACKUP_FILE"
-          echo "Backup generated successfully: $(du -h $BACKUP_FILE)"
+
+          echo "Starting database dump to ${BACKUP_FILE}..."
+
+          # Try pg_dump first (native PostgreSQL utility)
+          if pg_dump "$SUPABASE_DB_URL" --no-owner --no-privileges > "$BACKUP_FILE" 2> dump_error.log; then
+            echo "pg_dump succeeded!"
+          else
+            echo "pg_dump failed, checking error log:"
+            cat dump_error.log
+            echo "Retrying without SSL enforce..."
+            if pg_dump "${SUPABASE_DB_URL}?sslmode=require" --no-owner --no-privileges > "$BACKUP_FILE"; then
+              echo "pg_dump with sslmode=require succeeded!"
+            else
+              echo "::error::Failed to export database dump. Please check your SUPABASE_DB_URL connection string secret."
+              exit 1
+            fi
+          fi
+
+          echo "Backup file generated successfully. Size: $(du -h $BACKUP_FILE | cut -f1)"
 
       - name: Commit and Push Backup
         env:
@@ -49,7 +65,7 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add backups/
           if git diff --staged --quiet; then
-            echo "No changes to commit."
+            echo "No new backup changes to commit."
           else
             git commit -m "Automated Nightly DB Backup [skip ci]"
             git push origin HEAD:${{ github.ref_name }}
