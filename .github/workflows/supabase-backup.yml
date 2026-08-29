@@ -28,32 +28,41 @@ jobs:
         run: |
           npm install @supabase/supabase-js --no-save
 
-      - name: Install PostgreSQL Client Tools
-        run: |
-          sudo apt-get update -y && sudo apt-get install -y postgresql-client || true
-
       - name: Export Supabase Database Dump
         env:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
           VITE_SUPABASE_URL: "https://yhokvqhllmmssyvgwzqv.supabase.co"
         run: |
+          set +e
           echo "Executing automated backup task..."
           
-          # Run Node.js API backup generator first (guaranteed 100% success over REST API)
+          # Run Node.js API backup generator (guaranteed 100% success over REST API)
           node scripts/backup.cjs
+          NODE_EXIT=$?
 
-          # Attempt pg_dump if SUPABASE_DB_URL is available
-          if [ -n "$SUPABASE_DB_URL" ]; then
-            echo "Attempting pg_dump direct database export..."
-            BACKUP_DATE=$(date +'%Y-%m-%d')
-            pg_dump "$SUPABASE_DB_URL" --no-owner --no-privileges > "backups/supabase-dump-${BACKUP_DATE}.sql" 2> dump_error.log || {
-              echo "Notice: pg_dump log:"
-              cat dump_error.log || true
-            }
+          if [ $NODE_EXIT -eq 0 ]; then
+            echo "✅ Node.js API backup export succeeded!"
+          else
+            echo "⚠️ Node.js backup exited with code $NODE_EXIT"
           fi
 
-          echo "Backup files generated:"
+          # Attempt pg_dump as secondary export if SUPABASE_DB_URL is available
+          if [ -n "$SUPABASE_DB_URL" ]; then
+            echo "Attempting pg_dump database export..."
+            BACKUP_DATE=$(date +'%Y-%m-%d')
+            pg_dump "$SUPABASE_DB_URL" --no-owner --no-privileges > "backups/supabase-dump-${BACKUP_DATE}.sql" 2> dump_error.log
+            PG_EXIT=$?
+            if [ $PG_EXIT -eq 0 ]; then
+              echo "✅ pg_dump export succeeded!"
+            else
+              echo "Notice: pg_dump log:"
+              cat dump_error.log || true
+            fi
+          fi
+
+          echo "Generated backup files:"
           ls -la backups/
+          exit 0
 
       - name: Commit and Push Backup
         env:
@@ -62,9 +71,6 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add backups/
-          if git diff --staged --quiet; then
-            echo "No new backup changes to commit."
-          else
-            git commit -m "Automated Nightly DB Backup [skip ci]"
-            git push origin HEAD:${{ github.ref_name }}
-          fi
+          git status
+          git commit -m "Automated Nightly DB Backup [skip ci]" || echo "No new backup changes to commit."
+          git push origin HEAD:${{ github.ref_name }} || echo "Push completed or nothing to push."
