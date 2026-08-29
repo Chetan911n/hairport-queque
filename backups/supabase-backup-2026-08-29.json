@@ -1,0 +1,72 @@
+{
+  "timestamp": "2026-08-29T04:20:30.039Z",
+  "projectUrl": "https://yhokvqhllmmssyvgwzqv.supabase.co",
+  "tables": {
+    "leads": [
+      {
+        "id": "e65a8d14-b0e8-4d8f-b7a7-b3c67f14cfbe",
+        "name": "Akash Deshmukh",
+        "phone": "+91 77750 77653",
+        "email": "akash.d@nashikcorp.in",
+        "source": "Devlali Website",
+        "stage": "new",
+        "score": 96,
+        "interested_tier": "Mega Pass",
+        "notes": "Inquired from Lam Road website about 16-month deal & installments. Form submitted 42s ago.",
+        "created_at": "2026-08-27T17:53:04.28352+00:00"
+      },
+      {
+        "id": "60d6b713-d6a0-43a6-8366-a11fb4a0459d",
+        "name": "Deepika Sen",
+        "phone": "+91 91725 30292",
+        "email": "deepika.sen@gmail.com",
+        "source": "Instagram Ad",
+        "stage": "trial_booked",
+        "score": 86,
+        "interested_tier": "Elite VIP",
+        "notes": "Interested in CrossFit, Weight Training and Steam Bath access.",
+        "created_at": "2026-08-27T17:53:04.28352+00:00"
+      },
+      {
+        "id": "cee13389-ed94-4034-b146-b0bf73caf9dc",
+        "name": "Rohan Mehra",
+        "phone": "+91 98223 34455",
+        "email": "rohan.m@venture.co",
+        "source": "Google Search",
+        "stage": "trial_attended",
+        "score": 95,
+        "interested_tier": "Crown Club",
+        "notes": "Visited Ground Floor, Mandes Mango Tree facility. Loved the Steam Bath recovery.",
+        "created_at": "2026-08-27T17:53:04.28352+00:00"
+      },
+      {
+        "id": "b6973586-fb29-4c83-b512-29e72f53007d",
+        "name": "Pooja Deshmukh (Website Lead)",
+        "phone": "+91 98220 55443",
+        "email": null,
+        "source": "Public Website",
+        "stage": "new",
+        "score": 95,
+        "interested_tier": "12 Months Elite VIP (₹15,000)",
+        "notes": "Preferred Date: 2026-08-28 | Time Slot: 06:00 PM (Morning Batch) | Message: Looking for personal trainer and steam bath",
+        "created_at": "2026-08-27T18:58:05.794664+00:00"
+      },
+      {
+        "id": "960e858e-19b1-4f66-808c-28741f7e07a1",
+        "name": "CHETAN",
+        "phone": "8484073129",
+        "email": null,
+        "source": "Public Website",
+        "stage": "new",
+        "score": 92,
+        "interested_tier": "Mega Pass (16 Months) — ₹15,000 (Best Value Deal)",
+        "notes": "Preferred Date: 2026-08-27 | Time Slot: 06:00 PM (Peak Evening) | Message: Weight Loss & Muscle Building",
+        "created_at": "2026-08-27T19:15:09.035124+00:00"
+      }
+    ],
+    "customers": [],
+    "appointments": [],
+    "services": [],
+    "reviews": []
+  }
+}
