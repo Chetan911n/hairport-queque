@@ -66,10 +66,21 @@ export const completeTicketAndCreateVisitTransaction = async (
 
   const cleanPhone = normalizePhone(phone);
   const completionTime = new Date().toISOString();
-  const deterministicVisitId = `visit_${ticketDocId}`;
+  const effectiveTicketId = (ticketDocId && !ticketDocId.startsWith("temp_")) ? ticketDocId : (ticketId || `t_${Date.now()}`);
+  const deterministicVisitId = `visit_${effectiveTicketId.replace('#', '')}`;
   const visitRef = doc(db, "visits", deterministicVisitId);
 
   try {
+    // 0. Pre-check if a visit with this ticket ID or deterministic ID already exists
+    const directSnap = await getDocs(query(
+      collection(db, "visits"),
+      where("ticketId", "in", [effectiveTicketId, ticketId, ticketDocId].filter(Boolean))
+    ));
+    if (!directSnap.empty) {
+      console.warn(`Idempotency protection: Visit for ticket ${effectiveTicketId} already recorded.`);
+      return { success: true, alreadyCompleted: true };
+    }
+
     // 1. Pre-resolve or find target client ID before transaction
     let targetClientId = params.clientId;
     
@@ -100,43 +111,44 @@ export const completeTicketAndCreateVisitTransaction = async (
       if (clientSnap.exists()) {
         clientExistsInDb = true;
         const cData = clientSnap.data() as ClientProfile;
-        currentVisits = cData.totalVisits || 0;
-        currentSpent = cData.totalSpent || 0;
+        currentVisits = typeof cData.totalVisits === "number" ? cData.totalVisits : 0;
+        currentSpent = typeof cData.totalSpent === "number" ? cData.totalSpent : 0;
         existingFirstVisit = cData.firstVisit || null;
       }
 
       // Calculate new statistics
       const newTotalVisits = currentVisits + 1;
-      const newTotalSpent = currentSpent + (price || 0);
+      const validPrice = typeof price === "number" && !isNaN(price) ? Math.max(0, price) : 0;
+      const newTotalSpent = currentSpent + validPrice;
       const updatedFirstVisit = existingFirstVisit ? existingFirstVisit : completionTime;
 
-      // Construct Visit Record Payload
+      // Construct Visit Record Payload — strictly sanitized against undefined values
       const newVisitRecord: VisitRecord = {
         visitId: deterministicVisitId,
-        ticketId: ticketDocId || ticketId,
+        ticketId: effectiveTicketId,
         clientId: targetClientId,
-        clientName: (customerName || "").trim(),
+        clientName: (customerName || "").trim() || "Valued Client",
         phone: cleanPhone || "N/A",
         visitDate: completionTime,
         services: serviceType || "Haircut",
-        serviceCategory,
+        serviceCategory: serviceCategory || "Hair",
         stylistName: stylistName || "Unassigned",
-        colourNumber,
-        amount: price || 0,
+        colourNumber: colourNumber || "",
+        amount: validPrice,
         paymentMethod: paymentMethod || "UPI",
         paymentStatus: paymentMethod === "Pending" ? "Pending" : "Paid",
-        isSplit: params.isSplit || false,
-        primaryStylistName: params.primaryStylistName,
-        primaryStylistPrice: params.primaryStylistPrice,
-        primaryStylistService: params.primaryStylistService,
-        secondaryStylistName: params.secondaryStylistName,
-        secondaryStylistPrice: params.secondaryStylistPrice,
-        secondaryStylistService: params.secondaryStylistService,
-        tertiaryStylistName: params.tertiaryStylistName,
-        tertiaryStylistPrice: params.tertiaryStylistPrice,
-        tertiaryStylistService: params.tertiaryStylistService,
+        isSplit: Boolean(params.isSplit),
+        primaryStylistName: params.primaryStylistName || "",
+        primaryStylistPrice: typeof params.primaryStylistPrice === "number" ? params.primaryStylistPrice : 0,
+        primaryStylistService: params.primaryStylistService || "",
+        secondaryStylistName: params.secondaryStylistName || "",
+        secondaryStylistPrice: typeof params.secondaryStylistPrice === "number" ? params.secondaryStylistPrice : 0,
+        secondaryStylistService: params.secondaryStylistService || "",
+        tertiaryStylistName: params.tertiaryStylistName || "",
+        tertiaryStylistPrice: typeof params.tertiaryStylistPrice === "number" ? params.tertiaryStylistPrice : 0,
+        tertiaryStylistService: params.tertiaryStylistService || "",
         createdAt: completionTime,
-        createdBy
+        createdBy: createdBy || "Reception"
       };
 
       // Create the Visit Document inside transaction
@@ -155,19 +167,19 @@ export const completeTicketAndCreateVisitTransaction = async (
       } else {
         transaction.set(clientRef, {
           clientId: targetClientId,
-          name: (customerName || "").trim(),
+          name: (customerName || "").trim() || "Valued Client",
           phone: cleanPhone || "N/A",
-          gender,
+          gender: gender || "Male",
           firstVisit: updatedFirstVisit,
           lastVisit: completionTime,
           totalVisits: 1,
-          totalSpent: price || 0,
+          totalSpent: validPrice,
           notes: "",
           archived: false,
           createdAt: completionTime,
           updatedAt: completionTime,
-          createdBy,
-          updatedBy: createdBy
+          createdBy: createdBy || "Reception",
+          updatedBy: createdBy || "Reception"
         });
       }
 

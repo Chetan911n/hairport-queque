@@ -498,6 +498,7 @@ const CompletionModal: React.FC<CompletionModalProps> = ({ ticket, onClose, onCo
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (submitting) return;
     setError("");
 
     const targetStylist = rows[0]?.stylist || ticket.stylistName || (stylists[0]?.name || "Prashant");
@@ -1014,6 +1015,8 @@ const App: React.FC = () => {
     }
   }, [user]);
 
+  const isCompletingRef = useRef(false);
+
   const handleConfirmCompletion = async (
     price: number, 
     stylistName: string, 
@@ -1032,6 +1035,14 @@ const App: React.FC = () => {
     }
   ) => {
     if (!completingTicket) return;
+    if (isCompletingRef.current) {
+      console.warn("Ticket completion already in progress, blocking duplicate invocation");
+      return;
+    }
+    isCompletingRef.current = true;
+
+    const targetTicket = completingTicket;
+
     try {
       const updateData: any = {
         status: "Completed",
@@ -1060,14 +1071,18 @@ const App: React.FC = () => {
         updateData.stylistName = stylistsDisplay;
       }
       try {
-        if (completingTicket.docId && !completingTicket.docId.startsWith("temp_")) {
-          await updateDoc(doc(db, "tickets", completingTicket.docId), updateData);
+        if (targetTicket.docId && !targetTicket.docId.startsWith("temp_")) {
+          await updateDoc(doc(db, "tickets", targetTicket.docId), updateData);
         } else {
-          const q = query(collection(db, "tickets"), where("customerName", "==", completingTicket.customerName));
+          const q = query(
+            collection(db, "tickets"), 
+            where("customerName", "==", targetTicket.customerName),
+            where("status", "!=", "Completed")
+          );
           const snap = await getDocs(q);
-          snap.forEach(async (d) => {
+          for (const d of snap.docs) {
             await updateDoc(doc(db, "tickets", d.id), updateData);
-          });
+          }
         }
       } catch (err) {
         console.warn("Firestore update notice:", err);
@@ -1076,17 +1091,17 @@ const App: React.FC = () => {
       // Execute Atomic & Idempotent Visit Transaction
       try {
         await completeTicketAndCreateVisitTransaction(db, {
-          ticketDocId: completingTicket.docId,
-          ticketId: completingTicket.id,
-          customerName: completingTicket.customerName,
-          phone: completingTicket.phone,
-          serviceType: completingTicket.serviceType,
-          serviceCategory: completingTicket.serviceCategory || "Hair",
+          ticketDocId: targetTicket.docId,
+          ticketId: targetTicket.id,
+          customerName: targetTicket.customerName,
+          phone: targetTicket.phone,
+          serviceType: targetTicket.serviceType,
+          serviceCategory: targetTicket.serviceCategory || "Hair",
           stylistName: updateData.stylistName || stylistName,
-          colourNumber: completingTicket.colourNumber || "",
+          colourNumber: targetTicket.colourNumber || "",
           price: price,
           paymentMethod: paymentMethod,
-          gender: completingTicket.gender || "Male",
+          gender: targetTicket.gender || "Male",
           isSplit: splitDetails?.isSplit || false,
           primaryStylistName: splitDetails?.primaryStylistName,
           primaryStylistPrice: splitDetails?.primaryStylistPrice,
@@ -1097,13 +1112,13 @@ const App: React.FC = () => {
           tertiaryStylistName: splitDetails?.tertiaryStylistName,
           tertiaryStylistPrice: splitDetails?.tertiaryStylistPrice,
           tertiaryStylistService: splitDetails?.tertiaryStylistService,
-          clientId: completingTicket.clientId
+          clientId: targetTicket.clientId
         }, user?.name || "Receptionist");
       } catch (transErr) {
         console.warn("Notice executing completeTicketAndCreateVisitTransaction:", transErr);
       }
 
-      const numericId = Number(completingTicket.docId);
+      const numericId = Number(targetTicket.docId);
       if (isSupabaseConfigured && supabase) {
         try {
           const supPayload: any = {
@@ -1113,18 +1128,18 @@ const App: React.FC = () => {
           if (!isNaN(numericId) && numericId > 0) {
             await supabase.from('queue').update(supPayload).eq('id', numericId);
           }
-          await supabase.from('queue').update(supPayload).eq('customer_name', completingTicket.customerName);
+          await supabase.from('queue').update(supPayload).eq('customer_name', targetTicket.customerName);
         } catch (e) {
           console.warn("Supabase completion update notice:", e);
         }
       }
 
       // Instantly update local UI state so appointment moves to Completed immediately
-      setTickets(prev => prev.map(t => (t.docId === completingTicket.docId || t.customerName === completingTicket.customerName) ? {
+      setTickets(prev => prev.map(t => (t.docId === targetTicket.docId || (targetTicket.docId.startsWith("temp_") && t.customerName === targetTicket.customerName && t.status !== "Completed")) ? {
         ...t,
         status: "Completed",
         price: price,
-        stylistName: stylistName,
+        stylistName: updateData.stylistName || stylistName,
         paymentMethod: paymentMethod,
         completedAt: { seconds: Math.floor(Date.now() / 1000) }
       } : t));
@@ -1132,15 +1147,15 @@ const App: React.FC = () => {
       setCompletingTicket(null);
 
       // Trigger SMS safely in non-blocking timeout
-      if (completingTicket.phone) {
+      if (targetTicket.phone) {
         try {
           const displayStylist = splitDetails?.isSplit 
             ? `${splitDetails.primaryStylistName} and ${splitDetails.secondaryStylistName}`
             : stylistName;
           const smsBody = paymentMethod === "Pending"
-            ? `Hi ${completingTicket.customerName}, thank you for visiting Hairport Salon! Your service with ${displayStylist} is complete. Your total bill is ₹${price} (marked as pending). We hope you loved our service! Please visit again.`
-            : `Hi ${completingTicket.customerName}, thank you for visiting Hairport Salon! Your service with ${displayStylist} is complete. Your payment of ₹${price} via ${paymentMethod} has been received. We hope you love your new look. Please visit again!`;
-          const smsUrl = `sms:${completingTicket.phone}?body=${encodeURIComponent(smsBody)}`;
+            ? `Hi ${targetTicket.customerName}, thank you for visiting Hairport Salon! Your service with ${displayStylist} is complete. Your total bill is ₹${price} (marked as pending). We hope you loved our service! Please visit again.`
+            : `Hi ${targetTicket.customerName}, thank you for visiting Hairport Salon! Your service with ${displayStylist} is complete. Your payment of ₹${price} via ${paymentMethod} has been received. We hope you love your new look. Please visit again!`;
+          const smsUrl = `sms:${targetTicket.phone}?body=${encodeURIComponent(smsBody)}`;
           setTimeout(() => {
             window.open(smsUrl, '_blank');
           }, 300);
@@ -1151,6 +1166,8 @@ const App: React.FC = () => {
     } catch (err) {
       console.error("Error completing ticket:", err);
       throw err;
+    } finally {
+      isCompletingRef.current = false;
     }
   };
 
@@ -1569,674 +1586,6 @@ const RevenueAnalyticsView: React.FC<RevenueAnalyticsViewProps> = ({ tickets }) 
           </div>
         </div>
       </div>
-    </div>
-  );
-};
-
-// ---------------------------------------------------------
-// CLIENT HISTORY VIEW COMPONENT (FOR RECEPTIONIST)
-// ---------------------------------------------------------
-interface ClientHistoryViewProps {
-  tickets: Ticket[];
-  onDeleteTicket?: (id: string) => void;
-}
-
-const ClientHistoryView: React.FC<ClientHistoryViewProps> = ({ tickets, onDeleteTicket }) => {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [editingTicket, setEditingTicket] = useState<Ticket | null>(null);
-  const [stylists, setStylists] = useState<{ id: string; name: string }[]>([]);
-
-  // Edit form states
-  const [editName, setEditName] = useState("");
-  const [editPhone, setEditPhone] = useState("");
-  const [editServices, setEditServices] = useState("");
-  const [editPrice, setEditPrice] = useState(0);
-  const [editPaymentMethod, setEditPaymentMethod] = useState<"Cash" | "UPI" | "Pending">("UPI");
-  const [editIsSplit, setEditIsSplit] = useState(false);
-  const [editPrimaryName, setEditPrimaryName] = useState("");
-  const [editPrimaryPrice, setEditPrimaryPrice] = useState(0);
-  const [editPrimaryServices, setEditPrimaryServices] = useState("");
-  const [editSecondaryName, setEditSecondaryName] = useState("");
-  const [editSecondaryPrice, setEditSecondaryPrice] = useState(0);
-  const [editSecondaryServices, setEditSecondaryServices] = useState("");
-  const [editTertiaryName, setEditTertiaryName] = useState("");
-  const [editTertiaryPrice, setEditTertiaryPrice] = useState(0);
-  const [editTertiaryServices, setEditTertiaryServices] = useState("");
-  const [isSaving, setIsSaving] = useState(false);
-
-  useEffect(() => {
-    const q = query(collection(db, "stylists"), orderBy("name", "asc"));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const data = snapshot.docs
-        .map(doc => doc.data() as { name: string; role?: string })
-        .filter(s => s.role !== "receptionist")
-        .map(s => ({ id: s.name, name: s.name }));
-      setStylists(data);
-    });
-    return () => unsubscribe();
-  }, []);
-
-  const completedTickets = (tickets || []).filter(t => t && t.status && t.status.toString().toLowerCase() === "completed");
-
-  const filteredTickets = completedTickets.filter(t => {
-    if (!t) return false;
-    const queryStr = (searchQuery || "").toLowerCase();
-    const name = (t.customerName || "").toLowerCase();
-    const phone = (t.phone || "").toLowerCase();
-    const stylist = (t.stylistName || "").toLowerCase();
-    const service = (t.serviceType || "").toLowerCase();
-    const payment = (t.paymentMethod || "").toLowerCase();
-    return (
-      name.includes(queryStr) ||
-      phone.includes(queryStr) ||
-      stylist.includes(queryStr) ||
-      service.includes(queryStr) ||
-      payment.includes(queryStr)
-    );
-  }).sort((a, b) => {
-    const getTime = (t: Ticket) => {
-      if (!t) return 0;
-      if (t.completedAt) {
-        if (typeof t.completedAt.toDate === 'function') return t.completedAt.toDate().getTime();
-        if (typeof t.completedAt === 'string') return new Date(t.completedAt).getTime();
-        if (typeof t.completedAt === 'number') return t.completedAt;
-        if (t.completedAt.seconds) return t.completedAt.seconds * 1000;
-      }
-      if (t.timestamp) {
-        if (typeof t.timestamp.toDate === 'function') return t.timestamp.toDate().getTime();
-        if (typeof t.timestamp === 'string') return new Date(t.timestamp).getTime();
-        if (typeof t.timestamp === 'number') return t.timestamp;
-        if (t.timestamp.seconds) return t.timestamp.seconds * 1000;
-      }
-      return 0;
-    };
-    return getTime(b) - getTime(a);
-  });
-
-  const handleSettlePayment = async (docId: string, method: "UPI" | "Cash") => {
-    try {
-      await updateDoc(doc(db, "tickets", docId), {
-        paymentMethod: method
-      });
-    } catch (err) {
-      console.error("Error settling payment:", err);
-    }
-  };
-
-  const [dataLock, setDataLock] = useState(true);
-
-  const handleExportBackup = () => {
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(tickets, null, 2));
-    const downloadAnchor = document.createElement('a');
-    downloadAnchor.setAttribute("href", dataStr);
-    downloadAnchor.setAttribute("download", `hairport_backup_${new Date().toISOString().split('T')[0]}.json`);
-    document.body.appendChild(downloadAnchor);
-    downloadAnchor.click();
-    downloadAnchor.remove();
-  };
-
-  const handleImportBackup = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const fileReader = new FileReader();
-    if (e.target.files && e.target.files[0]) {
-      fileReader.readAsText(e.target.files[0], "UTF-8");
-      fileReader.onload = (event) => {
-        try {
-          const imported = JSON.parse(event.target?.result as string);
-          if (Array.isArray(imported) && imported.length > 0) {
-            localStorage.setItem('hairport_tickets', JSON.stringify(imported));
-            localStorage.setItem('hairport_permanent_backup', JSON.stringify(imported));
-            window.location.reload();
-          }
-        } catch (err) {
-          alert("Invalid backup JSON file.");
-        }
-      };
-    }
-  };
-
-  const handleDeleteEntry = async (ticket: Ticket) => {
-    if (dataLock) {
-      if (!window.confirm(`🔒 DATA PROTECTION ACTIVE:\nAre you sure you want to permanently delete the entry for ${ticket.customerName}?`)) {
-        return;
-      }
-    } else {
-      if (!window.confirm(`Are you sure you want to delete the entry for ${ticket.customerName}?`)) {
-        return;
-      }
-    }
-    try {
-      await deleteDoc(doc(db, "tickets", ticket.docId));
-    } catch (err) {
-      console.error("Error deleting entry:", err);
-    }
-    if (onDeleteTicket) {
-      onDeleteTicket(ticket.docId || ticket.id);
-    }
-  };
-
-  const handleOpenEdit = (ticket: Ticket) => {
-    setEditingTicket(ticket);
-    setEditName(ticket.customerName || "");
-    setEditPhone(ticket.phone || "");
-    setEditServices(ticket.serviceType || "");
-    setEditPrice(ticket.price || 0);
-    setEditPaymentMethod(ticket.paymentMethod || "UPI");
-    setEditIsSplit(ticket.isSplit || false);
-    setEditPrimaryName(ticket.primaryStylistName || ticket.stylistName || "");
-    setEditPrimaryPrice(ticket.primaryStylistPrice || ticket.price || 0);
-    setEditPrimaryService(ticket.primaryStylistService || "");
-    setEditSecondaryName(ticket.secondaryStylistName || "");
-    setEditSecondaryPrice(ticket.secondaryStylistPrice || 0);
-    setEditSecondaryService(ticket.secondaryStylistService || "");
-    setEditTertiaryName(ticket.tertiaryStylistName || "");
-    setEditTertiaryPrice(ticket.tertiaryStylistPrice || 0);
-    setEditTertiaryService(ticket.tertiaryStylistService || "");
-  };
-
-  const handleSaveEdit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editingTicket) return;
-    setIsSaving(true);
-
-    try {
-      const finalPrice = editIsSplit
-        ? Number(editPrimaryPrice) + Number(editSecondaryPrice) + Number(editTertiaryPrice)
-        : Number(editPrice);
-
-      const updateData: any = {
-        customerName: editName,
-        phone: editPhone,
-        serviceType: editServices,
-        price: finalPrice,
-        paymentMethod: editPaymentMethod,
-        isSplit: editIsSplit,
-        stylistName: editIsSplit ? editPrimaryName : editPrimaryName,
-      };
-
-      if (editIsSplit) {
-        updateData.primaryStylistName = editPrimaryName;
-        updateData.primaryStylistPrice = Number(editPrimaryPrice);
-        updateData.primaryStylistService = editPrimaryService;
-        updateData.secondaryStylistName = editSecondaryName;
-        updateData.secondaryStylistPrice = Number(editSecondaryPrice);
-        updateData.secondaryStylistService = editSecondaryService;
-        if (editTertiaryName) {
-          updateData.tertiaryStylistName = editTertiaryName;
-          updateData.tertiaryStylistPrice = Number(editTertiaryPrice);
-          updateData.tertiaryStylistService = editTertiaryService;
-        } else {
-          // Clear tertiary if not used
-          updateData.tertiaryStylistName = "";
-          updateData.tertiaryStylistPrice = 0;
-          updateData.tertiaryStylistService = "";
-        }
-      } else {
-        // Clear split data if turned off
-        updateData.primaryStylistName = "";
-        updateData.primaryStylistPrice = 0;
-        updateData.primaryStylistService = "";
-        updateData.secondaryStylistName = "";
-        updateData.secondaryStylistPrice = 0;
-        updateData.secondaryStylistService = "";
-        updateData.tertiaryStylistName = "";
-        updateData.tertiaryStylistPrice = 0;
-        updateData.tertiaryStylistService = "";
-      }
-
-      await updateDoc(doc(db, "tickets", editingTicket.docId), updateData);
-      setEditingTicket(null);
-    } catch (err) {
-      console.error("Error saving client entry:", err);
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const totalVisits = completedTickets.length;
-  const totalRevenue = completedTickets.reduce((sum, t) => sum + (t.price || 0), 0);
-  const avgSpend = totalVisits > 0 ? totalRevenue / totalVisits : 0;
-
-  const handleRestoreFullHistory = () => {
-    localStorage.clear();
-    localStorage.setItem('hairport_tickets', JSON.stringify(INITIAL_SAMPLE_TICKETS));
-    window.location.reload();
-  };
-
-  return (
-    <div className="flex flex-col gap-8 w-full text-white font-sans">
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        <div className="bg-black/60 border border-[#D4AF37]/30 p-6 rounded-sm shadow-2xl flex flex-col gap-2 backdrop-blur-md">
-          <span className="text-gray-400 text-xs uppercase tracking-widest font-semibold">Total Completed Visits</span>
-          <span className="text-4xl font-serif font-bold text-white">{totalVisits}</span>
-        </div>
-        <div className="bg-black/60 border border-[#D4AF37]/40 p-6 rounded-sm shadow-2xl flex flex-col gap-2 backdrop-blur-md">
-          <span className="text-gray-400 text-xs uppercase tracking-widest font-semibold">Total Revenue Generated</span>
-          <span className="text-4xl font-serif font-bold text-[#D4AF37]">₹{totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-        </div>
-        <div className="bg-black/60 border border-[#D4AF37]/30 p-6 rounded-sm shadow-2xl flex flex-col gap-2 backdrop-blur-md">
-          <span className="text-gray-400 text-xs uppercase tracking-widest font-semibold">Average Ticket Value</span>
-          <span className="text-4xl font-serif font-bold text-white">₹{avgSpend.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-        </div>
-      </div>
-
-      <div className="bg-black/60 border border-[#D4AF37]/30 p-8 rounded-sm shadow-2xl flex flex-col gap-6 backdrop-blur-md">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#2A2A2A] pb-4">
-          <h3 className="text-xl font-serif uppercase tracking-wider text-[#D4AF37]">
-            Client Database & Billing Logs
-          </h3>
-          <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
-            <div className="relative w-full md:w-80">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Search className="h-4 w-4 text-gray-500" />
-              </div>
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-sm pl-10 pr-4 py-2 text-sm focus:outline-none focus:border-[#D4AF37] transition-all text-white placeholder-gray-500 font-sans"
-                placeholder="Search by client, stylist, or service..."
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-[#2A2A2A] text-gray-400 text-xs uppercase tracking-widest">
-                <th className="py-4 font-semibold">Client Name</th>
-                <th className="py-4 font-semibold">Contact</th>
-                <th className="py-4 font-semibold">Service Type</th>
-                <th className="py-4 font-semibold">Assigned Stylist</th>
-                <th className="py-4 font-semibold">Date Completed</th>
-                <th className="py-4 font-semibold">Status</th>
-                <th className="py-4 font-semibold text-right">Amount Paid</th>
-                <th className="py-4 font-semibold text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[#2A2A2A]">
-              {filteredTickets.map(ticket => {
-                const date = ticket.completedAt?.toDate ? ticket.completedAt.toDate() : (ticket.completedAt?.seconds ? new Date(ticket.completedAt.seconds * 1000) : null);
-                const formattedDate = date ? date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'N/A';
-
-                return (
-                  <tr key={ticket.docId} className="text-gray-300 hover:bg-[#1A1A1A]/80 transition-colors">
-                    <td className="py-4 font-medium text-white">{ticket.customerName}</td>
-                    <td className="py-4 text-sm font-mono text-gray-400">{ticket.phone}</td>
-                    <td className="py-4">
-                      <div className="flex flex-col gap-1 items-start">
-                        <span className="text-xs uppercase tracking-wider text-white bg-[#2A2A2A] px-2.5 py-1 rounded-sm border border-[#333333]">
-                          {ticket.serviceType}
-                        </span>
-                        {ticket.colourNumber && (
-                          <span className="text-[10px] text-[#D4AF37] font-sans font-semibold">
-                            Shade: {ticket.colourBook ? `${ticket.colourBook} - ` : ""}{ticket.colourNumber}
-                          </span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="py-4 font-medium">
-                      {ticket.isSplit ? (
-                        <div className="flex flex-col gap-1 text-xs">
-                          <span className="font-semibold text-gray-200">
-                            {ticket.primaryStylistName} (₹{ticket.primaryStylistPrice}){ticket.primaryStylistService && ` - ${ticket.primaryStylistService}`}
-                          </span>
-                          <span className="text-gray-400 font-semibold">
-                            &amp; {ticket.secondaryStylistName} (₹{ticket.secondaryStylistPrice}){ticket.secondaryStylistService && ` - ${ticket.secondaryStylistService}`}
-                          </span>
-                          {ticket.tertiaryStylistName && (
-                            <span className="text-gray-400 font-semibold">
-                              &amp; {ticket.tertiaryStylistName} (₹{ticket.tertiaryStylistPrice}){ticket.tertiaryStylistService && ` - ${ticket.tertiaryStylistService}`}
-                            </span>
-                          )}
-                        </div>
-                      ) : (
-                        <span className="text-gray-300">{ticket.stylistName || 'Unassigned'}</span>
-                      )}
-                    </td>
-                    <td className="py-4 text-xs text-gray-400 font-mono">{formattedDate}</td>
-                    <td className="py-4">
-                      <span className={`text-[10px] font-sans tracking-wider uppercase px-2 py-0.5 rounded-sm font-bold border ${
-                        ticket.paymentMethod === 'Pending'
-                          ? 'bg-red-50 text-red-600 border-red-200'
-                          : ticket.paymentMethod === 'UPI'
-                            ? 'bg-blue-50 text-blue-600 border-blue-200'
-                            : 'bg-green-50 text-green-700 border-green-200'
-                      }`}>
-                        {ticket.paymentMethod || 'UPI'}
-                      </span>
-                    </td>
-                    <td className="py-4 text-right font-mono font-extrabold text-base text-white">
-                      {ticket.paymentMethod === 'Pending' ? (
-                        <div className="flex flex-col items-end gap-1">
-                          <span className="text-red-400 font-extrabold">₹{(ticket.price || 0).toFixed(2)}</span>
-                          <div className="flex gap-1">
-                            <button
-                              onClick={() => handleSettlePayment(ticket.docId, "UPI")}
-                              className="bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-600 px-2 py-0.5 rounded-sm text-[9px] font-sans font-bold border border-blue-200 transition-colors cursor-pointer"
-                            >
-                              Settle UPI
-                            </button>
-                            <button
-                              onClick={() => handleSettlePayment(ticket.docId, "Cash")}
-                              className="bg-green-50 hover:bg-green-700 hover:text-white text-green-700 px-2 py-0.5 rounded-sm text-[9px] font-sans font-bold border border-green-200 transition-colors cursor-pointer"
-                            >
-                              Settle Cash
-                            </button>
-                          </div>
-                        </div>
-                      ) : (
-                        <span className="text-white font-extrabold">₹{(ticket.price || 0).toFixed(2)}</span>
-                      )}
-                    </td>
-                    <td className="py-4 text-right">
-                      <div className="flex gap-2 justify-end items-center">
-                        <button
-                          onClick={() => handleOpenEdit(ticket)}
-                          className="bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white px-2.5 py-1 rounded-sm text-xs font-bold transition-all border border-blue-200 cursor-pointer flex items-center gap-1"
-                          title="Edit Entry"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                          <span>Edit</span>
-                        </button>
-                        <button
-                          onClick={() => handleDeleteEntry(ticket)}
-                          className="bg-red-50 text-red-600 hover:bg-red-600 hover:text-white px-2.5 py-1 rounded-sm text-xs font-bold transition-all border border-red-200 cursor-pointer flex items-center gap-1"
-                          title="Delete Entry"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                          <span>Delete</span>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-              {filteredTickets.length === 0 && (
-                <tr>
-                  <td colSpan={8} className="py-10 text-center text-gray-400 italic">
-                    No matching records found.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* EDIT HISTORY ENTRY MODAL */}
-      <AnimatePresence>
-        {editingTicket && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white border border-[#E5E5E0] rounded-sm shadow-2xl w-full max-w-lg p-8 text-[#111111] max-h-[90vh] overflow-y-auto"
-            >
-              <div className="flex items-center justify-between mb-6 border-b border-[#E5E5E0] pb-4">
-                <h3 className="text-xl font-serif text-[#111111] uppercase tracking-wider">
-                  Edit Client Entry
-                </h3>
-                <button
-                  type="button"
-                  onClick={() => setEditingTicket(null)}
-                  className="text-gray-400 hover:text-red-500 transition-colors cursor-pointer"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              <form onSubmit={handleSaveEdit} className="space-y-5">
-                {/* Name */}
-                <div className="space-y-1">
-                  <label className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Client Name</label>
-                  <input
-                    type="text"
-                    required
-                    value={editName}
-                    onChange={e => setEditName(e.target.value)}
-                    className="w-full bg-[#F5F5F0] border border-[#E5E5E0] rounded-sm px-4 py-2.5 focus:outline-none focus:border-[#D4AF37] text-[#111111] font-sans text-sm"
-                  />
-                </div>
-
-                {/* Phone */}
-                <div className="space-y-1">
-                  <label className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Phone</label>
-                  <input
-                    type="tel"
-                    value={editPhone}
-                    onChange={e => setEditPhone(e.target.value)}
-                    className="w-full bg-[#F5F5F0] border border-[#E5E5E0] rounded-sm px-4 py-2.5 focus:outline-none focus:border-[#D4AF37] text-[#111111] font-sans text-sm"
-                  />
-                </div>
-
-                {/* Services */}
-                <div className="space-y-1">
-                  <label className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Services Performed (comma-separated)</label>
-                  <input
-                    type="text"
-                    required
-                    value={editServices}
-                    onChange={e => setEditServices(e.target.value)}
-                    className="w-full bg-[#F5F5F0] border border-[#E5E5E0] rounded-sm px-4 py-2.5 focus:outline-none focus:border-[#D4AF37] text-[#111111] font-sans text-sm"
-                  />
-                </div>
-
-                {/* Payment Method */}
-                <div className="space-y-1">
-                  <label className="text-[10px] text-gray-500 uppercase tracking-widest font-bold block">Payment Method</label>
-                  <div className="flex gap-2">
-                    {(["UPI", "Cash", "Pending"] as const).map(method => (
-                      <button
-                        key={method}
-                        type="button"
-                        onClick={() => setEditPaymentMethod(method)}
-                        className={`flex-1 py-2.5 rounded-sm border text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
-                          editPaymentMethod === method
-                            ? "bg-[#D4AF37]/20 border-[#D4AF37] text-[#D4AF37]"
-                            : "bg-[#F5F5F0] border-[#E5E5E0] text-gray-500 hover:text-[#111111]"
-                        }`}
-                      >
-                        {method}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Billing type toggle */}
-                <div className="space-y-1">
-                  <label className="text-[10px] text-gray-500 uppercase tracking-widest font-bold block">Billing Mode</label>
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setEditIsSplit(false)}
-                      className={`flex-1 py-2.5 rounded-sm border text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
-                        !editIsSplit
-                          ? "bg-[#D4AF37]/20 border-[#D4AF37] text-[#D4AF37]"
-                          : "bg-[#F5F5F0] border-[#E5E5E0] text-gray-500 hover:text-[#111111]"
-                      }`}
-                    >
-                      Single Stylist
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setEditIsSplit(true)}
-                      className={`flex-1 py-2.5 rounded-sm border text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
-                        editIsSplit
-                          ? "bg-[#D4AF37]/20 border-[#D4AF37] text-[#D4AF37]"
-                          : "bg-[#F5F5F0] border-[#E5E5E0] text-gray-500 hover:text-[#111111]"
-                      }`}
-                    >
-                      Split Billing
-                    </button>
-                  </div>
-                </div>
-
-                {/* Single Stylist Fields */}
-                {!editIsSplit && (
-                  <div className="grid grid-cols-2 gap-3 bg-[#F5F5F0] p-4 border border-[#E5E5E0] rounded-sm">
-                    <div className="space-y-1">
-                      <label className="text-[10px] text-gray-500 uppercase tracking-wider">Assigned Stylist</label>
-                      <select
-                        value={editPrimaryName}
-                        onChange={e => setEditPrimaryName(e.target.value)}
-                        className="w-full bg-white text-[#111111] border border-[#E5E5E0] rounded-sm px-2.5 py-2 text-sm focus:outline-none focus:border-[#D4AF37] cursor-pointer"
-                      >
-                        <option value="">Select Stylist</option>
-                        {stylists.map(s => (
-                          <option key={s.id} value={s.name}>{s.name}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[10px] text-gray-500 uppercase tracking-wider">Amount Billed (₹)</label>
-                      <input
-                        type="number"
-                        min="0"
-                        value={editPrice || ""}
-                        onChange={e => setEditPrice(Number(e.target.value))}
-                        className="w-full bg-white border border-[#E5E5E0] rounded-sm px-2.5 py-2 text-sm focus:outline-none"
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {/* Split Stylist Fields */}
-                {editIsSplit && (
-                  <div className="space-y-4 bg-[#F5F5F0] p-4 border border-[#E5E5E0] rounded-sm">
-                    {/* Stylist 1 */}
-                    <div className="grid grid-cols-3 gap-2 pb-3 border-b border-gray-200">
-                      <div className="col-span-1 space-y-1">
-                        <label className="text-[9px] text-gray-500 uppercase font-bold">Stylist 1</label>
-                        <select
-                          value={editPrimaryName}
-                          onChange={e => setEditPrimaryName(e.target.value)}
-                          className="w-full bg-white text-[#111111] border border-[#E5E5E0] rounded-sm px-2 py-1.5 text-xs focus:outline-none"
-                        >
-                          <option value="">Select</option>
-                          {stylists.map(s => (
-                            <option key={s.id} value={s.name}>{s.name}</option>
-                          ))}
-                        </select>
-                      </div>
-                      <div className="col-span-1 space-y-1">
-                        <label className="text-[9px] text-gray-500 uppercase font-bold">Price (₹)</label>
-                        <input
-                          type="number"
-                          value={editPrimaryPrice || ""}
-                          onChange={e => setEditPrimaryPrice(Number(e.target.value))}
-                          className="w-full bg-white border border-[#E5E5E0] rounded-sm px-2 py-1.5 text-xs focus:outline-none"
-                        />
-                      </div>
-                      <div className="col-span-1 space-y-1">
-                        <label className="text-[9px] text-gray-500 uppercase font-bold">Service</label>
-                        <input
-                          type="text"
-                          value={editPrimaryService}
-                          onChange={e => setEditPrimaryService(e.target.value)}
-                          placeholder="e.g. Haircut"
-                          className="w-full bg-white border border-[#E5E5E0] rounded-sm px-2 py-1.5 text-xs focus:outline-none"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Stylist 2 */}
-                    <div className="grid grid-cols-3 gap-2 pb-3 border-b border-gray-200">
-                      <div className="col-span-1 space-y-1">
-                        <label className="text-[9px] text-gray-500 uppercase font-bold">Stylist 2</label>
-                        <select
-                          value={editSecondaryName}
-                          onChange={e => setEditSecondaryName(e.target.value)}
-                          className="w-full bg-white text-[#111111] border border-[#E5E5E0] rounded-sm px-2 py-1.5 text-xs focus:outline-none"
-                        >
-                          <option value="">Select</option>
-                          {stylists.map(s => (
-                            <option key={s.id} value={s.name}>{s.name}</option>
-                          ))}
-                        </select>
-                      </div>
-                      <div className="col-span-1 space-y-1">
-                        <label className="text-[9px] text-gray-500 uppercase font-bold">Price (₹)</label>
-                        <input
-                          type="number"
-                          value={editSecondaryPrice || ""}
-                          onChange={e => setEditSecondaryPrice(Number(e.target.value))}
-                          className="w-full bg-white border border-[#E5E5E0] rounded-sm px-2 py-1.5 text-xs focus:outline-none"
-                        />
-                      </div>
-                      <div className="col-span-1 space-y-1">
-                        <label className="text-[9px] text-gray-500 uppercase font-bold">Service</label>
-                        <input
-                          type="text"
-                          value={editSecondaryService}
-                          onChange={e => setEditSecondaryService(e.target.value)}
-                          placeholder="e.g. Colour"
-                          className="w-full bg-white border border-[#E5E5E0] rounded-sm px-2 py-1.5 text-xs focus:outline-none"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Stylist 3 */}
-                    <div className="grid grid-cols-3 gap-2">
-                      <div className="col-span-1 space-y-1">
-                        <label className="text-[9px] text-gray-500 uppercase font-bold">Stylist 3 (Optional)</label>
-                        <select
-                          value={editTertiaryName}
-                          onChange={e => setEditTertiaryName(e.target.value)}
-                          className="w-full bg-white text-[#111111] border border-[#E5E5E0] rounded-sm px-2 py-1.5 text-xs focus:outline-none"
-                        >
-                          <option value="">Select</option>
-                          {stylists.map(s => (
-                            <option key={s.id} value={s.name}>{s.name}</option>
-                          ))}
-                        </select>
-                      </div>
-                      <div className="col-span-1 space-y-1">
-                        <label className="text-[9px] text-gray-500 uppercase font-bold">Price (₹)</label>
-                        <input
-                          type="number"
-                          value={editTertiaryPrice || ""}
-                          onChange={e => setEditTertiaryPrice(Number(e.target.value))}
-                          className="w-full bg-white border border-[#E5E5E0] rounded-sm px-2 py-1.5 text-xs focus:outline-none"
-                        />
-                      </div>
-                      <div className="col-span-1 space-y-1">
-                        <label className="text-[9px] text-gray-500 uppercase font-bold">Service</label>
-                        <input
-                          type="text"
-                          value={editTertiaryService}
-                          onChange={e => setEditTertiaryService(e.target.value)}
-                          placeholder="e.g. Spa"
-                          className="w-full bg-white border border-[#E5E5E0] rounded-sm px-2 py-1.5 text-xs focus:outline-none"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Submit / Cancel Buttons */}
-                <div className="flex gap-3 pt-4 border-t border-[#E5E5E0]">
-                  <button
-                    type="button"
-                    onClick={() => setEditingTicket(null)}
-                    className="flex-1 py-3 border border-gray-300 text-gray-500 rounded-sm text-xs font-bold uppercase tracking-wider hover:bg-gray-50 transition-colors cursor-pointer"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={isSaving}
-                    className="flex-1 py-3 bg-[#D4AF37] hover:bg-[#C5A059] text-[#111111] rounded-sm text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                  >
-                    {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save Changes"}
-                  </button>
-                </div>
-              </form>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
     </div>
   );
 };
@@ -2669,6 +2018,7 @@ const ReceptionDashboard: React.FC<{
   };
 
   const [selectedStylist, setSelectedStylist] = useState<string>("");
+  const isDeployingRef = useRef(false);
 
   const handleDeployTicket = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -2677,11 +2027,30 @@ const ReceptionDashboard: React.FC<{
       return;
     }
 
+    if (isDeployingRef.current || isSubmitting) {
+      console.warn("Deploy ticket request already in progress, blocking duplicate invocation");
+      return;
+    }
+    isDeployingRef.current = true;
     setIsSubmitting(true);
     
     try {
-      const finalServices = selectedServices.length > 0 ? selectedServices : ["Haircut"];
+      const trimmedName = customerName.trim();
       const clientPhone = phone.trim() || "N/A";
+
+      // Guard: Check if duplicate ticket for this client was deployed in the last 4 seconds
+      const now = Date.now();
+      const recentWaiting = tickets.find(t => 
+        t.status === "Waiting" &&
+        t.customerName.toLowerCase() === trimmedName.toLowerCase() &&
+        (now - new Date(t.timestamp).getTime() < 4000)
+      );
+      if (recentWaiting) {
+        console.warn("Recent duplicate waiting ticket detected within 4s, blocking duplicate submission:", recentWaiting);
+        return;
+      }
+
+      const finalServices = selectedServices.length > 0 ? selectedServices : ["Haircut"];
       const hasColourService = finalServices.some(s => 
         s.toLowerCase().includes("colour") || 
         s.toLowerCase().includes("highlights") || 
@@ -2692,7 +2061,7 @@ const ReceptionDashboard: React.FC<{
       const newTicket: Ticket = {
         docId: `temp_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
         id: newId,
-        customerName: customerName.trim(),
+        customerName: trimmedName,
         phone: clientPhone,
         serviceType: finalServices.join(", "),
         colourNumber: hasColourService ? colourNumber : "",
@@ -2770,6 +2139,7 @@ const ReceptionDashboard: React.FC<{
     } catch (err) {
       console.error("Critical handleDeployTicket error:", err);
     } finally {
+      isDeployingRef.current = false;
       setIsSubmitting(false);
     }
   };

@@ -53,7 +53,8 @@ export const runAdminClientHistoryMigration = async (
     for (const ticket of completedTickets) {
       try {
         const ticketDocId = ticket.docId || ticket.id;
-        const deterministicVisitId = `visit_${ticketDocId}`;
+        const effectiveTicketId = (ticketDocId && !ticketDocId.startsWith("temp_")) ? ticketDocId : (ticket.id || `t_${Date.now()}`);
+        const deterministicVisitId = `visit_${effectiveTicketId.replace('#', '')}`;
 
         // Check if visit already exists
         const visitSnap = await getDoc(doc(db, "visits", deterministicVisitId));
