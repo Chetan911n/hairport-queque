@@ -22,6 +22,7 @@ import { supabase, isSupabaseConfigured } from './supabaseClient';
 import { findOrCreateClient } from './services/clientService';
 import { completeTicketAndCreateVisitTransaction } from './services/visitService';
 import { ClientHistoryView } from './components/ClientHistory/ClientHistoryView';
+import { SystemError } from './components/SystemError';
 
 // Firebase Configuration
 const firebaseConfig = {
@@ -822,7 +823,14 @@ const HeaderClock: React.FC<{ isDarkView?: boolean }> = React.memo(({ isDarkView
   );
 });
 
+// Set to false to restore regular operations at any time
+const SYSTEM_MAINTENANCE_OVERRIDE = true;
+
 const App: React.FC = () => {
+  if (SYSTEM_MAINTENANCE_OVERRIDE) {
+    return <SystemError />;
+  }
+
   const [user, setUser] = useState<User | null>(() => {
     const saved = localStorage.getItem('hairport_user');
     if (saved) {
