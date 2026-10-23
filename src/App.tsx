@@ -824,7 +824,7 @@ const HeaderClock: React.FC<{ isDarkView?: boolean }> = React.memo(({ isDarkView
 });
 
 // Set to false to restore regular operations at any time
-const SYSTEM_MAINTENANCE_OVERRIDE = true;
+const SYSTEM_MAINTENANCE_OVERRIDE = false;
 
 const App: React.FC = () => {
   if (SYSTEM_MAINTENANCE_OVERRIDE) {
